@@ -242,3 +242,10 @@ Compatible with Binance API as of **August 22, 2025**.
 The software is provided "as is" without warranties or guarantees of any kind, express or implied. The authors are not responsible for any damages, including but not limited to financial losses, trading failures, or missed/duplicated orders resulting from its use. By using this software, you accept full responsibility for all outcomes.
 
 > ⚠️ **CRYPTOCURRENCY AND TRADING INVOLVES SIGNIFICANT RISK, INCLUDING THE POSSIBILITY OF TOTAL LOSS OF CAPITAL.**
+
+---
+## Documentation
+
+For detailed information about the Binance Spot API, refer to the official Binance API documentation:
+
+- [Binance Spot API Documentation](https://developers.binance.com/docs/binance-spot-api-docs)
