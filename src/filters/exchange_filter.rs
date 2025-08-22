@@ -1,0 +1,24 @@
+use serde::{Deserialize, Serialize};
+
+use super::{
+    ExchangeMaxNumOrdersFilter, ExchangeMaxNumAlgoOrdersFilter,
+    ExchangeMaxNumIcebergOrdersFilter
+};
+
+/**
+ * Exchange-level filters.
+ *
+ * # Variants
+ * - Each variant wraps a struct containing the concrete rule fields.
+ */
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "filterType")]
+#[serde(deny_unknown_fields)]
+pub enum ExchangeFilter {
+    #[serde(rename = "EXCHANGE_MAX_NUM_ORDERS")]
+    ExchangeMaxNumOrders(ExchangeMaxNumOrdersFilter),
+    #[serde(rename = "EXCHANGE_MAX_NUM_ALGO_ORDERS")]
+    ExchangeMaxNumAlgoOrders(ExchangeMaxNumAlgoOrdersFilter),
+    #[serde(rename = "EXCHANGE_MAX_NUM_ICEBERG_ORDERS")]
+    ExchangeMaxNumIcebergOrders(ExchangeMaxNumIcebergOrdersFilter),
+}

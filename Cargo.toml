@@ -1,0 +1,31 @@
+[package]
+name = "binance-spot-rs"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-trait = "0.1.88" # Async trait support
+chrono = "0.4.41" # Date and time handling
+pem = "3.0.5" # PEM encoding/decoding
+base64 = "0.22.1" # Base64 encoding/decoding
+ed25519-dalek = {version = "2.2.0", features = ["pkcs8", "pem"]} # Ed25519 digital signatures
+futures-util = "0.3.31" # Utilities for working with futures
+phf = { version = "0.12.1", features = ["macros"] } # Compile-time hash maps
+reqwest = { version = "0.11", features = ["json"] } # HTTP client for REST API
+rust_decimal = { version = "1.37.2", features = ["serde-str", "macros"] } # Decimal type for precise financial calculations
+serde = { version = "1.0", features = ["derive"] } # Serialization framework
+serde_json = "1.0" # JSON serialization support
+serde_urlencoded = "0.7.1" # URL-encoded serialization
+tokio = { version = "1.0", features = ["full"] } # Async runtime
+tokio-tungstenite = { version = "0.20", features = ["rustls-tls-native-roots"] } # WebSocket client
+url = "2.4" # URL parsing and manipulation
+rand = "0.9.1" # Random number generation
+uuid = { version = "1.17.0", features = ["v4"] } # UUID generation
+zeroize = { version = "1.8.1", features = ["derive"] }
+proptest = "1.7.0"
+futures = "0.3.31"
+anyhow = "1.0.98"
+thiserror = "2.0.12"
+once_cell = "1.21.3"
+tokio-stream = {version = "0.1.17", features = ["sync"]} # Stream utilities for Tokio
+tracing = "0.1.41"
