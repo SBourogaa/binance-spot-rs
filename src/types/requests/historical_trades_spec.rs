@@ -11,17 +11,17 @@ use crate::{
 
 /**
  * Historical trades query specification.
- * 
+ *
  * This specification handles parameters for querying historical trades
  * with optional limit and starting trade ID controls.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol to query trades for.
  * - `limit`: Optional number of trades to return (default: 500, max: 1000).
  * - `from_id`: Optional trade ID to fetch from (returns trades with ID >= from_id).
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct HistoricalTradesSpec<S=Unvalidated> {
+pub struct HistoricalTradesSpec<S = Unvalidated> {
     pub symbol: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<u16>,
@@ -34,10 +34,10 @@ pub struct HistoricalTradesSpec<S=Unvalidated> {
 impl HistoricalTradesSpec<Unvalidated> {
     /**
      * Creates a new historical trades specification.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query.
-     * 
+     *
      * # Returns
      * - `Self`: New historical trades specification.
      */
@@ -49,13 +49,13 @@ impl HistoricalTradesSpec<Unvalidated> {
             _state: PhantomData,
         }
     }
-    
+
     /**
      * Sets the limit for number of trades to return.
-     * 
+     *
      * # Arguments
      * - `limit`: Number of trades to return (max: 1000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -63,13 +63,13 @@ impl HistoricalTradesSpec<Unvalidated> {
         self.limit = Some(limit);
         self
     }
-    
+
     /**
      * Sets the starting trade ID.
-     * 
+     *
      * # Arguments
      * - `from_id`: Trade ID to fetch from (inclusive).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -80,12 +80,13 @@ impl HistoricalTradesSpec<Unvalidated> {
 
     /**
      * Builds the historical trades specification.
-     * 
+     *
      * # Returns
      * - `HistoricalTradesSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<HistoricalTradesSpec<Validated>> {
-        self.validate().context("Failed to validate HistoricalTradesSpecification")?;
+        self.validate()
+            .context("Failed to validate HistoricalTradesSpecification")?;
 
         Ok(HistoricalTradesSpec {
             symbol: self.symbol,
@@ -94,10 +95,10 @@ impl HistoricalTradesSpec<Unvalidated> {
             _state: PhantomData::<Validated>,
         })
     }
-    
+
     /**
      * Validates the historical trades specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -105,13 +106,13 @@ impl HistoricalTradesSpec<Unvalidated> {
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());
         }
-        
+
         if let Some(limit) = self.limit {
             if limit > 1000 {
                 return Err(InvalidParameter::range("limit", 1, 1000).into());
             }
         }
-        
+
         Ok(())
     }
 }

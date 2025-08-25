@@ -11,7 +11,7 @@ use crate::{
 
 /**
  * All order lists query specification for getting historical order list information.
- * 
+ *
  * # Fields
  * - `from_id`: Optional order list ID to start from (if supplied, neither start_time nor end_time can be provided).
  * - `start_time`: Optional timestamp to start from.
@@ -20,7 +20,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AllOrderListsSpec<S=Unvalidated> {
+pub struct AllOrderListsSpec<S = Unvalidated> {
     pub from_id: Option<u64>,
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
@@ -32,7 +32,7 @@ pub struct AllOrderListsSpec<S=Unvalidated> {
 impl AllOrderListsSpec<Unvalidated> {
     /**
      * Creates a new all order lists specification.
-     * 
+     *
      * # Returns
      * - `Self`: New all order lists specification.
      */
@@ -48,10 +48,10 @@ impl AllOrderListsSpec<Unvalidated> {
 
     /**
      * Sets the starting order list ID.
-     * 
+     *
      * # Arguments
      * - `from_id`: Order list ID to start from.
-     * 
+     *
      * # Returns
      * - `Self`: Updated all order lists specification.
      */
@@ -62,10 +62,10 @@ impl AllOrderListsSpec<Unvalidated> {
 
     /**
      * Sets the start time filter.
-     * 
+     *
      * # Arguments
      * - `start_time`: Timestamp to start from.
-     * 
+     *
      * # Returns
      * - `Self`: Updated all order lists specification.
      */
@@ -76,10 +76,10 @@ impl AllOrderListsSpec<Unvalidated> {
 
     /**
      * Sets the end time filter.
-     * 
+     *
      * # Arguments
      * - `end_time`: Timestamp to end at.
-     * 
+     *
      * # Returns
      * - `Self`: Updated all order lists specification.
      */
@@ -90,10 +90,10 @@ impl AllOrderListsSpec<Unvalidated> {
 
     /**
      * Sets the result limit.
-     * 
+     *
      * # Arguments
      * - `limit`: Number of results to return (max 1000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated all order lists specification.
      */
@@ -104,12 +104,13 @@ impl AllOrderListsSpec<Unvalidated> {
 
     /**
      * Builds the all order lists specification.
-     * 
+     *
      * # Returns
      * - `AllOrderListsSpec<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<AllOrderListsSpec<Validated>> {
-        self.validate().context("Failed to validate AllOrderListsSpec")?;
+        self.validate()
+            .context("Failed to validate AllOrderListsSpec")?;
 
         Ok(AllOrderListsSpec {
             from_id: self.from_id,
@@ -122,7 +123,7 @@ impl AllOrderListsSpec<Unvalidated> {
 
     /**
      * Validates the all order lists parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -135,25 +136,26 @@ impl AllOrderListsSpec<Unvalidated> {
 
         if let (Some(start_time), Some(end_time)) = (self.start_time, self.end_time) {
             if start_time >= end_time {
-                return Err(InvalidParameter::new(
-                    "start_time", 
-                    "must be less than end_time"
-                ).into());
+                return Err(
+                    InvalidParameter::new("start_time", "must be less than end_time").into(),
+                );
             }
 
             if end_time - start_time > 86400000 {
                 return Err(InvalidParameter::new(
                     "start_time/end_time",
-                    "time range cannot be longer than 24 hours"
-                ).into());
+                    "time range cannot be longer than 24 hours",
+                )
+                .into());
             }
         }
 
         if self.from_id.is_some() && (self.start_time.is_some() || self.end_time.is_some()) {
             return Err(InvalidParameter::new(
                 "from_id",
-                "cannot be used with start_time or end_time"
-            ).into());
+                "cannot be used with start_time or end_time",
+            )
+            .into());
         }
 
         Ok(())

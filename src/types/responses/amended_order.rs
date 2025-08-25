@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::types::responses::{Order, OrderList};
+use serde::{Deserialize, Serialize};
 
 /**
  * Response structure for order amendment operations.

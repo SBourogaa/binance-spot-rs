@@ -33,8 +33,8 @@ pub trait StreamSpec {
      * # Returns
      * - Result indicating if the specification is valid, or an error if validation fails
      */
-    fn validate(&self) -> crate::Result<()> { 
-        Ok(()) 
+    fn validate(&self) -> crate::Result<()> {
+        Ok(())
     }
 
     /**

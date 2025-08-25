@@ -5,20 +5,14 @@ use serde::Serialize;
 
 use crate::Result;
 use crate::{
+    enums::{OrderResponseType, OrderSide, OrderType, SelfTradePreventionMode, TimeInForce},
     errors::InvalidParameter,
-    enums::{
-        OrderSide, 
-        OrderType,
-        TimeInForce, 
-        OrderResponseType, 
-        SelfTradePreventionMode,
-    },
     types::requests::{Unvalidated, Validated},
 };
 
 /**
  * SOR (Smart Order Routing) order specification builder.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol for the order.
  * - `side`: Order side - BUY or SELL.
@@ -38,27 +32,47 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SorOrderSpec<S=Unvalidated> {
+pub struct SorOrderSpec<S = Unvalidated> {
     pub symbol: String,
     pub side: OrderSide,
     #[serde(rename = "type")]
     pub order_type: OrderType,
-    
+
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_in_force: Option<TimeInForce>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub quantity: Option<rust_decimal::Decimal>,
-    #[serde(rename = "quoteOrderQty", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "quoteOrderQty",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub quote_order_quantity: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub price: Option<rust_decimal::Decimal>,
     #[serde(rename = "newClientOrderId", skip_serializing_if = "Option::is_none")]
     pub client_order_id: Option<String>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub stop_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub trailing_delta: Option<rust_decimal::Decimal>,
-    #[serde(rename = "icebergQty", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "icebergQty",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub iceberg_quantity: Option<rust_decimal::Decimal>,
     #[serde(rename = "newOrderRespType")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -76,12 +90,12 @@ pub struct SorOrderSpec<S=Unvalidated> {
 impl SorOrderSpec<Unvalidated> {
     /**
      * Creates a new SOR order specification with required parameters.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol for the order.
      * - `side`: Order side (buy/sell).
      * - `order_type`: Type of order (limit, market, etc.).
-     * 
+     *
      * # Returns
      * - `Self`: New SOR order specification.
      */
@@ -108,10 +122,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the time in force for the order.
-     * 
+     *
      * # Arguments
      * - `time_in_force`: Time in force for the order (GTC, IOC, FOK).
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -122,10 +136,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the order quantity.
-     * 
+     *
      * # Arguments
      * - `quantity`: Quantity of the asset to order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -136,10 +150,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the quote order quantity (alternative to quantity for market orders).
-     * 
+     *
      * # Arguments
      * - `quote_quantity`: Quote quantity for the order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -150,10 +164,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the order price.
-     * 
+     *
      * # Arguments
      * - `price`: Price for limit orders.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -164,10 +178,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the client order ID.
-     * 
+     *
      * # Arguments
      * - `client_id`: Custom client order ID.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -178,10 +192,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the stop price for stop orders.
-     * 
+     *
      * # Arguments
      * - `stop_price`: Stop price for stop loss/take profit orders.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -192,10 +206,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the trailing delta for trailing stop orders.
-     * 
+     *
      * # Arguments
      * - `trailing_delta`: Trailing delta for trailing stop orders.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -206,10 +220,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the iceberg quantity for iceberg orders.
-     * 
+     *
      * # Arguments
      * - `iceberg_quantity`: Quantity for iceberg orders.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -220,10 +234,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the response type.
-     * 
+     *
      * # Arguments
      * - `response_type`: Response type for the order (ACK, RESULT, FULL).
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -234,10 +248,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the strategy ID.
-     * 
+     *
      * # Arguments
      * - `strategy_id`: ID of the strategy to associate with the order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -248,10 +262,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the strategy type.
-     * 
+     *
      * # Arguments
      * - `strategy_type`: Type of the strategy (must be >= 1000000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -262,10 +276,10 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Sets the self-trade prevention mode.
-     * 
+     *
      * # Arguments
      * - `stp_mode`: Self-trade prevention mode to use.
-     * 
+     *
      * # Returns
      * - `Self`: Updated SOR order specification.
      */
@@ -276,7 +290,7 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Builds the SOR order specification.
-     * 
+     *
      * # Returns
      * - `SorOrderSpec<Validated>`: Validated specification or error if validation fails.
      */
@@ -305,7 +319,7 @@ impl SorOrderSpec<Unvalidated> {
 
     /**
      * Validates the SOR order parameters based on order type requirements.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -315,10 +329,9 @@ impl SorOrderSpec<Unvalidated> {
         }
 
         if self.quantity.is_some() && self.quote_order_quantity.is_some() {
-            return Err(InvalidParameter::mutually_exclusive(
-                "quantity",
-                "quote_order_quantity"
-            ).into());
+            return Err(
+                InvalidParameter::mutually_exclusive("quantity", "quote_order_quantity").into(),
+            );
         }
 
         if let Some(qty) = self.quantity {
@@ -329,7 +342,11 @@ impl SorOrderSpec<Unvalidated> {
 
         if let Some(quote_qty) = self.quote_order_quantity {
             if quote_qty <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new("quote_order_quantity", "must be greater than 0").into());
+                return Err(InvalidParameter::new(
+                    "quote_order_quantity",
+                    "must be greater than 0",
+                )
+                .into());
             }
         }
 
@@ -347,31 +364,37 @@ impl SorOrderSpec<Unvalidated> {
 
         if let Some(trailing_delta) = self.trailing_delta {
             if trailing_delta <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new("trailing_delta", "must be greater than 0").into());
+                return Err(
+                    InvalidParameter::new("trailing_delta", "must be greater than 0").into(),
+                );
             }
         }
 
         if let Some(iceberg_qty) = self.iceberg_quantity {
             if iceberg_qty <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new("iceberg_quantity", "must be greater than 0").into());
+                return Err(
+                    InvalidParameter::new("iceberg_quantity", "must be greater than 0").into(),
+                );
             }
         }
-        
+
         if let Some(strat_type) = self.strategy_type {
             if strat_type < 1000000 {
                 return Err(InvalidParameter::range("strategy_type", 1000000, u32::MAX).into());
             }
         }
-        
-        if self.iceberg_quantity.is_some() && 
-           !matches!(self.time_in_force, Some(TimeInForce::GTC)) && 
-           !matches!(self.order_type, OrderType::LimitMaker) {
+
+        if self.iceberg_quantity.is_some()
+            && !matches!(self.time_in_force, Some(TimeInForce::GTC))
+            && !matches!(self.order_type, OrderType::LimitMaker)
+        {
             return Err(InvalidParameter::new(
                 "iceberg_quantity",
-                "requires time_in_force to be GTC or order_type to be LIMIT_MAKER"
-            ).into());
+                "requires time_in_force to be GTC or order_type to be LIMIT_MAKER",
+            )
+            .into());
         }
-        
+
         match self.order_type {
             OrderType::Limit => {
                 if self.time_in_force.is_none() {
@@ -383,12 +406,12 @@ impl SorOrderSpec<Unvalidated> {
                 if self.price.is_none() {
                     return Err(InvalidParameter::empty("price").into());
                 }
-            },
+            }
             OrderType::Market => {
                 if self.quantity.is_none() && self.quote_order_quantity.is_none() {
-                    return Err(InvalidParameter::empty("quantity or quote_order_quantity").into())
+                    return Err(InvalidParameter::empty("quantity or quote_order_quantity").into());
                 }
-            },
+            }
             OrderType::StopLoss => {
                 if self.quantity.is_none() {
                     return Err(InvalidParameter::empty("quantity").into());
@@ -396,7 +419,7 @@ impl SorOrderSpec<Unvalidated> {
                 if self.stop_price.is_none() && self.trailing_delta.is_none() {
                     return Err(InvalidParameter::empty("stop_price or trailing_delta").into());
                 }
-            },
+            }
             OrderType::StopLossLimit => {
                 if self.time_in_force.is_none() {
                     return Err(InvalidParameter::empty("time_in_force").into());
@@ -410,7 +433,7 @@ impl SorOrderSpec<Unvalidated> {
                 if self.stop_price.is_none() && self.trailing_delta.is_none() {
                     return Err(InvalidParameter::empty("stop_price or trailing_delta").into());
                 }
-            },
+            }
             OrderType::TakeProfit => {
                 if self.quantity.is_none() {
                     return Err(InvalidParameter::empty("quantity").into());
@@ -418,7 +441,7 @@ impl SorOrderSpec<Unvalidated> {
                 if self.stop_price.is_none() && self.trailing_delta.is_none() {
                     return Err(InvalidParameter::empty("stop_price or trailing_delta").into());
                 }
-            },
+            }
             OrderType::TakeProfitLimit => {
                 if self.time_in_force.is_none() {
                     return Err(InvalidParameter::empty("time_in_force").into());
@@ -432,7 +455,7 @@ impl SorOrderSpec<Unvalidated> {
                 if self.stop_price.is_none() && self.trailing_delta.is_none() {
                     return Err(InvalidParameter::empty("stop_price or trailing_delta").into());
                 }
-            },
+            }
             OrderType::LimitMaker => {
                 if self.quantity.is_none() {
                     return Err(InvalidParameter::empty("quantity").into());
@@ -440,15 +463,14 @@ impl SorOrderSpec<Unvalidated> {
                 if self.price.is_none() {
                     return Err(InvalidParameter::empty("price").into());
                 }
-            },
+            }
             OrderType::Unknown => {
-                return Err(InvalidParameter::new(
-                    "order_type",
-                    "must be a valid order type"
-                ).into());
+                return Err(
+                    InvalidParameter::new("order_type", "must be a valid order type").into(),
+                );
             }
         }
-        
+
         Ok(())
     }
 }

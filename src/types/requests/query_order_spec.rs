@@ -1,6 +1,6 @@
-use std::marker::PhantomData;
-use serde::Serialize;
 use anyhow::Context;
+use serde::Serialize;
+use std::marker::PhantomData;
 
 use crate::Result;
 use crate::{
@@ -12,8 +12,8 @@ use crate::{
  * Specification for querying a specific order.
  *
  * This specification is used to query the status of a specific order by either
- * order ID or original client order ID. 
- * 
+ * order ID or original client order ID.
+ *
  * # Fields
  * - `symbol`: Trading symbol to query the order for (required).
  * - `order_id`: Order ID to query.
@@ -21,7 +21,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct QueryOrderSpec<S=Unvalidated> {
+pub struct QueryOrderSpec<S = Unvalidated> {
     pub symbol: String,
     pub order_id: Option<u64>,
     #[serde(rename = "origClientOrderId")]
@@ -33,10 +33,10 @@ pub struct QueryOrderSpec<S=Unvalidated> {
 impl QueryOrderSpec<Unvalidated> {
     /**
      * Creates a new query order specification.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query the order for.
-     * 
+     *
      * # Returns
      * - `Self`: New query order specification.
      */
@@ -51,10 +51,10 @@ impl QueryOrderSpec<Unvalidated> {
 
     /**
      * Sets the order ID to query.
-     * 
+     *
      * # Arguments
      * - `order_id`: ID of the order to query.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -65,27 +65,31 @@ impl QueryOrderSpec<Unvalidated> {
 
     /**
      * Sets the original client order ID to query.
-     * 
+     *
      * # Arguments
      * - `original_client_order_id`: Original client order ID to query.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
-    pub fn with_original_client_order_id(mut self, original_client_order_id: impl Into<String>) -> Self {
+    pub fn with_original_client_order_id(
+        mut self,
+        original_client_order_id: impl Into<String>,
+    ) -> Self {
         self.original_client_order_id = Some(original_client_order_id.into());
         self
     }
 
     /**
      * Builds the query order specification.
-     * 
+     *
      * # Returns
      * - `QueryOrderSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<QueryOrderSpec<Validated>> {
-        self.validate().context("Failed to validate QueryOrderSpecification")?;
-        
+        self.validate()
+            .context("Failed to validate QueryOrderSpecification")?;
+
         Ok(QueryOrderSpec {
             symbol: self.symbol,
             order_id: self.order_id,
@@ -102,10 +106,11 @@ impl QueryOrderSpec<Unvalidated> {
         if self.order_id.is_none() && self.original_client_order_id.is_none() {
             return Err(InvalidParameter::new(
                 "order_id or original_client_order_id",
-                "must be specified"
-            ).into());
+                "must be specified",
+            )
+            .into());
         }
-        
+
         Ok(())
     }
 }

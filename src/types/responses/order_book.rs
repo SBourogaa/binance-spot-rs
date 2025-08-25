@@ -4,9 +4,9 @@ use crate::types::responses::OrderBookLevel;
 
 /**
  * Order book response from Binance API.
- * 
+ *
  * Contains current bid and ask levels for a trading symbol.
- * 
+ *
  * # Fields
  * - `last_update_id`: Order book update ID for synchronization.
  * - `bids`: Bid levels sorted from highest to lowest price.
@@ -24,7 +24,7 @@ pub struct OrderBook {
 impl OrderBook {
     /**
      * Gets the best bid (highest bid price).
-     * 
+     *
      * # Returns
      * - `Option<&OrderBookLevel>`: Best bid level, if any.
      */
@@ -34,7 +34,7 @@ impl OrderBook {
 
     /**
      * Gets the best ask (lowest ask price).
-     * 
+     *
      * # Returns
      * - `Option<&OrderBookLevel>`: Best ask level, if any.
      */
@@ -44,14 +44,20 @@ impl OrderBook {
 
     /**
      * Checks if the order book is valid (bids and asks properly sorted).
-     * 
+     *
      * # Returns
      * - `bool`: True if order book is properly sorted.
      */
     pub fn is_valid(&self) -> bool {
-        let bids_sorted: bool = self.bids.windows(2).all(|pair| pair[0].price >= pair[1].price);  
-        let asks_sorted: bool = self.asks.windows(2).all(|pair| pair[0].price <= pair[1].price);
-        
+        let bids_sorted: bool = self
+            .bids
+            .windows(2)
+            .all(|pair| pair[0].price >= pair[1].price);
+        let asks_sorted: bool = self
+            .asks
+            .windows(2)
+            .all(|pair| pair[0].price <= pair[1].price);
+
         bids_sorted && asks_sorted
     }
 }

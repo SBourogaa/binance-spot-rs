@@ -2,9 +2,7 @@ use anyhow::Context;
 use serde::Serialize;
 
 use crate::Result;
-use crate::{
-    auth::SignatureProvider,
-};
+use crate::auth::SignatureProvider;
 
 /**
  * Generates timestamp and signature for authenticated API requests.
@@ -28,12 +26,12 @@ pub async fn generate_signature<T: Serialize>(
         .duration_since(std::time::UNIX_EPOCH)
         .unwrap()
         .as_millis() as u64;
-        
-    let params_query = serde_urlencoded::to_string(params)
-        .context("Failed to serialize parameters")?;
-        
+
+    let params_query =
+        serde_urlencoded::to_string(params).context("Failed to serialize parameters")?;
+
     let mut all_params = std::collections::BTreeMap::new();
-    
+
     if !params_query.is_empty() {
         for pair in params_query.split('&') {
             if let Some((key, value)) = pair.split_once('=') {
@@ -41,20 +39,20 @@ pub async fn generate_signature<T: Serialize>(
             }
         }
     }
-    
+
     if include_api_key {
         all_params.insert("apiKey".to_string(), signer.get_api_key().to_string());
     }
-    
+
     all_params.insert("timestamp".to_string(), timestamp.to_string());
     all_params.insert("recvWindow".to_string(), recv_window.to_string());
-    
+
     let signature_payload = all_params
         .iter()
         .map(|(k, v)| format!("{}={}", k, v))
         .collect::<Vec<_>>()
         .join("&");
-        
+
     let signature = signer.sign(&signature_payload).await?;
     Ok((signature, signature_payload))
 }

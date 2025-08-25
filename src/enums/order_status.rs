@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
  * - `Rejected`: The order was not accepted by the engine and not processed.
  * - `Expired`: The order was canceled according to the order type's rules or by the exchange.
  * - `ExpiredInMatch`: The order was expired by the exchange due to STP.
- * - `Unknown`: Any order status not recognized. 
+ * - `Unknown`: Any order status not recognized.
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]

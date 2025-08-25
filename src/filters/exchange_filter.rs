@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    ExchangeMaxNumOrdersFilter, ExchangeMaxNumAlgoOrdersFilter,
-    ExchangeMaxNumIcebergOrdersFilter
+    ExchangeMaxNumAlgoOrdersFilter, ExchangeMaxNumIcebergOrdersFilter, ExchangeMaxNumOrdersFilter,
 };
 
 /**

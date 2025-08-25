@@ -5,7 +5,7 @@ use crate::StreamConfig;
  * Specification for Binance Trade Stream
  *
  * The Trade Stream pushes raw trade information; each trade has a unique buyer and seller.
- * 
+ *
  * # Fields
  * - `symbol`: Trading pair symbol (e.g., "BTCUSDT")
  */

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /**
  * External Lock Update Event
- * 
+ *
  * Sent when part of your spot wallet balance is locked/unlocked by an external system
  * (e.g., when used as margin collateral).
  */

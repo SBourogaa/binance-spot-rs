@@ -1,9 +1,9 @@
+use chrono::{DateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc, TimeZone};
 
 /**
  * Server time response from Binance API.
- * 
+ *
  * # Fields
  * - `server_time`: Current server timestamp as UTC DateTime.
  */
@@ -21,9 +21,11 @@ impl ServerTime {
     pub fn from_millis(millis: u64) -> Self {
         let secs = (millis / 1000) as i64;
         let nanos = ((millis % 1000) * 1_000_000) as u32;
-        let dt = Utc.timestamp_opt(secs, nanos).single()
+        let dt = Utc
+            .timestamp_opt(secs, nanos)
+            .single()
             .unwrap_or_else(|| Utc::now());
-        
+
         Self { server_time: dt }
     }
 
@@ -31,12 +33,14 @@ impl ServerTime {
      * Creates ServerTime from current system time.
      */
     pub fn now() -> Self {
-        Self { server_time: Utc::now() }
+        Self {
+            server_time: Utc::now(),
+        }
     }
 }
 
 mod timestamp_millis {
-    use chrono::{DateTime, Utc, TimeZone};
+    use chrono::{DateTime, TimeZone, Utc};
     use serde::{Deserialize, Deserializer, Serializer};
 
     pub fn serialize<S>(dt: &DateTime<Utc>, serializer: S) -> Result<S::Ok, S::Error>
@@ -54,7 +58,9 @@ mod timestamp_millis {
         let millis = u64::deserialize(deserializer)?;
         let secs = (millis / 1000) as i64;
         let nanos = ((millis % 1000) * 1_000_000) as u32;
-        Ok(Utc.timestamp_opt(secs, nanos).single()
+        Ok(Utc
+            .timestamp_opt(secs, nanos)
+            .single()
             .unwrap_or_else(|| Utc::now()))
     }
 }

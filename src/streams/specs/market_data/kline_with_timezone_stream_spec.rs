@@ -1,16 +1,13 @@
-use super::{
-    interval::Interval, 
-    timezone_offset::TimezoneOffset
-};
 use super::super::r#trait::StreamSpec;
+use super::{interval::Interval, timezone_offset::TimezoneOffset};
 use crate::StreamConfig;
 
 /**
  * Specification for Binance Kline/Candlestick Stream with Timezone Offset
  *
- * The Kline/Candlestick Stream with timezone offset pushes updates to the current klines/candlestick 
+ * The Kline/Candlestick Stream with timezone offset pushes updates to the current klines/candlestick
  * every second (for 1s interval) or every 2 seconds (for other intervals) in the specified timezone.
- * 
+ *
  * # Fields
  * - `symbol`: Trading pair symbol (e.g., "BTCUSDT")
  * - `interval`: Kline interval (e.g., OneMinute, OneHour, etc.)
@@ -36,7 +33,11 @@ impl KlineWithTimezoneStreamSpec {
      * # Returns
      * - New KlineWithTimezoneStreamSpec instance
      */
-    pub fn new(symbol: impl Into<String>, interval: Interval, timezone_offset: TimezoneOffset) -> Self {
+    pub fn new(
+        symbol: impl Into<String>,
+        interval: Interval,
+        timezone_offset: TimezoneOffset,
+    ) -> Self {
         Self {
             symbol: symbol.into(),
             interval,
@@ -134,10 +135,12 @@ impl StreamSpec for KlineWithTimezoneStreamSpec {
      * - Stream name in format: <symbol>@kline_<interval>@<timezone_offset> (lowercase)
      */
     fn stream_name(&self) -> String {
-        format!("{}@kline_{}@{}",
+        format!(
+            "{}@kline_{}@{}",
             self.symbol.to_lowercase(),
             self.interval,
-            self.timezone_offset)
+            self.timezone_offset
+        )
     }
 
     /**
@@ -167,8 +170,8 @@ impl StreamSpec for KlineWithTimezoneStreamSpec {
     }
 }
 
-use serde::{Deserialize, Serialize};
 use crate::types::responses::Kline;
+use serde::{Deserialize, Serialize};
 
 /**
  * Kline Stream Data
@@ -214,7 +217,7 @@ pub struct KlineStreamData {
  * # Fields:
  * - `event_type`: Event type identifier, always "kline" (serde field "e")
  * - `event_time`: Event timestamp in milliseconds since Unix epoch (serde field "E")
- * - `symbol`: Trading pair symbol (serde field "s") 
+ * - `symbol`: Trading pair symbol (serde field "s")
  * - `kline`: Detailed kline data containing interval, trade IDs, prices, volumes, and metadata (serde field "k")
  */
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

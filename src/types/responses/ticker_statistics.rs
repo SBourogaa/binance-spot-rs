@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Ticker statistics response variants from Binance API.
- * 
+ *
  * Represents either FULL or MINI format ticker statistics for trading symbols.
  * Used by ticker_24hr, ticker_trading_day, and ticker_rolling_window endpoints.
  *
@@ -23,10 +23,10 @@ pub enum TickerStatistics {
 
 /**
  * Full ticker statistics from Binance API.
- * 
+ *
  * Contains comprehensive 24-hour, trading day, or rolling window statistics
  * with all available price, volume, and trading metrics.
- * 
+ *
  * Enhanced with WebSocket Stream aliases for `<symbol>@ticker` compatibility.
  *
  * # Fields
@@ -64,21 +64,54 @@ pub struct TickerStatisticsFull {
     pub price_change_percent: Decimal,
     #[serde(alias = "w", with = "rust_decimal::serde::str")]
     pub weighted_avg_price: Decimal,
-    
+
     // Optional fields - use str_option for Decimal strings
-    #[serde(default, alias = "x", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        alias = "x",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub prev_close_price: Option<Decimal>,
-    #[serde(rename = "lastQty", default, alias = "Q", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "lastQty",
+        default,
+        alias = "Q",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub last_quantity: Option<Decimal>,
-    #[serde(default, alias = "b", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        alias = "b",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub bid_price: Option<Decimal>,
-    #[serde(rename = "bidQty", default, alias = "B", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "bidQty",
+        default,
+        alias = "B",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub bid_quantity: Option<Decimal>,
-    #[serde(default, alias = "a", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        default,
+        alias = "a",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub ask_price: Option<Decimal>,
-    #[serde(rename = "askQty", default, alias = "A", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "askQty",
+        default,
+        alias = "A",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub ask_quantity: Option<Decimal>,
-    
+
     // Required fields
     #[serde(alias = "o", with = "rust_decimal::serde::str")]
     pub open_price: Decimal,
@@ -106,7 +139,7 @@ pub struct TickerStatisticsFull {
 
 /**
  * Mini ticker statistics from Binance API.
- * 
+ *
  * Contains essential OHLCV data and trade metrics without
  * detailed price change statistics or bid/ask information.
  *

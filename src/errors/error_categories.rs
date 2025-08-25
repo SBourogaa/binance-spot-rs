@@ -43,12 +43,12 @@ impl ErrorCategory {
      */
     pub const fn from_code(code: i32) -> Self {
         match code {
-            -2021 | -2022        => Self::CancelReplace,
-            -1013                => Self::FilterFailure,
-            -1099..=-1000        => Self::ServerOrNetwork,
-            -1199..=-1100        => Self::RequestIssues,
-            -2099..=-2000        => Self::TradingRejected,
-            _                    => Self::Unknown,
+            -2021 | -2022 => Self::CancelReplace,
+            -1013 => Self::FilterFailure,
+            -1099..=-1000 => Self::ServerOrNetwork,
+            -1199..=-1100 => Self::RequestIssues,
+            -2099..=-2000 => Self::TradingRejected,
+            _ => Self::Unknown,
         }
     }
 
@@ -58,7 +58,7 @@ impl ErrorCategory {
     pub fn description(&self) -> &'static str {
         match self {
             Self::ServerOrNetwork => "Server or network issue",
-            Self::RequestIssues => "Request format or parameter issue", 
+            Self::RequestIssues => "Request format or parameter issue",
             Self::TradingRejected => "Trading operation rejected",
             Self::FilterFailure => "Order filter validation failed",
             Self::CancelReplace => "Cancel-replace operation issue",
@@ -83,14 +83,14 @@ impl ErrorCategory {
 
 /**
  * Macro to generate error enums with from_code and maybe methods.
- * 
+ *
  * Creates enums with specific variants for known error codes and Other(i32) for unknown codes.
  * Provides both exhaustive mapping (from_code) and optional mapping (maybe) methods.
- * 
+ *
  * # Arguments
  * - `$name`: The name of the enum to create
  * - `$($code:literal => $variant:ident),+`: Pairs of error codes and their corresponding enum variants
- * 
+ *
  * # Generated Methods
  * - `from_code(code: i32) -> Self`: Maps any code to enum variant (uses Other for unknown)
  * - `maybe(code: i32) -> Option<Self>`: Maps only known codes (returns None for unknown)
@@ -99,9 +99,9 @@ impl ErrorCategory {
 macro_rules! impl_from_code {
     ($name:ident, $($code:literal => $variant:ident),+ $(,)?) => {
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-        pub enum $name { 
-            $($variant,)+ 
-            Other(i32) 
+        pub enum $name {
+            $($variant,)+
+            Other(i32)
         }
 
         impl $name {
@@ -115,9 +115,9 @@ macro_rules! impl_from_code {
              * - `Self`: The appropriate enum variant
              */
             pub const fn from_code(code: i32) -> Self {
-                match code { 
-                    $($code => Self::$variant,)+ 
-                    other => Self::Other(other) 
+                match code {
+                    $($code => Self::$variant,)+
+                    other => Self::Other(other)
                 }
             }
 
@@ -131,9 +131,9 @@ macro_rules! impl_from_code {
              * - `Option<Self>`: Some(variant) if known, None if unknown
              */
             pub const fn maybe(code: i32) -> Option<Self> {
-                match code { 
-                    $($code => Some(Self::$variant),)+ 
-                    _ => None 
+                match code {
+                    $($code => Some(Self::$variant),)+
+                    _ => None
                 }
             }
 
@@ -158,10 +158,10 @@ macro_rules! impl_from_code {
             }
         }
 
-        impl From<i32> for $name { 
-            fn from(code: i32) -> Self { 
-                Self::from_code(code) 
-            } 
+        impl From<i32> for $name {
+            fn from(code: i32) -> Self {
+                Self::from_code(code)
+            }
         }
     };
 }

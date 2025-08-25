@@ -3,10 +3,10 @@ use crate::StreamConfig;
 
 /**
  * Specification for Binance Book Ticker Stream
- * 
+ *
  * Pushes any update to the best bid or ask's price or quantity in real-time for a specified symbol.
  * Multiple <symbol>@bookTicker streams can be subscribed to over one connection.
- * 
+ *
  * # Fields
  * - `symbol`: Trading pair symbol (e.g., "BTCUSDT")
  */
@@ -19,10 +19,10 @@ pub struct BookTickerStreamSpec {
 impl BookTickerStreamSpec {
     /**
      * Creates a new book ticker stream specification
-     * 
+     *
      * # Arguments
      * - `symbol` - Trading pair symbol (e.g., "BTCUSDT")
-     * 
+     *
      * # Returns
      * - New BookTickerStreamSpec instance
      */
@@ -35,20 +35,20 @@ impl BookTickerStreamSpec {
 
 impl StreamSpec for BookTickerStreamSpec {
     type Event = crate::streams::events::BookTickerStreamEvent;
-    
+
     /**
      * Generates the WebSocket stream name
-     * 
+     *
      * # Returns
      * - Stream name in format: <symbol>@bookTicker (lowercase)
      */
     fn stream_name(&self) -> String {
         format!("{}@bookTicker", self.symbol.to_lowercase())
     }
-    
+
     /**
      * Validates the stream specification parameters
-     * 
+     *
      * # Returns
      * - Result indicating if the specification is valid, error otherwise.
      */
@@ -58,13 +58,13 @@ impl StreamSpec for BookTickerStreamSpec {
         }
         Ok(())
     }
-    
+
     /**
      * Gets the buffer size for this stream type
-     * 
+     *
      * # Arguments
      * - `config` - Stream configuration containing buffer size settings
-     * 
+     *
      * # Returns
      * - Buffer size for book ticker events
      */

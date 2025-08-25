@@ -7,13 +7,13 @@ use crate::types::requests::{Unvalidated, Validated};
 
 /**
  * Open order lists query specification for getting current active order lists.
- * 
+ *
  * This struct handles open order lists query with no parameters required.
  * Returns all currently open order lists.
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OpenOrderListsSpec<S=Unvalidated> {
+pub struct OpenOrderListsSpec<S = Unvalidated> {
     #[serde(skip)]
     _state: PhantomData<S>,
 }
@@ -21,7 +21,7 @@ pub struct OpenOrderListsSpec<S=Unvalidated> {
 impl OpenOrderListsSpec<Unvalidated> {
     /**
      * Creates a new open order lists specification.
-     * 
+     *
      * # Returns
      * - `Self`: New open order lists specification.
      */
@@ -33,7 +33,7 @@ impl OpenOrderListsSpec<Unvalidated> {
 
     /**
      * Builds the open order lists specification.
-     * 
+     *
      * # Returns
      * - `OpenOrderListsSpec<Validated>`: Validated specification.
      */

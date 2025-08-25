@@ -1,6 +1,5 @@
-
-use serde::{Deserialize, Serialize};
 use crate::types::responses::Trade;
+use serde::{Deserialize, Serialize};
 
 /**
  * Trade Stream Event

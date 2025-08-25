@@ -1,16 +1,14 @@
-//TODO: Clean up configs. 
+//TODO: Clean up configs.
 use std::sync::Arc;
 
 use crate::Result;
 use crate::{
-    errors::InvalidUrl,
-    auth::{SignatureProvider, Ed25519Signer},
+    auth::{Ed25519Signer, SignatureProvider},
     config::{
-        RestConfig, 
-        StreamConfig,
-        WebSocketConfig,
-        stream_config::{StreamMode, StreamInfo, StreamType},
+        RestConfig, StreamConfig, WebSocketConfig,
+        stream_config::{StreamInfo, StreamMode, StreamType},
     },
+    errors::InvalidUrl,
     streams::specs::StreamSpec,
 };
 
@@ -92,7 +90,7 @@ impl BinanceConfig<WebSocketConfig> {
     pub fn builder() -> WebSocketBinanceConfigBuilder {
         BinanceConfigBuilder::new().for_websocket()
     }
-    
+
     pub fn websocket_config(&self) -> &WebSocketConfig {
         &self.specific_config
     }
@@ -120,7 +118,7 @@ impl BinanceConfig<StreamConfig> {
     pub fn builder() -> StreamBinanceConfigBuilder {
         BinanceConfigBuilder::new().for_streams()
     }
-    
+
     pub fn stream_config(&self) -> &StreamConfig {
         &self.specific_config
     }
@@ -158,7 +156,11 @@ impl BinanceConfigBuilder {
         self
     }
 
-    pub fn with_credentials(mut self, api_key: impl Into<String>, private_key: impl Into<String>) -> Self {
+    pub fn with_credentials(
+        mut self,
+        api_key: impl Into<String>,
+        private_key: impl Into<String>,
+    ) -> Self {
         self.credentials = Some((api_key.into(), private_key.into()));
         self
     }
@@ -225,12 +227,20 @@ impl RestBinanceConfigBuilder {
         self
     }
 
-    pub fn with_credentials(mut self, api_key: impl Into<String>, private_key: impl Into<String>) -> Self {
+    pub fn with_credentials(
+        mut self,
+        api_key: impl Into<String>,
+        private_key: impl Into<String>,
+    ) -> Self {
         self.base = self.base.with_credentials(api_key, private_key);
         self
     }
 
-    pub fn with_credentials_from_file(mut self, api_key: impl Into<String>, pem_file_path: impl Into<String>) -> Result<Self> {
+    pub fn with_credentials_from_file(
+        mut self,
+        api_key: impl Into<String>,
+        pem_file_path: impl Into<String>,
+    ) -> Result<Self> {
         let private_key_pem = std::fs::read_to_string(pem_file_path.into())?;
         self.base = self.base.with_credentials(api_key, private_key_pem);
         Ok(self)
@@ -260,10 +270,7 @@ impl RestBinanceConfigBuilder {
 
     pub fn build(self) -> Result<BinanceConfig<RestConfig>> {
         if !self.rest_config.url.starts_with("https://") {
-            return Err(InvalidUrl::invalid_scheme(
-                &self.rest_config.url,
-                "https://",
-            ).into());
+            return Err(InvalidUrl::invalid_scheme(&self.rest_config.url, "https://").into());
         }
 
         let signer = if let Some((api_key, private_key)) = self.base.credentials {
@@ -298,12 +305,20 @@ impl WebSocketBinanceConfigBuilder {
         self
     }
 
-    pub fn with_credentials(mut self, api_key: impl Into<String>, private_key: impl Into<String>) -> Self {
+    pub fn with_credentials(
+        mut self,
+        api_key: impl Into<String>,
+        private_key: impl Into<String>,
+    ) -> Self {
         self.base = self.base.with_credentials(api_key, private_key);
         self
     }
 
-    pub fn with_credentials_from_file(mut self, api_key: impl Into<String>, pem_file_path: impl Into<String>) -> Result<Self> {
+    pub fn with_credentials_from_file(
+        mut self,
+        api_key: impl Into<String>,
+        pem_file_path: impl Into<String>,
+    ) -> Result<Self> {
         let private_key_pem = std::fs::read_to_string(pem_file_path.into())?;
         self.base = self.base.with_credentials(api_key, private_key_pem);
         Ok(self)
@@ -332,10 +347,7 @@ impl WebSocketBinanceConfigBuilder {
 
     pub fn build(self) -> Result<BinanceConfig<WebSocketConfig>> {
         if !self.websocket_config.url.starts_with("wss://") {
-            return Err(InvalidUrl::invalid_scheme(
-                &self.websocket_config.url,
-                "wss://",
-            ).into());
+            return Err(InvalidUrl::invalid_scheme(&self.websocket_config.url, "wss://").into());
         }
 
         let signer = if let Some((api_key, private_key)) = self.base.credentials {
@@ -370,12 +382,20 @@ impl StreamBinanceConfigBuilder {
         self
     }
 
-    pub fn with_credentials(mut self, api_key: impl Into<String>, private_key: impl Into<String>) -> Self {
+    pub fn with_credentials(
+        mut self,
+        api_key: impl Into<String>,
+        private_key: impl Into<String>,
+    ) -> Self {
         self.base = self.base.with_credentials(api_key, private_key);
         self
     }
 
-    pub fn with_credentials_from_file(mut self, api_key: impl Into<String>, pem_file_path: impl Into<String>) -> Result<Self> {
+    pub fn with_credentials_from_file(
+        mut self,
+        api_key: impl Into<String>,
+        pem_file_path: impl Into<String>,
+    ) -> Result<Self> {
         let private_key_pem = std::fs::read_to_string(pem_file_path.into())?;
         self.base = self.base.with_credentials(api_key, private_key_pem);
         Ok(self)
@@ -491,7 +511,6 @@ impl StreamBinanceConfigBuilder {
         self.stream_config.max_reconnect_attempts = max;
         self
     }
-
 }
 
 impl<T: Clone> Clone for BinanceConfig<T> {
@@ -528,12 +547,20 @@ impl MarketDataStreamBuilder {
         self
     }
 
-    pub fn with_credentials(mut self, api_key: impl Into<String>, private_key: impl Into<String>) -> Self {
+    pub fn with_credentials(
+        mut self,
+        api_key: impl Into<String>,
+        private_key: impl Into<String>,
+    ) -> Self {
         self.base = self.base.with_credentials(api_key, private_key);
         self
     }
 
-    pub fn with_credentials_from_file(mut self, api_key: impl Into<String>, pem_file_path: impl Into<String>) -> Result<Self> {
+    pub fn with_credentials_from_file(
+        mut self,
+        api_key: impl Into<String>,
+        pem_file_path: impl Into<String>,
+    ) -> Result<Self> {
         let private_key_pem = std::fs::read_to_string(pem_file_path.into())?;
         self.base = self.base.with_credentials(api_key, private_key_pem);
         Ok(self)
@@ -549,8 +576,8 @@ impl MarketDataStreamBuilder {
         Ok(self)
     }
 
-    pub fn with_combined_streams<'a, I, S>(mut self, specs: I) -> Result<Self> 
-    where 
+    pub fn with_combined_streams<'a, I, S>(mut self, specs: I) -> Result<Self>
+    where
         I: IntoIterator<Item = &'a S>,
         S: StreamSpec + 'a,
     {
@@ -564,7 +591,7 @@ impl MarketDataStreamBuilder {
                 })
             })
             .collect();
-            
+
         self.stream_config.stream_mode = StreamMode::Combined(stream_infos?);
         Ok(self)
     }
@@ -576,17 +603,15 @@ impl MarketDataStreamBuilder {
 
     pub fn build(self) -> Result<BinanceConfig<StreamConfig>> {
         if !self.stream_config.market_data_url.starts_with("wss://") {
-            return Err(InvalidUrl::invalid_scheme(
-                &self.stream_config.market_data_url,
-                "wss://",
-            ).into());
+            return Err(
+                InvalidUrl::invalid_scheme(&self.stream_config.market_data_url, "wss://").into(),
+            );
         }
 
         if !self.stream_config.user_data_url.starts_with("wss://") {
-            return Err(InvalidUrl::invalid_scheme(
-                &self.stream_config.user_data_url,
-                "wss://",
-            ).into());
+            return Err(
+                InvalidUrl::invalid_scheme(&self.stream_config.user_data_url, "wss://").into(),
+            );
         }
 
         let signer = if let Some((api_key, private_key)) = self.base.credentials {
@@ -621,12 +646,20 @@ impl UserDataStreamBuilder {
         self
     }
 
-    pub fn with_credentials(mut self, api_key: impl Into<String>, private_key: impl Into<String>) -> Self {
+    pub fn with_credentials(
+        mut self,
+        api_key: impl Into<String>,
+        private_key: impl Into<String>,
+    ) -> Self {
         self.base = self.base.with_credentials(api_key, private_key);
         self
     }
 
-    pub fn with_credentials_from_file(mut self, api_key: impl Into<String>, pem_file_path: impl Into<String>) -> Result<Self> {
+    pub fn with_credentials_from_file(
+        mut self,
+        api_key: impl Into<String>,
+        pem_file_path: impl Into<String>,
+    ) -> Result<Self> {
         let private_key_pem = std::fs::read_to_string(pem_file_path.into())?;
         self.base = self.base.with_credentials(api_key, private_key_pem);
         Ok(self)
@@ -634,17 +667,15 @@ impl UserDataStreamBuilder {
 
     pub fn build(self) -> Result<BinanceConfig<StreamConfig>> {
         if !self.stream_config.market_data_url.starts_with("wss://") {
-            return Err(InvalidUrl::invalid_scheme(
-                &self.stream_config.market_data_url,
-                "wss://",
-            ).into());
+            return Err(
+                InvalidUrl::invalid_scheme(&self.stream_config.market_data_url, "wss://").into(),
+            );
         }
 
         if !self.stream_config.user_data_url.starts_with("wss://") {
-            return Err(InvalidUrl::invalid_scheme(
-                &self.stream_config.user_data_url,
-                "wss://",
-            ).into());
+            return Err(
+                InvalidUrl::invalid_scheme(&self.stream_config.user_data_url, "wss://").into(),
+            );
         }
 
         let signer = if let Some((api_key, private_key)) = self.base.credentials {

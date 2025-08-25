@@ -5,24 +5,18 @@ use serde::Serialize;
 
 use crate::Result;
 use crate::{
+    enums::{OrderResponseType, OrderSide, OrderType, SelfTradePreventionMode, TimeInForce},
     errors::InvalidParameter,
-    enums::{
-        OrderSide, 
-        OrderType,
-        TimeInForce, 
-        OrderResponseType, 
-        SelfTradePreventionMode,
-    },
     types::requests::{Unvalidated, Validated},
 };
 
 /**
  * OCO (One-Cancels-the-Other) order specification.
- * 
+ *
  * An OCO has 2 orders called the above order and below order.
- * - One of the orders must be a LIMIT_MAKER/TAKE_PROFIT/TAKE_PROFIT_LIMIT order 
+ * - One of the orders must be a LIMIT_MAKER/TAKE_PROFIT/TAKE_PROFIT_LIMIT order
  * - The other must be STOP_LOSS or STOP_LOSS_LIMIT order.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol for the order.
  * - `list_client_order_id`: Optional arbitrary unique ID among open order lists.
@@ -51,38 +45,64 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OcoOrderSpec<S=Unvalidated> {
+pub struct OcoOrderSpec<S = Unvalidated> {
     pub symbol: String,
     pub list_client_order_id: Option<String>,
     pub side: OrderSide,
     #[serde(with = "rust_decimal::serde::str")]
     pub quantity: rust_decimal::Decimal,
-    
+
     // Above order fields
     pub above_type: OrderType,
     pub above_client_order_id: Option<String>,
-    #[serde(rename = "aboveIcebergQty", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "aboveIcebergQty",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub above_iceberg_quantity: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub above_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub above_stop_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub above_trailing_delta: Option<rust_decimal::Decimal>,
     pub above_time_in_force: Option<TimeInForce>,
     pub above_strategy_id: Option<u64>,
     pub above_strategy_type: Option<u32>,
-    
+
     // Below order fields
     pub below_type: OrderType,
     pub below_client_order_id: Option<String>,
-    #[serde(rename = "belowIcebergQty", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "belowIcebergQty",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub below_iceberg_quantity: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub below_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub below_stop_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub below_trailing_delta: Option<rust_decimal::Decimal>,
     pub below_time_in_force: Option<TimeInForce>,
     pub below_strategy_id: Option<u64>,
@@ -96,14 +116,14 @@ pub struct OcoOrderSpec<S=Unvalidated> {
 impl OcoOrderSpec<Unvalidated> {
     /**
      * Creates a new OCO order specification.
-     * 
+     *
      * # Arguments
      * - `symbol`: Symbol to trade
      * - `side`: Order side (BUY or SELL)
      * - `quantity`: Quantity for both orders
      * - `above_type`: Order type for the above order
      * - `below_type`: Order type for the below order
-     * 
+     *
      * # Returns
      * - `Self`: New OCO order specification
      */
@@ -233,7 +253,7 @@ impl OcoOrderSpec<Unvalidated> {
 
     /**
      * Validates and builds the OCO order specification.
-     * 
+     *
      * # Returns
      * - `OcoOrderSpec<Validated>`: Validated specification or error if validation fails.
      */
@@ -271,7 +291,7 @@ impl OcoOrderSpec<Unvalidated> {
 
     /**
      * Validates the OCO order parameters according to Binance API requirements.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -287,41 +307,69 @@ impl OcoOrderSpec<Unvalidated> {
         match self.above_type {
             OrderType::StopLossLimit => {
                 if self.above_time_in_force.is_none() {
-                    return Err(InvalidParameter::new("above_time_in_force", "required for STOP_LOSS_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "above_time_in_force",
+                        "required for STOP_LOSS_LIMIT",
+                    )
+                    .into());
                 }
                 if self.above_price.is_none() {
-                    return Err(InvalidParameter::new("above_price", "required for STOP_LOSS_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "above_price",
+                        "required for STOP_LOSS_LIMIT",
+                    )
+                    .into());
                 }
-            },
+            }
             OrderType::TakeProfitLimit => {
                 if self.above_time_in_force.is_none() {
-                    return Err(InvalidParameter::new("above_time_in_force", "required for TAKE_PROFIT_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "above_time_in_force",
+                        "required for TAKE_PROFIT_LIMIT",
+                    )
+                    .into());
                 }
                 if self.above_price.is_none() {
-                    return Err(InvalidParameter::new("above_price", "required for TAKE_PROFIT_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "above_price",
+                        "required for TAKE_PROFIT_LIMIT",
+                    )
+                    .into());
                 }
                 if self.above_stop_price.is_none() && self.above_trailing_delta.is_none() {
                     return Err(InvalidParameter::new("above_stop_price or above_trailing_delta", "either above_stop_price or above_trailing_delta must be specified for TAKE_PROFIT_LIMIT").into());
                 }
-            },
+            }
             OrderType::LimitMaker => {
                 if self.above_price.is_none() {
-                    return Err(InvalidParameter::new("above_price", "required for LIMIT_MAKER").into());
+                    return Err(
+                        InvalidParameter::new("above_price", "required for LIMIT_MAKER").into(),
+                    );
                 }
-            },
+            }
             OrderType::TakeProfit => {
                 if self.above_price.is_none() {
-                    return Err(InvalidParameter::new("above_price", "required for TAKE_PROFIT").into());
+                    return Err(
+                        InvalidParameter::new("above_price", "required for TAKE_PROFIT").into(),
+                    );
                 }
                 if self.above_stop_price.is_none() && self.above_trailing_delta.is_none() {
-                    return Err(InvalidParameter::new("above_stop_price or above_trailing_delta", "either above_stop_price or above_trailing_delta must be specified").into());
+                    return Err(InvalidParameter::new(
+                        "above_stop_price or above_trailing_delta",
+                        "either above_stop_price or above_trailing_delta must be specified",
+                    )
+                    .into());
                 }
-            },
+            }
             OrderType::StopLoss => {
                 if self.above_stop_price.is_none() && self.above_trailing_delta.is_none() {
-                    return Err(InvalidParameter::new("above_stop_price or above_trailing_delta", "either above_stop_price or above_trailing_delta must be specified").into());
+                    return Err(InvalidParameter::new(
+                        "above_stop_price or above_trailing_delta",
+                        "either above_stop_price or above_trailing_delta must be specified",
+                    )
+                    .into());
                 }
-            },
+            }
             _ => {
                 return Err(InvalidParameter::new("above_type", "must be STOP_LOSS_LIMIT, STOP_LOSS, LIMIT_MAKER, TAKE_PROFIT, or TAKE_PROFIT_LIMIT").into());
             }
@@ -330,45 +378,87 @@ impl OcoOrderSpec<Unvalidated> {
         match self.below_type {
             OrderType::StopLossLimit => {
                 if self.below_time_in_force.is_none() {
-                    return Err(InvalidParameter::new("below_time_in_force", "required for STOP_LOSS_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "below_time_in_force",
+                        "required for STOP_LOSS_LIMIT",
+                    )
+                    .into());
                 }
                 if self.below_price.is_none() {
-                    return Err(InvalidParameter::new("below_price", "required for STOP_LOSS_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "below_price",
+                        "required for STOP_LOSS_LIMIT",
+                    )
+                    .into());
                 }
-            },
+            }
             OrderType::TakeProfitLimit => {
                 if self.below_time_in_force.is_none() {
-                    return Err(InvalidParameter::new("below_time_in_force", "required for TAKE_PROFIT_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "below_time_in_force",
+                        "required for TAKE_PROFIT_LIMIT",
+                    )
+                    .into());
                 }
                 if self.below_price.is_none() {
-                    return Err(InvalidParameter::new("below_price", "required for TAKE_PROFIT_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "below_price",
+                        "required for TAKE_PROFIT_LIMIT",
+                    )
+                    .into());
                 }
                 if self.below_stop_price.is_none() && self.below_trailing_delta.is_none() {
                     return Err(InvalidParameter::new("below_stop_price or below_trailing_delta", "either below_stop_price or below_trailing_delta must be specified for TAKE_PROFIT_LIMIT").into());
                 }
-            },
+            }
             OrderType::LimitMaker => {
                 if self.below_time_in_force.is_some() {
-                    return Err(InvalidParameter::new("below_time_in_force", "not needed for LIMIT_MAKER").into());
+                    return Err(InvalidParameter::new(
+                        "below_time_in_force",
+                        "not needed for LIMIT_MAKER",
+                    )
+                    .into());
                 }
                 if self.below_price.is_none() {
-                    return Err(InvalidParameter::new("below_price", "required for LIMIT_MAKER").into());
+                    return Err(
+                        InvalidParameter::new("below_price", "required for LIMIT_MAKER").into(),
+                    );
                 }
-            },
+            }
             OrderType::StopLoss | OrderType::TakeProfit => {
                 if self.below_stop_price.is_none() && self.below_trailing_delta.is_none() {
-                    return Err(InvalidParameter::new("below_stop_price or below_trailing_delta", "either below_stop_price or below_trailing_delta must be specified").into());
+                    return Err(InvalidParameter::new(
+                        "below_stop_price or below_trailing_delta",
+                        "either below_stop_price or below_trailing_delta must be specified",
+                    )
+                    .into());
                 }
-            },
+            }
             _ => {
-                return Err(InvalidParameter::new("below_type", "must be STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, or TAKE_PROFIT_LIMIT").into());
+                return Err(InvalidParameter::new(
+                    "below_type",
+                    "must be STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, or TAKE_PROFIT_LIMIT",
+                )
+                .into());
             }
         }
 
-        let above_is_maker_take = matches!(self.above_type, OrderType::LimitMaker | OrderType::TakeProfit | OrderType::TakeProfitLimit);
-        let below_is_maker_take = matches!(self.below_type, OrderType::LimitMaker | OrderType::TakeProfit | OrderType::TakeProfitLimit);
-        let above_is_stop = matches!(self.above_type, OrderType::StopLoss | OrderType::StopLossLimit);
-        let below_is_stop = matches!(self.below_type, OrderType::StopLoss | OrderType::StopLossLimit);
+        let above_is_maker_take = matches!(
+            self.above_type,
+            OrderType::LimitMaker | OrderType::TakeProfit | OrderType::TakeProfitLimit
+        );
+        let below_is_maker_take = matches!(
+            self.below_type,
+            OrderType::LimitMaker | OrderType::TakeProfit | OrderType::TakeProfitLimit
+        );
+        let above_is_stop = matches!(
+            self.above_type,
+            OrderType::StopLoss | OrderType::StopLossLimit
+        );
+        let below_is_stop = matches!(
+            self.below_type,
+            OrderType::StopLoss | OrderType::StopLossLimit
+        );
 
         if !((above_is_maker_take && below_is_stop) || (above_is_stop && below_is_maker_take)) {
             return Err(InvalidParameter::new(
@@ -379,13 +469,17 @@ impl OcoOrderSpec<Unvalidated> {
 
         if let Some(strategy_type) = self.above_strategy_type {
             if strategy_type < 1000000 {
-                return Err(InvalidParameter::new("above_strategy_type", "must be >= 1000000").into());
+                return Err(
+                    InvalidParameter::new("above_strategy_type", "must be >= 1000000").into(),
+                );
             }
         }
 
         if let Some(strategy_type) = self.below_strategy_type {
             if strategy_type < 1000000 {
-                return Err(InvalidParameter::new("below_strategy_type", "must be >= 1000000").into());
+                return Err(
+                    InvalidParameter::new("below_strategy_type", "must be >= 1000000").into(),
+                );
             }
         }
 

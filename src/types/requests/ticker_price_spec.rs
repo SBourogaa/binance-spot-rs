@@ -11,16 +11,16 @@ use crate::{
 
 /**
  * Ticker price query specification.
- * 
+ *
  * This specification handles parameters for querying latest price
  * information for one or more trading symbols.
- * 
+ *
  * # Fields
  * - `symbol`: Optional single symbol to query.
  * - `symbols`: Optional array of symbols to query.
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct TickerPriceSpec<S=Unvalidated> {
+pub struct TickerPriceSpec<S = Unvalidated> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -32,7 +32,7 @@ pub struct TickerPriceSpec<S=Unvalidated> {
 impl TickerPriceSpec<Unvalidated> {
     /**
      * Creates a new ticker price specification.
-     * 
+     *
      * # Returns
      * - `Self`: New ticker price specification.
      */
@@ -43,13 +43,13 @@ impl TickerPriceSpec<Unvalidated> {
             _state: PhantomData,
         }
     }
-    
+
     /**
      * Sets a single symbol to query.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -57,13 +57,13 @@ impl TickerPriceSpec<Unvalidated> {
         self.symbol = Some(symbol.into());
         self
     }
-    
+
     /**
      * Sets multiple symbols to query.
-     * 
+     *
      * # Arguments
      * - `symbols`: Array of trading symbols to query.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -75,12 +75,13 @@ impl TickerPriceSpec<Unvalidated> {
 
     /**
      * Builds the ticker price specification.
-     * 
+     *
      * # Returns
      * - `TickerPriceSpecification<Validated>`: Validated specification or error if validation fails
      */
     pub fn build(self) -> Result<TickerPriceSpec<Validated>> {
-        self.validate().context("Failed to validate TickerPriceSpecification")?;
+        self.validate()
+            .context("Failed to validate TickerPriceSpecification")?;
 
         Ok(TickerPriceSpec {
             symbol: self.symbol,
@@ -88,10 +89,10 @@ impl TickerPriceSpec<Unvalidated> {
             _state: PhantomData::<Validated>,
         })
     }
-    
+
     /**
      * Validates the ticker price specification parameters.
-     * 
+     *
      * # Returns
      * - `Result<()>`: Ok if valid, error if invalid parameters.
      */
@@ -124,10 +125,7 @@ impl TickerPriceSpec<Unvalidated> {
         }
 
         if self.symbol.is_some() && self.symbols.is_some() {
-            return Err(InvalidParameter::mutually_exclusive(
-                "symbol",
-                "symbols"
-            ).into());
+            return Err(InvalidParameter::mutually_exclusive("symbol", "symbols").into());
         }
 
         Ok(())

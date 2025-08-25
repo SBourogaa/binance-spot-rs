@@ -2,7 +2,7 @@ use thiserror::Error;
 
 /**
  * Parameter validation error with context.
- * 
+ *
  * Used when request parameters fail client-side validation before being sent to the API.
  * Provides specific context about which parameter failed and why.
  */
@@ -36,7 +36,11 @@ impl InvalidParameter {
     /**
      * Helper for invalid range validation.
      */
-    pub fn range(param: impl Into<String>, min: impl std::fmt::Display, max: impl std::fmt::Display) -> Self {
+    pub fn range(
+        param: impl Into<String>,
+        min: impl std::fmt::Display,
+        max: impl std::fmt::Display,
+    ) -> Self {
         Self::new(param, format!("must be between {} and {}", min, max))
     }
 
@@ -46,7 +50,7 @@ impl InvalidParameter {
     pub fn mutually_exclusive(param1: impl Into<String>, param2: impl Into<String>) -> Self {
         Self::new(
             format!("{}/{}", param1.into(), param2.into()),
-            "cannot be used together"
+            "cannot be used together",
         )
     }
 
@@ -60,7 +64,7 @@ impl InvalidParameter {
 
 /**
  * Authentication credentials validation error.
- * 
+ *
  * Used when API keys, private keys, or signatures fail validation before use.
  */
 #[derive(Debug, Error, Clone, PartialEq)]
@@ -104,7 +108,7 @@ impl InvalidCredentials {
 
 /**
  * URL validation error.
- * 
+ *
  * Used when constructed URLs are malformed or don't meet API requirements.
  */
 #[derive(Debug, Error, Clone, PartialEq)]
@@ -144,7 +148,7 @@ impl InvalidUrl {
 
 /**
  * Configuration validation error.
- * 
+ *
  * Used when client configuration contains invalid values or incompatible combinations.
  */
 #[derive(Debug, Error, Clone, PartialEq)]
@@ -180,14 +184,18 @@ impl InvalidConfig {
     pub fn incompatible(field1: impl Into<String>, field2: impl Into<String>) -> Self {
         Self::new(
             format!("{}/{}", field1.into(), field2.into()),
-            "configuration combination is not supported"
+            "configuration combination is not supported",
         )
     }
 
     /**
      * Helper for out of range validation.
      */
-    pub fn out_of_range(field: impl Into<String>, min: impl std::fmt::Display, max: impl std::fmt::Display) -> Self {
+    pub fn out_of_range(
+        field: impl Into<String>,
+        min: impl std::fmt::Display,
+        max: impl std::fmt::Display,
+    ) -> Self {
         Self::new(field, format!("must be between {} and {}", min, max))
     }
 }

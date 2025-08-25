@@ -1,20 +1,14 @@
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
-use crate::enums::{
-    OrderSide, 
-    OrderType, 
-    OrderStatus, 
-    TimeInForce,
-    SelfTradePreventionMode,
-};
+use crate::enums::{OrderSide, OrderStatus, OrderType, SelfTradePreventionMode, TimeInForce};
 
 /**
  * Execution Report Event
- * 
+ *
  * Sent whenever there's an update on an order (placement, cancellation, fill, etc.)
  * This is the primary event for tracking order lifecycle.
- * 
+ *
  * Based on Binance WebSocket API documentation, includes all fields that may appear
  * in executionReport events from the WebSocket stream.
  */

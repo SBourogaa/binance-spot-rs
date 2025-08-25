@@ -3,7 +3,7 @@ use super::error_categories::impl_from_code;
 impl_from_code!(RequestError,
     // Request Issues (11xx series)
     // These errors occur due to problems with request format, parameters, or data validation.
-    
+
     -1100 => IllegalChars,
     -1101 => TooManyParameters,
     -1102 => MandatoryParamEmptyOrMalformed,
@@ -76,11 +76,12 @@ impl RequestError {
      * Returns whether this error is due to missing required parameters.
      */
     pub fn is_missing_parameter(&self) -> bool {
-        matches!(self,
-            Self::MandatoryParamEmptyOrMalformed |
-            Self::ParamEmpty |
-            Self::EmptyNewClOrdId |
-            Self::EmptyOrgClOrdId
+        matches!(
+            self,
+            Self::MandatoryParamEmptyOrMalformed
+                | Self::ParamEmpty
+                | Self::EmptyNewClOrdId
+                | Self::EmptyOrgClOrdId
         )
     }
 
@@ -88,20 +89,21 @@ impl RequestError {
      * Returns whether this error is due to invalid parameter values.
      */
     pub fn is_invalid_parameter(&self) -> bool {
-        matches!(self,
-            Self::IllegalChars |
-            Self::InvalidParameter |
-            Self::BadPrecision |
-            Self::InvalidTif |
-            Self::InvalidOrderType |
-            Self::InvalidSide |
-            Self::BadInterval |
-            Self::BadSymbol |
-            Self::InvalidSymbolStatus |
-            Self::BadStrategyType |
-            Self::InvalidJson |
-            Self::InvalidTickerType |
-            Self::InvalidCancelRestrictions
+        matches!(
+            self,
+            Self::IllegalChars
+                | Self::InvalidParameter
+                | Self::BadPrecision
+                | Self::InvalidTif
+                | Self::InvalidOrderType
+                | Self::InvalidSide
+                | Self::BadInterval
+                | Self::BadSymbol
+                | Self::InvalidSymbolStatus
+                | Self::BadStrategyType
+                | Self::InvalidJson
+                | Self::InvalidTickerType
+                | Self::InvalidCancelRestrictions
         )
     }
 
@@ -109,15 +111,16 @@ impl RequestError {
      * Returns whether this error is due to parameter combination issues.
      */
     pub fn is_parameter_combination(&self) -> bool {
-        matches!(self,
-            Self::TooManyParameters |
-            Self::UnknownParam |
-            Self::UnreadParameters |
-            Self::ParamNotRequired |
-            Self::TifNotRequired |
-            Self::OptionalParamsBadCombo |
-            Self::ParamsBadCombo |
-            Self::DuplicateSymbols
+        matches!(
+            self,
+            Self::TooManyParameters
+                | Self::UnknownParam
+                | Self::UnreadParameters
+                | Self::ParamNotRequired
+                | Self::TifNotRequired
+                | Self::OptionalParamsBadCombo
+                | Self::ParamsBadCombo
+                | Self::DuplicateSymbols
         )
     }
 
@@ -125,16 +128,17 @@ impl RequestError {
      * Returns whether this error is related to OCO orders.
      */
     pub fn is_oco_related(&self) -> bool {
-        matches!(self,
-            Self::OcoOrderTypeRejected |
-            Self::OcoIcebergQtyTimeInForce |
-            Self::BuyOcoLimitMustBeBelow |
-            Self::SellOcoLimitMustBeAbove |
-            Self::BothOcoOrdersCannotBeLimit |
-            Self::BuyOcoStopLossMustBeAbove |
-            Self::SellOcoStopLossMustBeBelow |
-            Self::BuyOcoTakeProfitMustBeBelow |
-            Self::SellOcoTakeProfitMustBeAbove
+        matches!(
+            self,
+            Self::OcoOrderTypeRejected
+                | Self::OcoIcebergQtyTimeInForce
+                | Self::BuyOcoLimitMustBeBelow
+                | Self::SellOcoLimitMustBeAbove
+                | Self::BothOcoOrdersCannotBeLimit
+                | Self::BuyOcoStopLossMustBeAbove
+                | Self::SellOcoStopLossMustBeBelow
+                | Self::BuyOcoTakeProfitMustBeBelow
+                | Self::SellOcoTakeProfitMustBeAbove
         )
     }
 

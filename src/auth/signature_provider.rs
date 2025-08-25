@@ -64,7 +64,10 @@ mod tests {
          * - `Self`: A new MockSigner instance.
          */
         fn new(api_key: impl Into<String>, should_fail: bool) -> Self {
-            Self { api_key: api_key.into(), should_fail }
+            Self {
+                api_key: api_key.into(),
+                should_fail,
+            }
         }
     }
 
@@ -120,13 +123,19 @@ mod tests {
         // Assert
         assert!(short_result.is_ok(), "Short payload signing should succeed");
         assert!(long_result.is_ok(), "Long payload signing should succeed");
-        
+
         let short_signature = short_result.unwrap();
         let long_signature = long_result.unwrap();
-        
+
         // Verify deterministic behavior
-        assert_eq!(short_signature, format!("mock_signature_{}", short_payload.len()));
-        assert_eq!(long_signature, format!("mock_signature_{}", long_payload.len()));
+        assert_eq!(
+            short_signature,
+            format!("mock_signature_{}", short_payload.len())
+        );
+        assert_eq!(
+            long_signature,
+            format!("mock_signature_{}", long_payload.len())
+        );
     }
 
     /**
@@ -138,13 +147,13 @@ mod tests {
         // Arrange
         let signer = MockSigner::new("test_key", true);
         let payload = "symbol=BTCUSDT&timestamp=1234567890";
-        
+
         // Act
         let result = signer.sign(payload).await;
-        
+
         // Assert
         assert!(result.is_err(), "Configured failure should return error");
-        
+
         // Since you're using anyhow::Result, check the error chain
         let error = result.unwrap_err();
         let error_chain = format!("{:#}", error);
@@ -164,8 +173,14 @@ mod tests {
         let test_cases = vec![
             ("", "Empty payload"),
             ("symbol=BTC%2FUSDT", "URL encoded payload"),
-            ("symbol=BTCUSDT&price=50000.123456789", "High precision decimals"),
-            ("a=1&b=2&c=3&d=4&e=5&f=6&g=7&h=8&i=9&j=10", "Many parameters"),
+            (
+                "symbol=BTCUSDT&price=50000.123456789",
+                "High precision decimals",
+            ),
+            (
+                "a=1&b=2&c=3&d=4&e=5&f=6&g=7&h=8&i=9&j=10",
+                "Many parameters",
+            ),
         ];
 
         for (payload, description) in test_cases {
@@ -175,7 +190,11 @@ mod tests {
             // Assert
             assert!(result.is_ok(), "{} should be signable", description);
             let signature = result.unwrap();
-            assert!(!signature.is_empty(), "{} signature should not be empty", description);
+            assert!(
+                !signature.is_empty(),
+                "{} signature should not be empty",
+                description
+            );
         }
     }
 
@@ -195,7 +214,10 @@ mod tests {
 
         // Assert
         assert_eq!(api_key, "boxed_key");
-        assert!(signature_result.is_ok(), "Boxed signer should work correctly");
+        assert!(
+            signature_result.is_ok(),
+            "Boxed signer should work correctly"
+        );
     }
 
     /**
@@ -211,7 +233,13 @@ mod tests {
         let debug_output = format!("{:?}", signer);
 
         // Assert
-        assert!(debug_output.contains("MockSigner"), "Debug output should contain struct name");
-        assert!(debug_output.contains("debug_test_key"), "Debug output should contain API key");
+        assert!(
+            debug_output.contains("MockSigner"),
+            "Debug output should contain struct name"
+        );
+        assert!(
+            debug_output.contains("debug_test_key"),
+            "Debug output should contain API key"
+        );
     }
 }

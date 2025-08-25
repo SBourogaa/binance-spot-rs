@@ -11,24 +11,18 @@
 /// Version tracking for error definitions - update when Binance API changes
 pub const BINANCE_ERROR_VERSION: &str = "2025-06-11";
 
-mod binance_error;
 mod api_error;
-mod validation_errors;
+mod binance_error;
 mod error_categories;
-mod server_error;
 mod request_error;
+mod server_error;
 mod trading_error;
+mod validation_errors;
 
-pub use binance_error::BinanceError;
 pub use api_error::ApiError;
-pub use validation_errors::{
-    InvalidParameter,
-    InvalidCredentials, 
-    InvalidUrl,
-    InvalidConfig,
-};
+pub use binance_error::BinanceError;
 pub use error_categories::ErrorCategory;
-pub use server_error::ServerError;
 pub use request_error::RequestError;
+pub use server_error::ServerError;
 pub use trading_error::TradingError;
-
+pub use validation_errors::{InvalidConfig, InvalidCredentials, InvalidParameter, InvalidUrl};

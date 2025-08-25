@@ -29,16 +29,12 @@ impl StreamEndpoint {
      */
     pub fn from_config(config: &BinanceConfig<StreamConfig>) -> Self {
         match config.stream_config().stream_mode() {
-            crate::config::StreamMode::Raw(stream_info) => {
-                Self::Single(stream_info.name.clone())
-            }
+            crate::config::StreamMode::Raw(stream_info) => Self::Single(stream_info.name.clone()),
             crate::config::StreamMode::Combined(stream_infos) => {
                 let streams = stream_infos.iter().map(|info| info.name.clone()).collect();
                 Self::Combined(streams)
             }
-            crate::config::StreamMode::Dynamic => {
-                Self::Dynamic
-            }
+            crate::config::StreamMode::Dynamic => Self::Dynamic,
         }
     }
 
@@ -53,7 +49,7 @@ impl StreamEndpoint {
      */
     pub fn build_url(&self, base_url: &str) -> String {
         let base = base_url.trim_end_matches('/');
-        
+
         match self {
             Self::Single(stream) => {
                 format!("{}/ws/{}", base, stream)

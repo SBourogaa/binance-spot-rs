@@ -11,10 +11,10 @@ use crate::{
 
 /**
  * Ticker trading day statistics query specification.
- * 
+ *
  * This specification handles parameters for querying trading day ticker
  * statistics for one or more trading symbols.
- * 
+ *
  * # Fields
  * - `symbol`: Optional single symbol to query.
  * - `symbols`: Optional array of symbols to query.
@@ -22,7 +22,7 @@ use crate::{
  * - `ticker_type`: Optional ticker type ("FULL" or "MINI").
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct TickerTradingDaySpec<S=Unvalidated> {
+pub struct TickerTradingDaySpec<S = Unvalidated> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -38,7 +38,7 @@ pub struct TickerTradingDaySpec<S=Unvalidated> {
 impl TickerTradingDaySpec<Unvalidated> {
     /**
      * Creates a new ticker trading day specification.
-     * 
+     *
      * # Returns
      * - `Self`: New ticker trading day specification.
      */
@@ -51,13 +51,13 @@ impl TickerTradingDaySpec<Unvalidated> {
             _state: PhantomData,
         }
     }
-    
+
     /**
      * Sets a single symbol to query.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -65,13 +65,13 @@ impl TickerTradingDaySpec<Unvalidated> {
         self.symbol = Some(symbol.into());
         self
     }
-    
+
     /**
      * Sets multiple symbols to query.
-     * 
+     *
      * # Arguments
      * - `symbols`: Array of trading symbols to query.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -79,13 +79,13 @@ impl TickerTradingDaySpec<Unvalidated> {
         self.symbols = Some(serde_json::to_string(&symbols).unwrap());
         self
     }
-    
+
     /**
      * Sets the timezone for trading day calculation.
-     * 
+     *
      * # Arguments
      * - `time_zone`: Timezone offset (default: "0" UTC).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -93,13 +93,13 @@ impl TickerTradingDaySpec<Unvalidated> {
         self.time_zone = Some(time_zone.into());
         self
     }
-    
+
     /**
      * Sets the ticker type filter.
-     * 
+     *
      * # Arguments
      * - `ticker_type`: Ticker type ("FULL" or "MINI").
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -107,15 +107,16 @@ impl TickerTradingDaySpec<Unvalidated> {
         self.ticker_type = Some(ticker_type.into());
         self
     }
-    
+
     /**
      * Builds the ticker trading day specification.
-     * 
+     *
      * # Returns
      * - `TickerTradingDaySpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<TickerTradingDaySpec<Validated>> {
-        self.validate().context("Failed to validate TickerTradingDaySpecification")?;
+        self.validate()
+            .context("Failed to validate TickerTradingDaySpecification")?;
 
         Ok(TickerTradingDaySpec {
             symbol: self.symbol,
@@ -125,19 +126,16 @@ impl TickerTradingDaySpec<Unvalidated> {
             _state: PhantomData,
         })
     }
-    
+
     /**
      * Validates the ticker trading day specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
     fn validate(&self) -> Result<()> {
         if self.symbol.is_none() && self.symbols.is_none() {
-            return Err(InvalidParameter::new(
-                "symbol or symbols", 
-                "must be specified"
-            ).into());
+            return Err(InvalidParameter::new("symbol or symbols", "must be specified").into());
         }
 
         if let Some(ref symbol) = self.symbol {
@@ -157,9 +155,10 @@ impl TickerTradingDaySpec<Unvalidated> {
                     }
                     if symbols_array.len() > 100 {
                         return Err(InvalidParameter::new(
-                            "symbols", 
-                            "maximum 100 symbols allowed"
-                        ).into());
+                            "symbols",
+                            "maximum 100 symbols allowed",
+                        )
+                        .into());
                     }
                     for symbol in symbols_array {
                         if symbol.trim().is_empty() {
@@ -179,19 +178,19 @@ impl TickerTradingDaySpec<Unvalidated> {
 
         if let Some(ref ticker_type) = self.ticker_type {
             match ticker_type.as_str() {
-                "FULL" | "MINI" => {},
-                _ => return Err(InvalidParameter::new(
-                    "ticker_type", 
-                    "must be either FULL or MINI"
-                ).into()),
+                "FULL" | "MINI" => {}
+                _ => {
+                    return Err(InvalidParameter::new(
+                        "ticker_type",
+                        "must be either FULL or MINI",
+                    )
+                    .into());
+                }
             }
         }
 
         if self.symbol.is_some() && self.symbols.is_some() {
-            return Err(InvalidParameter::mutually_exclusive(
-                "symbol",
-                "symbols"
-            ).into());
+            return Err(InvalidParameter::mutually_exclusive("symbol", "symbols").into());
         }
 
         Ok(())
@@ -199,63 +198,66 @@ impl TickerTradingDaySpec<Unvalidated> {
 
     /**
      * Validates timezone format and range according to API requirements.
-     * 
+     *
      * # Arguments
      * - `timezone`: Timezone string to validate.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid timezone.
      */
     fn validate_timezone(&self, timezone: &str) -> Result<()> {
         let tz = timezone.trim();
-        
+
         if let Ok(hours) = tz.parse::<i32>() {
             if hours < -12 || hours > 14 {
                 return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone hours must be in range [-12 to +14]"
-                ).into());
+                    "time_zone",
+                    "timezone hours must be in range [-12 to +14]",
+                )
+                .into());
             }
             return Ok(());
         }
-        
+
         if tz.contains(':') {
             let parts: Vec<&str> = tz.split(':').collect();
             if parts.len() != 2 {
                 return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone format must be like '0', '8', '-1:00', or '05:45'"
-                ).into());
+                    "time_zone",
+                    "timezone format must be like '0', '8', '-1:00', or '05:45'",
+                )
+                .into());
             }
-            
-            let hours = parts[0].parse::<i32>().map_err(|_| {
-                InvalidParameter::new("time_zone", "invalid hour format")
-            })?;
-            
-            let minutes = parts[1].parse::<u32>().map_err(|_| {
-                InvalidParameter::new("time_zone", "invalid minute format")
-            })?;
-            
+
+            let hours = parts[0]
+                .parse::<i32>()
+                .map_err(|_| InvalidParameter::new("time_zone", "invalid hour format"))?;
+
+            let minutes = parts[1]
+                .parse::<u32>()
+                .map_err(|_| InvalidParameter::new("time_zone", "invalid minute format"))?;
+
             if hours < -12 || hours > 14 {
                 return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone hours must be in range [-12 to +14]"
-                ).into());
+                    "time_zone",
+                    "timezone hours must be in range [-12 to +14]",
+                )
+                .into());
             }
-            
+
             if minutes >= 60 {
-                return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone minutes must be 0-59"
-                ).into());
+                return Err(
+                    InvalidParameter::new("time_zone", "timezone minutes must be 0-59").into(),
+                );
             }
-            
+
             return Ok(());
         }
-        
+
         Err(InvalidParameter::new(
-            "time_zone", 
-            "timezone format must be like '0', '8', '-1:00', or '05:45'"
-        ).into())
+            "time_zone",
+            "timezone format must be like '0', '8', '-1:00', or '05:45'",
+        )
+        .into())
     }
 }

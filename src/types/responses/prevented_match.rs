@@ -5,10 +5,10 @@ use crate::enums::SelfTradePreventionMode;
 
 /**
  * Prevented match information for orders expired due to STP.
- * 
+ *
  * Contains details about orders that were prevented from matching
  * due to self-trade prevention (STP) rules.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol for the prevented match.
  * - `prevented_match_id`: Unique identifier for this prevented match.

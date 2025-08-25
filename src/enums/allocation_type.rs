@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
  *
  * # Variants
  * - `SOR`: Smart Order Routing allocation.
- * - `Unknown`: Any type not recognized. 
+ * - `Unknown`: Any type not recognized.
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

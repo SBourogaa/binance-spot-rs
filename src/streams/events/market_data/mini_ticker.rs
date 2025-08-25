@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Individual Symbol Mini Ticker Stream Event
- * 
+ *
  * 24hr rolling window mini-ticker statistics for a single symbol.
  * These are NOT the statistics of the UTC day, but a 24hr rolling window for the previous 24hrs.
- * 
+ *
  * # Fields:
  * - `event_type`: Event type identifier (always "24hrMiniTicker")
  * - `event_time`: Event timestamp in milliseconds
@@ -43,10 +43,10 @@ pub struct MiniTickerStreamEvent {
 
 /**
  * All Market Mini Tickers Stream Event
- * 
+ *
  * Contains an array of mini ticker data for all symbols that changed.
  * Uses transparent serialization to directly serialize/deserialize as an array.
- * 
+ *
  * # Fields:
  * - `tickers`: Array of mini ticker data for symbols that changed
  */
@@ -58,10 +58,10 @@ pub struct AllMiniTickersStreamEvent {
 
 /**
  * Mini Ticker Data
- * 
+ *
  * Individual mini ticker data used within the all market mini tickers array.
  * Same structure as MiniTickerStreamEvent but used in array context.
- * 
+ *
  * # Fields:
  * - `event_type`: Event type identifier (always "24hrMiniTicker")
  * - `event_time`: Event timestamp in milliseconds

@@ -2,14 +2,11 @@ use std::collections::HashMap;
 
 use serde_json::{Value, json};
 use tokio::sync::oneshot;
-use tracing::{debug, trace, instrument, error};
+use tracing::{debug, error, instrument, trace};
 use uuid::Uuid;
 
+use super::types::{HandlerMode, ValueSender};
 use crate::Result;
-use super::types::{
-    ValueSender, 
-    HandlerMode
-};
 
 /**
  * Message router for WebSocket stream data.
@@ -53,23 +50,29 @@ impl MessageRouter {
         self.dynamic_channels.remove(stream_name);
     }
 
-    pub fn add_pending_request(&mut self, request_id: String, response_sender: oneshot::Sender<Result<()>>) {
+    pub fn add_pending_request(
+        &mut self,
+        request_id: String,
+        response_sender: oneshot::Sender<Result<()>>,
+    ) {
         self.pending_requests.insert(request_id, response_sender);
     }
 
     pub fn add_pending_user_data_logon(
-        &mut self, 
-        logon_id: String, 
-        stream_name: String, 
-        sender: ValueSender, 
-        response_sender: oneshot::Sender<Result<()>>
+        &mut self,
+        logon_id: String,
+        stream_name: String,
+        sender: ValueSender,
+        response_sender: oneshot::Sender<Result<()>>,
     ) {
-        self.pending_user_data_logons.insert(logon_id, (stream_name, sender, response_sender));
+        self.pending_user_data_logons
+            .insert(logon_id, (stream_name, sender, response_sender));
     }
-    
+
     pub fn try_handle_user_data_logon(&mut self, value: &Value) -> Option<Value> {
         if let Some(id) = value.get("id").and_then(|id| id.as_str()) {
-            if let Some((stream_name, sender, response)) = self.pending_user_data_logons.remove(id) {
+            if let Some((stream_name, sender, response)) = self.pending_user_data_logons.remove(id)
+            {
                 return self.handle_user_data_logon_response(value, stream_name, sender, response);
             }
         }
@@ -99,29 +102,32 @@ impl MessageRouter {
         };
 
         let duration = start.elapsed();
-        
+
         if !routed {
-            debug!("Unrouted message: {}", serde_json::to_string(value).unwrap_or_else(|_| "invalid JSON".to_string()));
+            debug!(
+                "Unrouted message: {}",
+                serde_json::to_string(value).unwrap_or_else(|_| "invalid JSON".to_string())
+            );
         }
-        
+
         trace!(
             routing_time_us = duration.as_micros(),
             routed = routed,
             "Message routing completed"
         );
-        
+
         routed
     }
 
     /**
      * Handles subscription/unsubscription response messages
-     * 
+     *
      * Processes responses from the WebSocket API for subscription management
      * operations and sends the results back to the requesting clients.
-     * 
+     *
      * # Arguments
      * - `value`: The JSON response message
-     * 
+     *
      * # Returns
      * - `true` if this was a subscription response, `false` otherwise
      */
@@ -144,10 +150,13 @@ impl MessageRouter {
                 return true;
             } else {
                 if value.get("result").and_then(|r| r.get("apiKey")).is_some() {
-                    debug!(request_id = id, "Received API status response, continuing to route");
+                    debug!(
+                        request_id = id,
+                        "Received API status response, continuing to route"
+                    );
                     return false;
                 }
-                
+
                 debug!(request_id = id, "Received response for unknown request ID");
                 return true;
             }
@@ -172,31 +181,32 @@ impl MessageRouter {
         value: &Value,
         stream_name: String,
         sender: ValueSender,
-        response: oneshot::Sender<Result<()>>
+        response: oneshot::Sender<Result<()>>,
     ) -> Option<Value> {
         if let Some(error) = value.get("error") {
             error!("Session logon failed: {:?}", error);
-            let _ = response.send(Err(anyhow::anyhow!("Session authentication failed: {:?}", error)));
+            let _ = response.send(Err(anyhow::anyhow!(
+                "Session authentication failed: {:?}",
+                error
+            )));
             return None;
         }
-        
+
         self.add_subscription(stream_name, sender);
         let subscribe_id = Uuid::new_v4().to_string();
         self.add_pending_request(subscribe_id.clone(), response);
-        
+
         debug!(
             logon_success = true,
             subscribe_id = %subscribe_id,
             "User data logon successful, sending subscription request"
         );
-        
+
         Some(json!({
             "method": "userDataStream.subscribe",
             "id": subscribe_id
         }))
     }
-
-
 
     /**
      * Routes data messages in dynamic mode.
@@ -211,7 +221,7 @@ impl MessageRouter {
      * - `true` if the message was successfully routed.
      */
     fn route_dynamic_data(&self, value: &Value) -> bool {
-        self.route_combined_format(value) 
+        self.route_combined_format(value)
             || self.route_user_data_event(value)
             || self.route_nested_user_data_event(value)
             || self.route_api_response(value)
@@ -319,14 +329,14 @@ impl MessageRouter {
 
     /**
      * Routes data messages in static mode
-     * 
-     * Handles both combined format and direct event format. Uses stream 
+     *
+     * Handles both combined format and direct event format. Uses stream
      * name resolution to match events with the correct broadcast channels.
-     * 
+     *
      * # Arguments
      * - `value`: The JSON message containing stream data
      * - `senders`: Map of stream names to broadcast senders
-     * 
+     *
      * # Returns
      * - `true` indicating the message was processed (may or may not have been routed)
      */
@@ -339,7 +349,7 @@ impl MessageRouter {
             }
             return true;
         }
-        
+
         if value.is_array() {
             for (stream_name, sender) in senders {
                 if stream_name.starts_with('!') {
@@ -348,19 +358,19 @@ impl MessageRouter {
             }
             return true;
         }
-        
+
         if senders.len() == 1 {
             if let Some((_, sender)) = senders.iter().next() {
                 let _ = sender.send(value.clone());
             }
         }
-        
+
         true
     }
 
     /**
      * Shuts down all pending requests
-     * 
+     *
      * Sends failure responses to all pending subscription requests and user data logons
      * when the connection is shutting down. This ensures no requests are left hanging indefinitely.
      */
@@ -368,15 +378,15 @@ impl MessageRouter {
     pub fn shutdown_all_pending(&mut self) {
         let pending_count = self.pending_requests.len();
         let user_data_count = self.pending_user_data_logons.len();
-        
+
         for (_, sender) in self.pending_requests.drain() {
             let _ = sender.send(Err(anyhow::anyhow!("Connection shutting down")));
         }
-        
+
         for (_, (_, _, response)) in self.pending_user_data_logons.drain() {
             let _ = response.send(Err(anyhow::anyhow!("Connection shutting down")));
         }
-        
+
         if pending_count > 0 || user_data_count > 0 {
             debug!(
                 cancelled_requests = pending_count,

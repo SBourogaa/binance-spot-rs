@@ -3,9 +3,9 @@ use crate::StreamConfig;
 
 /**
  * Specification for Binance Average Price Stream
- * 
+ *
  * Average price streams push changes in the average price over a fixed time interval.
- * 
+ *
  * # Fields
  * - `symbol`: Trading pair symbol (e.g., "BTCUSDT")
  */
@@ -18,10 +18,10 @@ pub struct AveragePriceStreamSpec {
 impl AveragePriceStreamSpec {
     /**
      * Creates a new average price stream specification
-     * 
+     *
      * # Arguments
      * - `symbol` - Trading pair symbol (e.g., "BTCUSDT")
-     * 
+     *
      * # Returns
      * - New AveragePriceStreamSpec instance
      */
@@ -34,20 +34,20 @@ impl AveragePriceStreamSpec {
 
 impl StreamSpec for AveragePriceStreamSpec {
     type Event = crate::streams::events::AveragePriceStreamEvent;
-    
+
     /**
      * Generates the WebSocket stream name
-     * 
+     *
      * # Returns
      * - Stream name in format: <symbol>@avgPrice (lowercase)
      */
     fn stream_name(&self) -> String {
         format!("{}@avgPrice", self.symbol.to_lowercase())
     }
-    
+
     /**
      * Validates the stream specification parameters
-     * 
+     *
      * # Returns
      * - Result indicating if the specification is valid, error otherwise.
      */
@@ -57,13 +57,13 @@ impl StreamSpec for AveragePriceStreamSpec {
         }
         Ok(())
     }
-    
+
     /**
      * Gets the buffer size for this stream type
-     * 
+     *
      * # Arguments
      * - `config` - Stream configuration containing buffer size settings
-     * 
+     *
      * # Returns
      * - Buffer size for average price events
      */

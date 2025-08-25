@@ -2,20 +2,19 @@ use async_trait::async_trait;
 
 use crate::Result;
 use crate::{
-    clients::{
-        r#trait::GeneralClient, 
-        rest::BinanceSpotRestClient
-    },
+    clients::{rest::BinanceSpotRestClient, r#trait::GeneralClient},
     types::{
-        responses::{ServerTime, ExchangeInfo},
         requests::{ExchangeInfoSpec, Validated},
+        responses::{ExchangeInfo, ServerTime},
     },
 };
 
 #[async_trait]
 impl GeneralClient for BinanceSpotRestClient {
     async fn ping(&self) -> Result<()> {
-        let _: serde_json::Value = self.request(reqwest::Method::GET, "/api/v3/ping", ()).await?;
+        let _: serde_json::Value = self
+            .request(reqwest::Method::GET, "/api/v3/ping", ())
+            .await?;
         Ok(())
     }
 
@@ -23,7 +22,11 @@ impl GeneralClient for BinanceSpotRestClient {
         self.request(reqwest::Method::GET, "/api/v3/time", ()).await
     }
 
-    async fn exchange_info(&self, specification: ExchangeInfoSpec<Validated>) -> Result<ExchangeInfo> {
-        self.request(reqwest::Method::GET, "/api/v3/exchangeInfo", specification).await
+    async fn exchange_info(
+        &self,
+        specification: ExchangeInfoSpec<Validated>,
+    ) -> Result<ExchangeInfo> {
+        self.request(reqwest::Method::GET, "/api/v3/exchangeInfo", specification)
+            .await
     }
 }

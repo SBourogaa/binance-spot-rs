@@ -11,10 +11,10 @@ use crate::{
 
 /**
  * My trades query specification.
- * 
+ *
  * This specification handles parameters for querying trade history
  * for a specific account and symbol with various filtering options.
- * 
+ *
  * # Fields
  * - `symbol`: Symbol to retrieve trades for (required).
  * - `order_id`: Optional order ID to filter trades.
@@ -24,7 +24,7 @@ use crate::{
  * - `limit`: Optional limit (default: 500, max: 1000).
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct MyTradesSpec<S=Unvalidated> {
+pub struct MyTradesSpec<S = Unvalidated> {
     pub symbol: String,
     #[serde(skip_serializing_if = "Option::is_none", rename = "orderId")]
     pub order_id: Option<u64>,
@@ -43,10 +43,10 @@ pub struct MyTradesSpec<S=Unvalidated> {
 impl MyTradesSpec<Unvalidated> {
     /**
      * Creates a new my trades specification.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query trades for.
-     * 
+     *
      * # Returns
      * - `Self`: New my trades specification.
      */
@@ -61,13 +61,13 @@ impl MyTradesSpec<Unvalidated> {
             _state: PhantomData,
         }
     }
-    
+
     /**
      * Sets the order ID filter.
-     * 
+     *
      * # Arguments
      * - `order_id`: Order ID to filter trades.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -75,13 +75,13 @@ impl MyTradesSpec<Unvalidated> {
         self.order_id = Some(order_id);
         self
     }
-    
+
     /**
      * Sets the start time filter.
-     * 
+     *
      * # Arguments
      * - `start_time`: Start time in milliseconds.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -89,13 +89,13 @@ impl MyTradesSpec<Unvalidated> {
         self.start_time = Some(start_time);
         self
     }
-    
+
     /**
      * Sets the end time filter.
-     * 
+     *
      * # Arguments
      * - `end_time`: End time in milliseconds.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -103,13 +103,13 @@ impl MyTradesSpec<Unvalidated> {
         self.end_time = Some(end_time);
         self
     }
-    
+
     /**
      * Sets the starting trade ID.
-     * 
+     *
      * # Arguments
      * - `from_id`: Trade ID to start from.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -117,13 +117,13 @@ impl MyTradesSpec<Unvalidated> {
         self.from_id = Some(from_id);
         self
     }
-    
+
     /**
      * Sets the limit for number of trades to return.
-     * 
+     *
      * # Arguments
      * - `limit`: Number of trades to return (max: 1000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -134,12 +134,13 @@ impl MyTradesSpec<Unvalidated> {
 
     /**
      * Builds the my trades specification.
-     * 
+     *
      * # Returns
      * - `MyTradesSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<MyTradesSpec<Validated>> {
-        self.validate().context("Failed to validate MyTradesSpecification")?;
+        self.validate()
+            .context("Failed to validate MyTradesSpecification")?;
 
         Ok(MyTradesSpec {
             symbol: self.symbol,
@@ -151,10 +152,10 @@ impl MyTradesSpec<Unvalidated> {
             _state: PhantomData::<Validated>,
         })
     }
-    
+
     /**
      * Validates the my trades specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -162,7 +163,7 @@ impl MyTradesSpec<Unvalidated> {
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());
         }
-        
+
         if let Some(limit) = self.limit {
             if limit > 1000 {
                 return Err(InvalidParameter::range("limit", 1, 1000).into());
@@ -171,38 +172,34 @@ impl MyTradesSpec<Unvalidated> {
 
         if let (Some(start), Some(end)) = (self.start_time, self.end_time) {
             if end <= start {
-                return Err(InvalidParameter::new(
-                    "end_time",
-                    "must be greater than start_time"
-                ).into());
+                return Err(
+                    InvalidParameter::new("end_time", "must be greater than start_time").into(),
+                );
             }
             let duration = end - start;
             if duration > 24 * 60 * 60 * 1000 {
-                return Err(InvalidParameter::new(
-                    "time_range",
-                    "cannot be longer than 24 hours"
-                ).into());
+                return Err(
+                    InvalidParameter::new("time_range", "cannot be longer than 24 hours").into(),
+                );
             }
         }
 
         if let Some(_from_id) = self.from_id {
             if self.start_time.is_some() || self.end_time.is_some() {
-                return Err(InvalidParameter::mutually_exclusive(
-                    "fromId",
-                    "startTime/endTime"
-                ).into());
+                return Err(
+                    InvalidParameter::mutually_exclusive("fromId", "startTime/endTime").into(),
+                );
             }
         }
 
         if let Some(_order_id) = self.order_id {
             if self.start_time.is_some() || self.end_time.is_some() {
-                return Err(InvalidParameter::mutually_exclusive(
-                    "orderId",
-                    "startTime/endTime"
-                ).into());
+                return Err(
+                    InvalidParameter::mutually_exclusive("orderId", "startTime/endTime").into(),
+                );
             }
         }
-        
+
         Ok(())
     }
 }

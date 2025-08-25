@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Average Price Stream Event
- * 
+ *
  * Contains average price changes over a fixed time interval.
- * 
+ *
  * # Fields:
  * - `event_type`: Event type identifier (always "avgPrice")
  * - `event_time`: Event timestamp in milliseconds

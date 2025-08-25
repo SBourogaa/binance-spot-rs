@@ -1,13 +1,7 @@
 use thiserror::Error;
 use tracing::debug;
 
-use super::{
-    ApiError,
-    InvalidParameter,
-    InvalidCredentials,
-    InvalidUrl,
-    InvalidConfig,
-};
+use super::{ApiError, InvalidConfig, InvalidCredentials, InvalidParameter, InvalidUrl};
 
 /**
  * Main error type for the Binance API client.
@@ -26,7 +20,7 @@ use super::{
 pub enum BinanceError {
     /**
      * API errors returned directly by Binance servers.
-     * 
+     *
      * These errors include all official Binance error codes from the API specification,
      * including rate limiting (-1003), authentication failures, and trading rejections.
      */
@@ -35,7 +29,7 @@ pub enum BinanceError {
 
     /**
      * Parameter validation errors detected client-side.
-     * 
+     *
      * These occur when request parameters fail validation before being sent to the API.
      * Catching these early provides better user experience and reduces unnecessary API calls.
      */
@@ -44,7 +38,7 @@ pub enum BinanceError {
 
     /**
      * Authentication credential validation errors.
-     * 
+     *
      * These occur when API keys, signatures, or other authentication data is malformed
      * or fails validation before being used in requests.
      */
@@ -53,7 +47,7 @@ pub enum BinanceError {
 
     /**
      * URL validation errors.
-     * 
+     *
      * These occur when constructed URLs are malformed or don't meet Binance API requirements.
      */
     #[error(transparent)]
@@ -61,7 +55,7 @@ pub enum BinanceError {
 
     /**
      * Configuration validation errors.
-     * 
+     *
      * These occur when client configuration (timeouts, connection settings, etc.)
      * contains invalid values or incompatible combinations.
      */
@@ -119,13 +113,13 @@ impl BinanceError {
             BinanceError::Api(api_error) => api_error.is_retryable(),
             _ => false,
         };
-        
+
         debug!(
             error_type = std::any::type_name::<Self>(),
             is_retryable = retryable,
             "Determined error retryability"
         );
-        
+
         retryable
     }
 }

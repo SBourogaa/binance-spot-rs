@@ -1,20 +1,20 @@
+mod account;
 mod client;
 mod general;
-mod account;
+mod market_data;
 mod ticker;
 mod trading;
-mod market_data;
 
-use client::BinanceSpotRestClient;
 use crate::Result;
 use crate::{BinanceConfig, RestConfig};
+use client::BinanceSpotRestClient;
 
 /**
  * Creates a new REST-based Binance client.
- * 
+ *
  * # Arguments
  * - `config`: Binance configuration with API credentials and REST-specific settings.
- * 
+ *
  * # Returns
  * - `BinanceRestClient`: New REST client instance.
  */
@@ -37,10 +37,10 @@ mod tests {
             .with_testnet()
             .build()
             .expect("Config creation should succeed");
-        
+
         // Act
         let result = client(config);
-        
+
         // Assert
         assert!(result.is_ok(), "Constructor should work");
     }

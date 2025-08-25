@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
  * This struct handles both REST API and WebSocket API formats:
  * - REST API uses full field names: "asset", "free", "locked"
  * - WebSocket API uses abbreviated names: "a", "f", "l"
- * 
+ *
  * # Fields
  * - `asset`: Asset symbol (e.g., "BTC", "USDT").
  * - `free`: Available balance for trading.
@@ -22,6 +22,6 @@ pub struct Balance {
     #[serde(with = "rust_decimal::serde::str")]
     pub free: Decimal,
     #[serde(alias = "l")]
-    #[serde(with = "rust_decimal::serde::str")]  
+    #[serde(with = "rust_decimal::serde::str")]
     pub locked: Decimal,
 }

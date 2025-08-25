@@ -1,17 +1,12 @@
+use anyhow::Context;
 use reqwest;
 use serde::Serialize;
-use serde_json::Value;
 use serde::de::DeserializeOwned;
-use anyhow::Context;
-use tracing::{info, debug, instrument};
+use serde_json::Value;
+use tracing::{debug, info, instrument};
 
 use crate::Result;
-use crate::{
-    BinanceConfig,
-    RestConfig,
-    errors::BinanceError,
-    clients::common::generate_signature,
-};
+use crate::{BinanceConfig, RestConfig, clients::common::generate_signature, errors::BinanceError};
 
 /**
  * REST API client implementation with configurable HTTP settings.
@@ -37,7 +32,7 @@ impl BinanceSpotRestClient {
      */
     pub fn new(config: BinanceConfig<RestConfig>) -> Result<Self> {
         let rest_config = config.rest_config();
-        
+
         let client_builder = reqwest::Client::builder()
             .timeout(rest_config.request_timeout)
             .connect_timeout(rest_config.connection_timeout)
@@ -48,7 +43,7 @@ impl BinanceSpotRestClient {
         let client = client_builder
             .build()
             .context("Failed to create HTTP client")?;
-        
+
         Ok(Self { config, client })
     }
 
@@ -63,8 +58,7 @@ impl BinanceSpotRestClient {
      */
     pub(crate) async fn handle_response(&self, response: reqwest::Response) -> Result<Value> {
         let status = response.status();
-        let text = response.text().await
-            .context("Failed to read response")?;
+        let text = response.text().await.context("Failed to read response")?;
 
         if !status.is_success() {
             if let Ok(error_json) = serde_json::from_str::<Value>(&text) {
@@ -79,8 +73,9 @@ impl BinanceSpotRestClient {
                         );
                         return Err(BinanceError::Api(crate::errors::ApiError::new(
                             code_num as i32,
-                            msg_str.to_string()
-                        )).into());
+                            msg_str.to_string(),
+                        ))
+                        .into());
                     }
                 }
             }
@@ -93,16 +88,15 @@ impl BinanceSpotRestClient {
             return Err(anyhow::anyhow!("HTTP {}: {}", status, text));
         }
 
-        serde_json::from_str(&text)
-            .map_err(|e| {
-                debug!(
-                    error_type = "parse_error",
-                    response_text = %text,
-                    parse_error = %e,
-                    "Failed to parse JSON response"
-                );
-                anyhow::Error::from(e).context("Failed to parse JSON response")
-            })
+        serde_json::from_str(&text).map_err(|e| {
+            debug!(
+                error_type = "parse_error",
+                response_text = %text,
+                parse_error = %e,
+                "Failed to parse JSON response"
+            );
+            anyhow::Error::from(e).context("Failed to parse JSON response")
+        })
     }
 
     /**
@@ -125,31 +119,35 @@ impl BinanceSpotRestClient {
     ) -> Result<Value> {
         let start = std::time::Instant::now();
         let prep_start = std::time::Instant::now();
-        
-        let params_query = serde_urlencoded::to_string(&params)
-            .context("Failed to serialize parameters")?;
+
+        let params_query =
+            serde_urlencoded::to_string(&params).context("Failed to serialize parameters")?;
 
         let url = if params_query.is_empty() {
             format!("{}{}", self.config.url(), endpoint)
         } else {
             format!("{}{}?{}", self.config.url(), endpoint, params_query)
         };
-        
+
         let prep_duration = prep_start.elapsed();
         debug!(
             prep_duration_us = prep_duration.as_micros(),
             "Request preparation completed"
         );
-        
+
         let network_start = std::time::Instant::now();
-        let response = self.client.request(method, &url).send().await
+        let response = self
+            .client
+            .request(method, &url)
+            .send()
+            .await
             .context("Failed to send request")?;
         let network_duration = network_start.elapsed();
-        
+
         let parse_start = std::time::Instant::now();
         let result = self.handle_response(response).await;
         let parse_duration = parse_start.elapsed();
-        
+
         debug!(
             total_duration_us = start.elapsed().as_micros(),
             prep_duration_us = prep_duration.as_micros(),
@@ -158,7 +156,7 @@ impl BinanceSpotRestClient {
             success = result.is_ok(),
             "REST request completed"
         );
-        
+
         result
     }
 
@@ -182,31 +180,37 @@ impl BinanceSpotRestClient {
     ) -> Result<Value> {
         let start = std::time::Instant::now();
         let prep_start = std::time::Instant::now();
-        
-        let signer = self.config.signer()
+
+        let signer = self
+            .config
+            .signer()
             .ok_or_else(|| anyhow::anyhow!("No authentication configured"))?;
 
-        let (signature, query_string) = generate_signature(&params, signer.as_ref(), self.config.recv_window(), false).await?;
+        let (signature, query_string) =
+            generate_signature(&params, signer.as_ref(), self.config.recv_window(), false).await?;
 
         let final_query = format!("{}&signature={}", query_string, signature);
         let url = format!("{}{}?{}", self.config.url(), endpoint, final_query);
-        
+
         let prep_duration = prep_start.elapsed();
         debug!(
             prep_duration_us = prep_duration.as_micros(),
             "Signed request preparation completed"
         );
-        
+
         let network_start = std::time::Instant::now();
-        let response = self.client.request(method, &url)
+        let response = self
+            .client
+            .request(method, &url)
             .header("X-MBX-APIKEY", signer.get_api_key())
-            .send().await?;
+            .send()
+            .await?;
         let network_duration = network_start.elapsed();
-        
+
         let parse_start = std::time::Instant::now();
         let result = self.handle_response(response).await;
         let parse_duration = parse_start.elapsed();
-        
+
         info!(
             total_duration_us = start.elapsed().as_micros(),
             prep_duration_us = prep_duration.as_micros(),
@@ -215,7 +219,7 @@ impl BinanceSpotRestClient {
             success = result.is_ok(),
             "Signed REST request completed"
         );
-        
+
         result
     }
 
@@ -230,9 +234,14 @@ impl BinanceSpotRestClient {
      * # Returns
      * - `R`: Parsed response object.
      */
-    pub(crate) async fn request<S, R>(&self, method: reqwest::Method, endpoint: &str, spec: S) -> Result<R>
-    where 
-        S: Serialize, 
+    pub(crate) async fn request<S, R>(
+        &self,
+        method: reqwest::Method,
+        endpoint: &str,
+        spec: S,
+    ) -> Result<R>
+    where
+        S: Serialize,
         R: DeserializeOwned,
     {
         let mut response = self.send_request(method, endpoint, spec).await?;
@@ -240,7 +249,7 @@ impl BinanceSpotRestClient {
         if response.is_object() && std::any::type_name::<R>().starts_with("alloc::vec::Vec<") {
             response = serde_json::Value::Array(vec![response]);
         }
-        
+
         serde_json::from_value(response).context("Failed to parse response")
     }
 
@@ -255,9 +264,14 @@ impl BinanceSpotRestClient {
      * # Returns
      * - `R`: Parsed response object.
      */
-    pub(crate) async fn signed_request<S, R>(&self, method: reqwest::Method, endpoint: &str, spec: S) -> Result<R>
-    where 
-        S: Serialize, 
+    pub(crate) async fn signed_request<S, R>(
+        &self,
+        method: reqwest::Method,
+        endpoint: &str,
+        spec: S,
+    ) -> Result<R>
+    where
+        S: Serialize,
         R: DeserializeOwned,
     {
         let response = self.send_signed_request(method, endpoint, spec).await?;
@@ -268,11 +282,7 @@ impl BinanceSpotRestClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        BinanceConfig,
-        RestConfig,
-        errors::BinanceError,
-    };
+    use crate::{BinanceConfig, RestConfig, errors::BinanceError};
     use serde_json::json;
     use std::time::Duration;
 
@@ -329,7 +339,7 @@ mod tests {
             .build()
             .expect("Config creation");
         let client = BinanceSpotRestClient::new(config).unwrap();
-        
+
         let json_body = json!({"serverTime": 1234567890});
         let response = tokio_tungstenite::tungstenite::http::Response::builder()
             .status(200)
@@ -356,7 +366,7 @@ mod tests {
             .build()
             .expect("Config creation");
         let client = BinanceSpotRestClient::new(config).unwrap();
-        
+
         let error_body = json!({"code": -1121, "msg": "Invalid symbol."});
         let response = tokio_tungstenite::tungstenite::http::Response::builder()
             .status(400)
@@ -385,7 +395,7 @@ mod tests {
             .build()
             .expect("Config creation");
         let client = BinanceSpotRestClient::new(config).unwrap();
-        
+
         let response = tokio_tungstenite::tungstenite::http::Response::builder()
             .status(500)
             .body("Internal Server Error")
@@ -411,7 +421,7 @@ mod tests {
             .build()
             .expect("Config creation");
         let client = BinanceSpotRestClient::new(config).unwrap();
-        
+
         let response = tokio_tungstenite::tungstenite::http::Response::builder()
             .status(200)
             .body("{invalid json")
@@ -423,7 +433,12 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Failed to parse JSON"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Failed to parse JSON")
+        );
     }
 
     /**
@@ -439,11 +454,18 @@ mod tests {
         let client = BinanceSpotRestClient::new(config).unwrap();
 
         // Act
-        let result = client.send_signed_request(reqwest::Method::GET, "/test", ()).await;
+        let result = client
+            .send_signed_request(reqwest::Method::GET, "/test", ())
+            .await;
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("No authentication configured"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("No authentication configured")
+        );
     }
 
     /**
@@ -470,18 +492,21 @@ mod tests {
         };
 
         // Act
-        let result = client.send_request(reqwest::Method::GET, "/api/v3/depth", params).await;
+        let result = client
+            .send_request(reqwest::Method::GET, "/api/v3/depth", params)
+            .await;
 
         // Assert
         match result {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 let error_string = e.to_string();
                 assert!(
-                    error_string.contains("Failed to send request") || 
-                    error_string.contains("dns error") ||
-                    error_string.contains("connection"),
-                    "Should be a network error, not serialization error: {}", error_string
+                    error_string.contains("Failed to send request")
+                        || error_string.contains("dns error")
+                        || error_string.contains("connection"),
+                    "Should be a network error, not serialization error: {}",
+                    error_string
                 );
             }
         }
@@ -500,19 +525,22 @@ mod tests {
         let client = BinanceSpotRestClient::new(config).unwrap();
 
         // Act
-        let result: Result<serde_json::Value> = client.request(reqwest::Method::GET, "/api/v3/ping", ()).await;
+        let result: Result<serde_json::Value> = client
+            .request(reqwest::Method::GET, "/api/v3/ping", ())
+            .await;
 
         // Assert
         match result {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 let error_string = e.to_string();
                 assert!(
-                    error_string.contains("Failed to send request") || 
-                    error_string.contains("dns error") ||
-                    error_string.contains("connection") ||
-                    error_string.contains("Failed to parse response"),
-                    "Should be a network or parse error: {}", error_string
+                    error_string.contains("Failed to send request")
+                        || error_string.contains("dns error")
+                        || error_string.contains("connection")
+                        || error_string.contains("Failed to parse response"),
+                    "Should be a network or parse error: {}",
+                    error_string
                 );
             }
         }
@@ -531,10 +559,17 @@ mod tests {
         let client = BinanceSpotRestClient::new(config).unwrap();
 
         // Act
-        let result: Result<serde_json::Value> = client.signed_request(reqwest::Method::GET, "/api/v3/account", ()).await;
+        let result: Result<serde_json::Value> = client
+            .signed_request(reqwest::Method::GET, "/api/v3/account", ())
+            .await;
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("No authentication configured"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("No authentication configured")
+        );
     }
 }

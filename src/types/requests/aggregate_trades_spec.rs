@@ -6,15 +6,15 @@ use serde::Serialize;
 use crate::Result;
 use crate::{
     errors::InvalidParameter,
-    types::requests::{Validated, Unvalidated},
+    types::requests::{Unvalidated, Validated},
 };
 
 /**
  * Aggregate trades query specification.
- * 
+ *
  * This specification handles parameters for querying compressed/aggregate trades
  * with time range, ID range, and limit controls.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol to query aggregate trades for.
  * - `from_id`: Optional aggregate trade ID to fetch from (returns trades with ID >= from_id).
@@ -24,7 +24,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AggregateTradesSpec<S=Unvalidated> {
+pub struct AggregateTradesSpec<S = Unvalidated> {
     pub symbol: String,
     #[serde(skip_serializing_if = "Option::is_none", rename = "fromId")]
     pub from_id: Option<u64>,
@@ -41,10 +41,10 @@ pub struct AggregateTradesSpec<S=Unvalidated> {
 impl AggregateTradesSpec<Unvalidated> {
     /**
      * Creates a new aggregate trades specification.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query.
-     * 
+     *
      * # Returns
      * - `Self`: New aggregate trades specification.
      */
@@ -58,13 +58,13 @@ impl AggregateTradesSpec<Unvalidated> {
             _state: PhantomData,
         }
     }
-    
+
     /**
      * Sets the starting aggregate trade ID.
-     * 
+     *
      * # Arguments
      * - `from_id`: Aggregate trade ID to fetch from (inclusive).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -72,13 +72,13 @@ impl AggregateTradesSpec<Unvalidated> {
         self.from_id = Some(from_id);
         self
     }
-    
+
     /**
      * Sets the start time for trades query.
-     * 
+     *
      * # Arguments
      * - `start_time`: Start time in milliseconds.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -86,13 +86,13 @@ impl AggregateTradesSpec<Unvalidated> {
         self.start_time = Some(start_time);
         self
     }
-    
+
     /**
      * Sets the end time for trades query.
-     * 
+     *
      * # Arguments
      * - `end_time`: End time in milliseconds.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -100,13 +100,13 @@ impl AggregateTradesSpec<Unvalidated> {
         self.end_time = Some(end_time);
         self
     }
-    
+
     /**
      * Sets the limit for number of trades to return.
-     * 
+     *
      * # Arguments
      * - `limit`: Number of trades to return (max: 1000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -114,16 +114,17 @@ impl AggregateTradesSpec<Unvalidated> {
         self.limit = Some(limit);
         self
     }
-    
+
     /**
      * Builds the aggregate trades specification.
-     * 
+     *
      * # Returns
      * - `AggregateTradesSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<AggregateTradesSpec<Validated>> {
-        self.validate().context("Failed to validate AggregateTradesSpecification")?;
-        
+        self.validate()
+            .context("Failed to validate AggregateTradesSpecification")?;
+
         Ok(AggregateTradesSpec {
             symbol: self.symbol,
             from_id: self.from_id,
@@ -136,7 +137,7 @@ impl AggregateTradesSpec<Unvalidated> {
 
     /**
      * Validates the aggregate trades specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -144,13 +145,13 @@ impl AggregateTradesSpec<Unvalidated> {
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());
         }
-        
+
         if let Some(limit) = self.limit {
             if limit > 1000 {
                 return Err(InvalidParameter::range("limit", 1, 1000).into());
             }
         }
-        
+
         Ok(())
     }
 }

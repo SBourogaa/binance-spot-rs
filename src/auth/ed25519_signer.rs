@@ -1,22 +1,19 @@
-use async_trait::async_trait;
-use zeroize::ZeroizeOnDrop;
-use base64::prelude::{BASE64_STANDARD, Engine}; 
-use ed25519_dalek::{SigningKey, Signature, Signer};
-use ed25519_dalek::pkcs8::DecodePrivateKey;
 use anyhow::Context;
+use async_trait::async_trait;
+use base64::prelude::{BASE64_STANDARD, Engine};
+use ed25519_dalek::pkcs8::DecodePrivateKey;
+use ed25519_dalek::{Signature, Signer, SigningKey};
+use zeroize::ZeroizeOnDrop;
 
 use crate::Result;
-use crate::{
-    auth::SignatureProvider,
-    errors::InvalidCredentials,
-};
+use crate::{auth::SignatureProvider, errors::InvalidCredentials};
 
 /**
  * Ed25519 signature provider for Binance API authentication with secure key management.
  *
  * This implementation provides Ed25519 digital signatures with automatic memory
  * cleanup to prevent key material from lingering in memory.
- * 
+ *
  * # Fields
  * - `api_key`: The API key for request headers.
  * - `signing_key`: The Ed25519 private key for generating signatures.
@@ -85,7 +82,7 @@ impl Ed25519Signer {
     pub fn rotate_key(&mut self, new_private_key_pem: &str) -> Result<()> {
         let new_signing_key = SigningKey::from_pkcs8_pem(new_private_key_pem)
             .map_err(|e| InvalidCredentials::invalid_private_key(format!("{}", e)))?;
-        
+
         // Replace the key - old key is automatically dropped and zeroized
         self.signing_key = new_signing_key;
         Ok(())
@@ -117,7 +114,7 @@ impl SignatureProvider for Ed25519Signer {
     async fn sign(&self, payload: &str) -> Result<String> {
         let signature: Signature = self.signing_key.sign(payload.as_bytes());
         let signature_b64 = BASE64_STANDARD.encode(signature.to_bytes());
-        
+
         Ok(signature_b64)
     }
 }
@@ -125,9 +122,9 @@ impl SignatureProvider for Ed25519Signer {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::sync::Arc;
-    use proptest::prelude::*;
     use crate::auth::SignatureProvider;
+    use proptest::prelude::*;
+    use std::sync::Arc;
 
     const TEST_ED25519_PEM: &str = r#"-----BEGIN PRIVATE KEY-----
 MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
@@ -144,15 +141,30 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
         let mut signer = Ed25519Signer::new(TEST_API_KEY, TEST_ED25519_PEM)
             .expect("Signer creation should succeed");
         let payload = "test_payload";
-        
+
         // Act
-        let original_sig = signer.sign(payload).await.expect("Original signing should work");
-        signer.rotate_key(TEST_ED25519_PEM).expect("Key rotation should succeed");
-        let same_key_sig = signer.sign(payload).await.expect("Signing after same-key rotation should work");
-        
+        let original_sig = signer
+            .sign(payload)
+            .await
+            .expect("Original signing should work");
+        signer
+            .rotate_key(TEST_ED25519_PEM)
+            .expect("Key rotation should succeed");
+        let same_key_sig = signer
+            .sign(payload)
+            .await
+            .expect("Signing after same-key rotation should work");
+
         // Assert
-        assert_eq!(signer.get_api_key(), TEST_API_KEY, "API key should remain unchanged");
-        assert_eq!(original_sig, same_key_sig, "Same key should produce same signature");
+        assert_eq!(
+            signer.get_api_key(),
+            TEST_API_KEY,
+            "API key should remain unchanged"
+        );
+        assert_eq!(
+            original_sig, same_key_sig,
+            "Same key should produce same signature"
+        );
     }
 
     /**
@@ -163,19 +175,17 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
         // Arrange
         let signer = Arc::new(
             Ed25519Signer::new(TEST_API_KEY, TEST_ED25519_PEM)
-                .expect("Signer creation should succeed")
+                .expect("Signer creation should succeed"),
         );
         let mut handles = Vec::new();
-        
+
         // Act
         for i in 0..10 {
             let signer_clone = Arc::clone(&signer);
             let payload = format!("symbol=BTCUSDT&nonce={}", i);
-            
-            let handle = tokio::spawn(async move {
-                signer_clone.sign(&payload).await
-            });
-            
+
+            let handle = tokio::spawn(async move { signer_clone.sign(&payload).await });
+
             handles.push(handle);
         }
 
@@ -183,9 +193,11 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
         for handle in handles {
             let result = handle.await.expect("Task should complete");
             assert!(result.is_ok(), "Concurrent signing should succeed");
-            
+
             let signature = result.unwrap();
-            let decoded = BASE64_STANDARD.decode(&signature).expect("Should be valid base64");
+            let decoded = BASE64_STANDARD
+                .decode(&signature)
+                .expect("Should be valid base64");
             assert_eq!(decoded.len(), 64, "Should produce valid 64-byte signature");
         }
     }
@@ -198,10 +210,10 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
         // Arrange
         let signer: Box<dyn SignatureProvider> = Box::new(
             Ed25519Signer::new(TEST_API_KEY, TEST_ED25519_PEM)
-                .expect("Signer creation should succeed")
+                .expect("Signer creation should succeed"),
         );
         let payload = "symbol=ADAUSDT&side=BUY&timestamp=1111111111";
-        
+
         // Act
         let api_key = signer.get_api_key();
         let signature_result = signer.sign(payload).await;
@@ -227,16 +239,21 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
         // Act & Assert
         for invalid_pem in invalid_cases {
             let result = Ed25519Signer::new(TEST_API_KEY, invalid_pem);
-            
-            assert!(result.is_err(), "Should reject invalid PEM: {}", invalid_pem);
-            
+
+            assert!(
+                result.is_err(),
+                "Should reject invalid PEM: {}",
+                invalid_pem
+            );
+
             // Since we're using anyhow::Result, check the error chain
             let error = result.unwrap_err();
             let error_chain = format!("{:#}", error);
             assert!(
-                error_chain.contains("private key format is invalid") || 
-                error_chain.contains("Invalid credentials"),
-                "Should mention credential/key validation failure, got: {}", error_chain
+                error_chain.contains("private key format is invalid")
+                    || error_chain.contains("Invalid credentials"),
+                "Should mention credential/key validation failure, got: {}",
+                error_chain
             );
         }
     }
@@ -252,15 +269,15 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
         ) {
             // Arrange
             let signer = Ed25519Signer::new(
-                TEST_API_KEY, 
+                TEST_API_KEY,
                 TEST_ED25519_PEM
             ).unwrap();
-            
+
             // Act
             let sig1 = futures::executor::block_on(signer.sign(&payload)).unwrap();
             let sig2 = futures::executor::block_on(signer.sign(&payload)).unwrap();
             let decoded = BASE64_STANDARD.decode(&sig1).unwrap();
-            
+
             // Assert
             prop_assert_eq!(sig1, sig2);
             prop_assert_eq!(decoded.len(), 64);
@@ -275,17 +292,17 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
             payload2 in "[a-zA-Z0-9=&]{10,100}",
         ) {
             prop_assume!(payload1 != payload2);
-            
+
             // Arrange
             let signer = Ed25519Signer::new(
-                TEST_API_KEY, 
+                TEST_API_KEY,
                 TEST_ED25519_PEM
             ).unwrap();
-            
+
             // Act
             let sig1 = futures::executor::block_on(signer.sign(&payload1)).unwrap();
             let sig2 = futures::executor::block_on(signer.sign(&payload2)).unwrap();
-            
+
             // Assert
             prop_assert_ne!(sig1, sig2);
         }
@@ -307,13 +324,13 @@ MC4CAQAwBQYDK2VwBCIEIC8tLOD+n4yj+ER4J+9+4B+8l7pK5J+yX9CX7V3c7z6S
                 symbol, side, qty_str, price_str, timestamp
             );
             let signer = Ed25519Signer::new(
-                TEST_API_KEY, 
+                TEST_API_KEY,
                 TEST_ED25519_PEM
             ).unwrap();
-            
+
             // Act
             let result = futures::executor::block_on(signer.sign(&payload));
-            
+
             // Assert
             prop_assert!(result.is_ok());
             let signature = result.unwrap();

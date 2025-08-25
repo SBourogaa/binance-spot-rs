@@ -2,19 +2,10 @@ use async_trait::async_trait;
 
 use crate::Result;
 use crate::{
-    clients::{
-        r#trait::GeneralClient, 
-        websocket::BinanceSpotWebSocketClient
-    },
+    clients::{r#trait::GeneralClient, websocket::BinanceSpotWebSocketClient},
     types::{
-        responses::{
-            ServerTime, 
-            ExchangeInfo
-        },
-        requests::{
-            Validated,
-            ExchangeInfoSpec,
-        },
+        requests::{ExchangeInfoSpec, Validated},
+        responses::{ExchangeInfo, ServerTime},
     },
 };
 
@@ -25,12 +16,14 @@ impl GeneralClient for BinanceSpotWebSocketClient {
         Ok(())
     }
 
-
     async fn server_time(&self) -> Result<ServerTime> {
         self.request("time", ()).await
     }
 
-    async fn exchange_info(&self, specification: ExchangeInfoSpec<Validated>) -> Result<ExchangeInfo> {
+    async fn exchange_info(
+        &self,
+        specification: ExchangeInfoSpec<Validated>,
+    ) -> Result<ExchangeInfo> {
         self.request("exchangeInfo", specification).await
     }
 }

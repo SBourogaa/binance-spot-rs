@@ -1,12 +1,12 @@
-use super::interval::Interval;
 use super::super::r#trait::StreamSpec;
+use super::interval::Interval;
 use crate::StreamConfig;
 
 /**
  * Specification for Binance Kline/Candlestick Stream
  *
  * The Kline/Candlestick Stream pushes updates to the current klines/candlestick every second in UTC+0 timezone.
- * 
+ *
  * # Fields
  * - `symbol`: Trading pair symbol (e.g., "BTCUSDT")
  * - `interval`: Kline interval (e.g., OneMinute, OneHour, etc.)
@@ -35,7 +35,7 @@ impl KlineStreamSpec {
             interval,
         }
     }
-    
+
     /**
      * Creates a 1-second kline stream specification
      *
@@ -48,7 +48,7 @@ impl KlineStreamSpec {
     pub fn one_second(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::OneSecond)
     }
-    
+
     /**
      * Creates a 1-minute kline stream specification
      *
@@ -61,7 +61,7 @@ impl KlineStreamSpec {
     pub fn one_minute(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::OneMinute)
     }
-    
+
     /**
      * Creates a 3-minute kline stream specification
      *
@@ -74,7 +74,7 @@ impl KlineStreamSpec {
     pub fn three_minutes(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::ThreeMinutes)
     }
-    
+
     /**
      * Creates a 5-minute kline stream specification
      *
@@ -87,7 +87,7 @@ impl KlineStreamSpec {
     pub fn five_minutes(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::FiveMinutes)
     }
-    
+
     /**
      * Creates a 15-minute kline stream specification
      *
@@ -100,7 +100,7 @@ impl KlineStreamSpec {
     pub fn fifteen_minutes(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::FifteenMinutes)
     }
-    
+
     /**
      * Creates a 30-minute kline stream specification
      *
@@ -113,7 +113,7 @@ impl KlineStreamSpec {
     pub fn thirty_minutes(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::ThirtyMinutes)
     }
-    
+
     /**
      * Creates a 1-hour kline stream specification
      *
@@ -126,7 +126,7 @@ impl KlineStreamSpec {
     pub fn hourly(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::OneHour)
     }
-    
+
     /**
      * Creates a 2-hour kline stream specification
      *
@@ -139,7 +139,7 @@ impl KlineStreamSpec {
     pub fn two_hourly(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::TwoHours)
     }
-    
+
     /**
      * Creates a 4-hour kline stream specification
      *
@@ -152,7 +152,7 @@ impl KlineStreamSpec {
     pub fn four_hourly(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::FourHours)
     }
-    
+
     /**
      * Creates a 6-hour kline stream specification
      *
@@ -165,7 +165,7 @@ impl KlineStreamSpec {
     pub fn six_hourly(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::SixHours)
     }
-    
+
     /**
      * Creates an 8-hour kline stream specification
      *
@@ -178,7 +178,7 @@ impl KlineStreamSpec {
     pub fn eight_hourly(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::EightHours)
     }
-    
+
     /**
      * Creates a 12-hour kline stream specification
      *
@@ -191,7 +191,7 @@ impl KlineStreamSpec {
     pub fn twelve_hourly(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::TwelveHours)
     }
-    
+
     /**
      * Creates a 1-day kline stream specification
      *
@@ -204,7 +204,7 @@ impl KlineStreamSpec {
     pub fn daily(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::OneDay)
     }
-    
+
     /**
      * Creates a 3-day kline stream specification
      *
@@ -217,7 +217,7 @@ impl KlineStreamSpec {
     pub fn three_days(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::ThreeDays)
     }
-    
+
     /**
      * Creates a 1-week kline stream specification
      *
@@ -230,7 +230,7 @@ impl KlineStreamSpec {
     pub fn weekly(symbol: impl Into<String>) -> Self {
         Self::new(symbol, Interval::OneWeek)
     }
-    
+
     /**
      * Creates a 1-month kline stream specification
      *
@@ -247,7 +247,7 @@ impl KlineStreamSpec {
 
 impl StreamSpec for KlineStreamSpec {
     type Event = crate::streams::events::KlineStreamEvent;
-    
+
     /**
      * Generates the WebSocket stream name
      *
@@ -257,7 +257,7 @@ impl StreamSpec for KlineStreamSpec {
     fn stream_name(&self) -> String {
         format!("{}@kline_{}", self.symbol.to_lowercase(), self.interval)
     }
-    
+
     /**
      * Validates the stream specification parameters
      *
@@ -270,7 +270,7 @@ impl StreamSpec for KlineStreamSpec {
         }
         Ok(())
     }
-    
+
     /**
      * Gets the buffer size for this stream type
      *

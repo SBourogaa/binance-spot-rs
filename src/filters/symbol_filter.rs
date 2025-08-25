@@ -1,21 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    PriceFilter, 
-    LotSizeFilter, 
-    MinNotionalFilter, 
-    PercentPriceFilter,
-    PercentPriceBySideFilter, 
-    NotionalFilter, 
-    IcebergPartsFilter, 
-    MarketLotSizeFilter, 
-    MaxNumOrdersFilter, 
-    MaxNumOrderAmendsFilter,
-    MaxNumOrderListsFilter,
-    MaxNumAlgoOrdersFilter, 
-    MaxNumIcebergOrdersFilter, 
-    MaxPositionFilter, 
-    TrailingDeltaFilter
+    IcebergPartsFilter, LotSizeFilter, MarketLotSizeFilter, MaxNumAlgoOrdersFilter,
+    MaxNumIcebergOrdersFilter, MaxNumOrderAmendsFilter, MaxNumOrderListsFilter, MaxNumOrdersFilter,
+    MaxPositionFilter, MinNotionalFilter, NotionalFilter, PercentPriceBySideFilter,
+    PercentPriceFilter, PriceFilter, TrailingDeltaFilter,
 };
 
 /**

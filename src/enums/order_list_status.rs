@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
  * - `ExecStarted`: The order list has been placed or there is an update to the order list status.
  * - `Updated`: The clientOrderId of an order in the order list has been changed.
  * - `AllDone`: The order list has finished executing and thus is no longer active.
- * - `Unknown`: Any status not recognized. 
+ * - `Unknown`: Any status not recognized.
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]

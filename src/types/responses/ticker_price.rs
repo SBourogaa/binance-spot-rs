@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Ticker price data from Binance API.
- * 
+ *
  * Represents the latest market price for a trading symbol.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol name.
  * - `price`: Latest market price.

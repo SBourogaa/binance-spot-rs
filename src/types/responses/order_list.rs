@@ -1,6 +1,6 @@
+use crate::enums::{ContingencyType, OrderListOrderStatus, OrderListStatus};
+use crate::types::responses::{Order, OrderSummary};
 use serde::{Deserialize, Serialize};
-use crate::enums::{ContingencyType, OrderListStatus, OrderListOrderStatus};
-use crate::types::responses::{OrderSummary, Order};
 
 /**
  * Order list information for OCO and other multi-order operations.

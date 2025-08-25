@@ -18,8 +18,10 @@ pub type ValueReceiver = broadcast::Receiver<Value>;
 /**
  * Type aliases for WebSocket stream components.
  */
-pub(super) type WsStream = tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
-pub(super) type WsSink = futures_util::stream::SplitSink<WsStream, tokio_tungstenite::tungstenite::protocol::Message>;
+pub(super) type WsStream =
+    tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>;
+pub(super) type WsSink =
+    futures_util::stream::SplitSink<WsStream, tokio_tungstenite::tungstenite::protocol::Message>;
 pub(super) type WsRead = futures_util::stream::SplitStream<WsStream>;
 
 /**
@@ -64,7 +66,7 @@ pub enum StreamMessage {
         sender: ValueSender,
         response: oneshot::Sender<Result<()>>,
     },
-    
+
     /**
      * Unsubscribe from streams.
      *
@@ -76,7 +78,7 @@ pub enum StreamMessage {
         stream_names: Vec<String>,
         response: oneshot::Sender<Result<()>>,
     },
-    
+
     /**
      * Gracefully shutdown the connection.
      *
@@ -99,7 +101,7 @@ pub(super) enum HandlerMode {
      * Dynamic mode for runtime subscription management.
      */
     Dynamic,
-    
+
     /**
      * Static mode for pre-configured streams.
      *

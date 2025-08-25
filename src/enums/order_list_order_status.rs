@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
  * - `Executing`: Either an order list has been placed or there is an update to the status of the list.
  * - `AllDone`: An order list has completed execution and thus no longer active.
  * - `Reject`: The List Status is responding to a failed action either during order placement or order canceled.
- * - `Unknown`: Any status not recognized. 
+ * - `Unknown`: Any status not recognized.
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]

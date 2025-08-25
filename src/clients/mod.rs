@@ -1,5 +1,5 @@
 mod common;
-mod tests;
 pub mod rest;
-pub mod websocket;
+mod tests;
 pub mod r#trait;
+pub mod websocket;

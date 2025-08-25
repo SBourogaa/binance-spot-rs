@@ -1,14 +1,9 @@
-use rust_decimal::Decimal;
-use serde::{Deserialize, Serialize};
 use crate::enums::{
-    OrderStatus,
-    TimeInForce,
-    OrderType,
-    OrderSide,
-    SelfTradePreventionMode,
-    WorkingFloor
+    OrderSide, OrderStatus, OrderType, SelfTradePreventionMode, TimeInForce, WorkingFloor,
 };
 use crate::types::responses::Fill;
+use rust_decimal::Decimal;
+use serde::{Deserialize, Serialize};
 
 /**
  * Complete order information returned by order placement and status queries.
@@ -59,14 +54,14 @@ pub struct Order {
     pub client_order_id: String,
     #[serde(rename = "origClientOrderId")]
     pub original_client_order_id: Option<String>,
-    
+
     // Timestamp fields - different between placement and status responses
     #[serde(rename = "transactTime")]
     pub transaction_time: Option<u64>,
     pub time: Option<u64>,
     pub update_time: Option<u64>,
     pub is_working: Option<bool>,
-    
+
     // Core order fields
     #[serde(with = "rust_decimal::serde::str_option")]
     pub price: Option<Decimal>,
@@ -82,7 +77,7 @@ pub struct Order {
     #[serde(rename = "cummulativeQuoteQty", alias = "cumulativeQuoteQty")]
     #[serde(with = "rust_decimal::serde::str_option")]
     pub cumulative_quote_quantity: Option<Decimal>,
-    
+
     pub status: Option<OrderStatus>,
     pub time_in_force: Option<TimeInForce>,
     #[serde(rename = "type")]
@@ -90,10 +85,10 @@ pub struct Order {
     pub side: Option<OrderSide>,
     pub working_time: Option<i64>,
     pub self_trade_prevention_mode: Option<SelfTradePreventionMode>,
-    
+
     // Full response only - fills information
     pub fills: Option<Vec<Fill>>,
-    
+
     // Conditional fields based on order type and parameters
     #[serde(with = "rust_decimal::serde::str_option")]
     #[serde(default)]

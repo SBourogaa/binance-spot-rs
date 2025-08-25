@@ -11,10 +11,10 @@ use crate::{
 
 /**
  * Klines/candlestick data query specification.
- * 
+ *
  * This specification handles parameters for querying kline data
  * with time range, interval, and timezone controls.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol to query klines for.
  * - `interval`: Kline interval (e.g., "1m", "5m", "1h", "1d").
@@ -24,9 +24,9 @@ use crate::{
  * - `limit`: Optional number of klines to return (default: 500, max: 1000).
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct KlinesSpec<S=Unvalidated> {
+pub struct KlinesSpec<S = Unvalidated> {
     pub symbol: String,
-    // TODO: Create a KlineInterval enum. 
+    // TODO: Create a KlineInterval enum.
     pub interval: String,
     #[serde(skip_serializing_if = "Option::is_none", rename = "startTime")]
     pub start_time: Option<u64>,
@@ -43,11 +43,11 @@ pub struct KlinesSpec<S=Unvalidated> {
 impl KlinesSpec<Unvalidated> {
     /**
      * Creates a new klines specification.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query.
      * - `interval`: Kline interval (e.g., "1m", "5m", "1h", "1d").
-     * 
+     *
      * # Returns
      * - `Self`: New klines specification.
      */
@@ -62,13 +62,13 @@ impl KlinesSpec<Unvalidated> {
             _state: PhantomData,
         }
     }
-    
+
     /**
      * Sets the start time for klines query.
-     * 
+     *
      * # Arguments
      * - `start_time`: Start time in milliseconds.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -76,13 +76,13 @@ impl KlinesSpec<Unvalidated> {
         self.start_time = Some(start_time);
         self
     }
-    
+
     /**
      * Sets the end time for klines query.
-     * 
+     *
      * # Arguments
      * - `end_time`: End time in milliseconds.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -90,13 +90,13 @@ impl KlinesSpec<Unvalidated> {
         self.end_time = Some(end_time);
         self
     }
-    
+
     /**
      * Sets the timezone for klines query.
-     * 
+     *
      * # Arguments
      * - `time_zone`: Timezone offset (e.g., "0", "-1:00", "05:45", range: [-12:00 to +14:00]).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -104,13 +104,13 @@ impl KlinesSpec<Unvalidated> {
         self.time_zone = Some(time_zone.into());
         self
     }
-    
+
     /**
      * Sets the limit for number of klines to return.
-     * 
+     *
      * # Arguments
      * - `limit`: Number of klines to return (max: 1000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -121,12 +121,13 @@ impl KlinesSpec<Unvalidated> {
 
     /**
      * Builds the klines specification.
-     * 
+     *
      * # Returns
      * - `KlinesSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<KlinesSpec<Validated>> {
-        self.validate().context("Failed to validate KlinesSpecification")?;
+        self.validate()
+            .context("Failed to validate KlinesSpecification")?;
 
         Ok(KlinesSpec {
             symbol: self.symbol,
@@ -138,10 +139,10 @@ impl KlinesSpec<Unvalidated> {
             _state: PhantomData::<Validated>,
         })
     }
-    
+
     /**
      * Validates the klines specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -149,102 +150,106 @@ impl KlinesSpec<Unvalidated> {
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());
         }
-        
+
         if self.interval.trim().is_empty() {
             return Err(InvalidParameter::empty("interval").into());
         }
-        
+
         match self.interval.as_str() {
-            "1s" | "1m" | "3m" | "5m" | "15m" | "30m" | 
-            "1h" | "2h" | "4h" | "6h" | "8h" | "12h" |
-            "1d" | "3d" | "1w" | "1M" => {},
+            "1s" | "1m" | "3m" | "5m" | "15m" | "30m" | "1h" | "2h" | "4h" | "6h" | "8h"
+            | "12h" | "1d" | "3d" | "1w" | "1M" => {}
             _ => return Err(InvalidParameter::new(
-                "interval", 
-                "must be one of: 1s, 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M"
-            ).into()),
+                "interval",
+                "must be one of: 1s, 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w, 1M",
+            )
+            .into()),
         }
-        
+
         if let Some(limit) = self.limit {
             if limit > 1000 {
                 return Err(InvalidParameter::range("limit", 1, 1000).into());
             }
         }
-        
+
         if let (Some(start), Some(end)) = (self.start_time, self.end_time) {
             if end <= start {
                 return Err(InvalidParameter::new(
-                    "start_time/end_time", 
-                    "end_time must be greater than start_time"
-                ).into());
+                    "start_time/end_time",
+                    "end_time must be greater than start_time",
+                )
+                .into());
             }
         }
-        
+
         if let Some(ref tz) = self.time_zone {
             self.validate_timezone(tz)?;
         }
-        
+
         Ok(())
     }
-    
+
     /**
      * Validates timezone format and range according to API requirements.
-     * 
+     *
      * # Arguments
      * - `timezone`: Timezone string to validate.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid timezone.
      */
     fn validate_timezone(&self, timezone: &str) -> Result<()> {
         let tz = timezone.trim();
-        
+
         if let Ok(hours) = tz.parse::<i32>() {
             if hours < -12 || hours > 14 {
                 return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone hours must be in range [-12 to +14]"
-                ).into());
+                    "time_zone",
+                    "timezone hours must be in range [-12 to +14]",
+                )
+                .into());
             }
             return Ok(());
         }
-        
+
         if tz.contains(':') {
             let parts: Vec<&str> = tz.split(':').collect();
             if parts.len() != 2 {
                 return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone format must be like '0', '8', '-1:00', or '05:45'"
-                ).into());
+                    "time_zone",
+                    "timezone format must be like '0', '8', '-1:00', or '05:45'",
+                )
+                .into());
             }
-            
-            let hours = parts[0].parse::<i32>().map_err(|_| {
-                InvalidParameter::new("time_zone", "invalid hour format")
-            })?;
-            
-            let minutes = parts[1].parse::<u32>().map_err(|_| {
-                InvalidParameter::new("time_zone", "invalid minute format")
-            })?;
-            
+
+            let hours = parts[0]
+                .parse::<i32>()
+                .map_err(|_| InvalidParameter::new("time_zone", "invalid hour format"))?;
+
+            let minutes = parts[1]
+                .parse::<u32>()
+                .map_err(|_| InvalidParameter::new("time_zone", "invalid minute format"))?;
+
             if hours < -12 || hours > 14 {
                 return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone hours must be in range [-12 to +14]"
-                ).into());
+                    "time_zone",
+                    "timezone hours must be in range [-12 to +14]",
+                )
+                .into());
             }
-            
+
             if minutes >= 60 {
-                return Err(InvalidParameter::new(
-                    "time_zone", 
-                    "timezone minutes must be 0-59"
-                ).into());
+                return Err(
+                    InvalidParameter::new("time_zone", "timezone minutes must be 0-59").into(),
+                );
             }
-            
+
             return Ok(());
         }
-        
+
         Err(InvalidParameter::new(
-            "time_zone", 
-            "timezone format must be like '0', '8', '-1:00', or '05:45'"
-        ).into())
+            "time_zone",
+            "timezone format must be like '0', '8', '-1:00', or '05:45'",
+        )
+        .into())
     }
 }

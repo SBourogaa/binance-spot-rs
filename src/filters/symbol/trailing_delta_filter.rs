@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
  * This filter defines the minimum and maximum value for the parameter trailingDelta.
  *
  * In order for a trailing stop order to pass this filter, the following must be true:
- * 
+ *
  * For STOP_LOSS BUY, STOP_LOSS_LIMIT_BUY, TAKE_PROFIT SELL and TAKE_PROFIT_LIMIT SELL orders:
  * - trailingDelta >= minTrailingAboveDelta
  * - trailingDelta <= maxTrailingAboveDelta

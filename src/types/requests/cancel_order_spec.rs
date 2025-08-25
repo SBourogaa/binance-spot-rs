@@ -5,14 +5,14 @@ use serde::Serialize;
 
 use crate::Result;
 use crate::{
-    errors::InvalidParameter,
     enums::CancelRestrictions,
+    errors::InvalidParameter,
     types::requests::{Unvalidated, Validated},
 };
 
 /**
  * Cancel order specification for clean parameter specification.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol to cancel order for.
  * - `order_id`: Optional order ID to cancel.
@@ -22,7 +22,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CancelOrderSpec<S=Unvalidated> {
+pub struct CancelOrderSpec<S = Unvalidated> {
     pub symbol: String,
     pub order_id: Option<u64>,
     #[serde(rename = "origClientOrderId")]
@@ -36,10 +36,10 @@ pub struct CancelOrderSpec<S=Unvalidated> {
 impl CancelOrderSpec<Unvalidated> {
     /**
      * Creates a new cancel order specification with required symbol.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to cancel order for.
-     * 
+     *
      * # Returns
      * - `Self`: New cancel order specification.
      */
@@ -56,10 +56,10 @@ impl CancelOrderSpec<Unvalidated> {
 
     /**
      * Sets the order ID to cancel.
-     * 
+     *
      * # Arguments
      * - `order_id`: The ID of the order to cancel.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -70,10 +70,10 @@ impl CancelOrderSpec<Unvalidated> {
 
     /**
      * Sets the original client order ID to cancel.
-     * 
+     *
      * # Arguments
      * - `original_id`: The original client order ID to cancel.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -84,10 +84,10 @@ impl CancelOrderSpec<Unvalidated> {
 
     /**
      * Sets a new client order ID for the cancellation.
-     * 
+     *
      * # Arguments
      * - `new_id`: The new client order ID to assign to the cancellation
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -98,11 +98,11 @@ impl CancelOrderSpec<Unvalidated> {
 
     /**
      * Sets cancel restrictions for the order.
-     * 
+     *
      * # Arguments
      * - `cancel_restrictions`: Restrictions on the cancellation (e.g., no market
      *    orders, no stop orders).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -113,12 +113,13 @@ impl CancelOrderSpec<Unvalidated> {
 
     /**
      * Builds the cancel order specification.
-     * 
+     *
      * # Returns
      * - `CancelOrderSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<CancelOrderSpec<Validated>> {
-        self.validate().context("Failed to validate CancelOrderSpecification")?;
+        self.validate()
+            .context("Failed to validate CancelOrderSpecification")?;
 
         Ok(CancelOrderSpec {
             symbol: self.symbol,
@@ -132,11 +133,11 @@ impl CancelOrderSpec<Unvalidated> {
 
     /**
      * Sets cancel restrictions for the order.
-     * 
+     *
      * # Arguments
-     * - `cancel_restrictions`: Restrictions on the cancellation based on order status 
+     * - `cancel_restrictions`: Restrictions on the cancellation based on order status
      *   (ONLY_NEW: only cancel if status is NEW, ONLY_PARTIALLY_FILLED: only cancel if partially filled).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */

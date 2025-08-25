@@ -2,10 +2,10 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Cancel restrictions for order cancellation.
- * 
+ *
  * These restrictions control under what conditions an order can be canceled,
  * providing additional safety for order management operations.
- * 
+ *
  * # Variants
  * - `OnlyNew`: Cancel will succeed if the order status is NEW.
  * - `OnlyPartiallyFilled`: Cancel will succeed if order status is PARTIALLY_FILLED.

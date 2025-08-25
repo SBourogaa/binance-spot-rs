@@ -1,20 +1,20 @@
+pub mod account;
 pub mod client;
 pub mod general;
-pub mod account;
+pub mod market_data;
 pub mod ticker;
 pub mod trading;
-pub mod market_data;
 
-use client::BinanceSpotWebSocketClient;
 use crate::Result;
 use crate::{BinanceConfig, WebSocketConfig};
+use client::BinanceSpotWebSocketClient;
 
 /**
  * Creates a new WebSocket-based Binance client.
- * 
+ *
  * # Arguments
  * - `config`: Binance configuration with API credentials and WebSocket-specific settings.
- * 
+ *
  * # Returns
  * - `BinanceWebSocketClient`: New WebSocket client instance.
  */

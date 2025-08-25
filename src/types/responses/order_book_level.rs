@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Order book level representing a single bid or ask.
- * 
+ *
  * # Fields
  * - `price`: Price level as a precise decimal.
  * - `quantity`: Quantity available at this price level.

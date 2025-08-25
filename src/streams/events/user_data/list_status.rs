@@ -1,16 +1,12 @@
 use serde::{Deserialize, Serialize};
 
-use crate::enums::{
-    ContingencyType,
-    OrderListStatus,
-    OrderListOrderStatus,
-};
+use crate::enums::{ContingencyType, OrderListOrderStatus, OrderListStatus};
 
 /**
  * List Status Event
- * 
+ *
  * Sent when there's an update to an order list (OCO orders, etc.)
- * 
+ *
  * # Fields
  * - `event_type`: Always "listStatus".
  * - `event_time`: The time the event was generated, in milliseconds since epoch.
@@ -51,7 +47,7 @@ pub struct ListStatusEvent {
 
 /**
  * Order information within a list status event
- * 
+ *
  * # Fields
  * - `symbol`: The trading pair symbol.
  * - `order_id`: The unique identifier for the order.

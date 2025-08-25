@@ -1,9 +1,9 @@
 /**
  * Kline/Candlestick Chart Interval
- * 
+ *
  * Represents the time intervals supported for kline/candlestick streams.
  * Intervals: s=seconds, m=minutes, h=hours, d=days, w=weeks, M=months
- * 
+ *
  * # Variants:
  * - `OneSecond`: 1 second interval ("1s")
  * - `OneMinute`: 1 minute interval ("1m")
@@ -46,7 +46,7 @@ pub enum Interval {
 impl Interval {
     /**
      * Gets the string representation of the interval
-     * 
+     *
      * # Returns
      * - String representation used in stream names and API calls
      */
@@ -75,10 +75,10 @@ impl Interval {
 impl std::fmt::Display for Interval {
     /**
      * Formats the interval for display
-     * 
+     *
      * # Arguments
      * - `f` - Formatter
-     * 
+     *
      * # Returns
      * - Formatted result using the string representation
      */

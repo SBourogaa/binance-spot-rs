@@ -1,21 +1,18 @@
 use std::collections::HashMap;
 
-use uuid::Uuid;
 use anyhow::Context;
-use serde::Serialize;
-use serde_json::{json, Value};
-use serde::de::DeserializeOwned;
-use tokio::sync::{mpsc, oneshot, watch};
 use futures_util::{SinkExt, StreamExt};
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+use serde_json::{Value, json};
+use tokio::sync::{mpsc, oneshot, watch};
 use tokio_tungstenite::{connect_async, tungstenite::protocol::Message};
-use tracing::{error, warn, info, debug, instrument};
+use tracing::{debug, error, info, instrument, warn};
+use uuid::Uuid;
 
 use crate::Result;
 use crate::{
-    BinanceConfig,
-    WebSocketConfig,
-    clients::common::generate_signature,
-    errors::BinanceError,
+    BinanceConfig, WebSocketConfig, clients::common::generate_signature, errors::BinanceError,
 };
 
 /**
@@ -56,7 +53,7 @@ pub struct BinanceSpotWebSocketClient {
 
 /**
  * Internal message type for communicating with the background WebSocket task.
- * 
+ *
  * # Fields
  * - `id`: Unique request ID.
  * - `method`: WebSocket method name.
@@ -73,7 +70,7 @@ pub(crate) struct RequestMessage {
 
 /**
  * Message types for communicating with the background WebSocket task.
- * 
+ *
  * # Variants
  * - `Request`: Normal API request message.
  * - `Shutdown`: Graceful shutdown command.
@@ -100,7 +97,12 @@ impl BinanceSpotWebSocketClient {
         let ws_url = format!("{}/ws-api/v3", config.url());
         let ws_config = config.websocket_config().clone();
 
-        let connection_handle = tokio::spawn(Self::connection_task(ws_url, request_receiver, ws_config, status_sender));
+        let connection_handle = tokio::spawn(Self::connection_task(
+            ws_url,
+            request_receiver,
+            ws_config,
+            status_sender,
+        ));
 
         Ok(Self {
             config,
@@ -139,15 +141,17 @@ impl BinanceSpotWebSocketClient {
                         "WebSocket connection ready"
                     );
                     return Ok(());
-                },
+                }
                 ConnectionStatus::Failed => {
-                    return Err(anyhow::anyhow!("Connection failed permanently"))
-                },
+                    return Err(anyhow::anyhow!("Connection failed permanently"));
+                }
                 ConnectionStatus::Disconnected => {
-                    return Err(anyhow::anyhow!("Connection disconnected"))
-                },
+                    return Err(anyhow::anyhow!("Connection disconnected"));
+                }
                 _ => {
-                    status_receiver.changed().await
+                    status_receiver
+                        .changed()
+                        .await
                         .context("Status channel closed")?;
                 }
             }
@@ -156,7 +160,7 @@ impl BinanceSpotWebSocketClient {
 
     /**
      * Gracefully closes the WebSocket connection.
-     * 
+     *
      * Ensures all pending requests are sent before closing the connection.
      *
      * # Returns
@@ -165,21 +169,21 @@ impl BinanceSpotWebSocketClient {
     pub async fn close(&mut self) -> Result<()> {
         if let Some(sender) = self.request_sender.take() {
             let (response_sender, response_receiver) = oneshot::channel();
-            
-            sender.send(TaskMessage::Shutdown(response_sender))
+
+            sender
+                .send(TaskMessage::Shutdown(response_sender))
                 .context("Failed to send shutdown command")?;
-            
-            let result = tokio::time::timeout(
-                std::time::Duration::from_secs(10),
-                response_receiver
-            ).await
-            .context("Shutdown timeout")?
-            .context("Failed to receive shutdown response")?;
-            
+
+            let result =
+                tokio::time::timeout(std::time::Duration::from_secs(10), response_receiver)
+                    .await
+                    .context("Shutdown timeout")?
+                    .context("Failed to receive shutdown response")?;
+
             if let Some(handle) = self.connection_handle.take() {
                 handle.abort();
             }
-            
+
             result
         } else {
             Ok(())
@@ -199,7 +203,7 @@ impl BinanceSpotWebSocketClient {
     fn calculate_retry_delay(attempts: u32, ws_config: &WebSocketConfig) -> std::time::Duration {
         let base_delay = ws_config.initial_retry_delay * 2_u32.pow(attempts - 1);
         let capped_delay = std::cmp::min(base_delay, ws_config.max_retry_delay);
-        
+
         debug!(
             attempt = attempts,
             base_delay_us = base_delay.as_micros(),
@@ -208,7 +212,7 @@ impl BinanceSpotWebSocketClient {
             max_delay_us = ws_config.max_retry_delay.as_micros(),
             "Calculated exponential backoff delay"
         );
-        
+
         capped_delay
     }
 
@@ -229,16 +233,22 @@ impl BinanceSpotWebSocketClient {
         ws_config: &WebSocketConfig,
         reconnect_attempts: &mut u32,
         status_sender: &watch::Sender<ConnectionStatus>,
-    ) -> Option<tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>> {
+    ) -> Option<
+        tokio_tungstenite::WebSocketStream<
+            tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>,
+        >,
+    > {
         let lifecycle_start = std::time::Instant::now();
-        
+
         let status = if *reconnect_attempts == 0 {
             ConnectionStatus::Connecting
         } else {
-            ConnectionStatus::Reconnecting { attempt: *reconnect_attempts }
+            ConnectionStatus::Reconnecting {
+                attempt: *reconnect_attempts,
+            }
         };
         let _ = status_sender.send(status);
-        
+
         info!(
             attempt = *reconnect_attempts,
             timeout_ms = ws_config.connection_timeout.as_millis(),
@@ -246,24 +256,22 @@ impl BinanceSpotWebSocketClient {
         );
 
         let connection_start = std::time::Instant::now();
-        let connection_result = tokio::time::timeout(
-            ws_config.connection_timeout,
-            connect_async(url)
-        ).await;
+        let connection_result =
+            tokio::time::timeout(ws_config.connection_timeout, connect_async(url)).await;
         let connection_duration = connection_start.elapsed();
 
         match connection_result {
             Ok(Ok((stream, response))) => {
                 *reconnect_attempts = 0;
                 let _ = status_sender.send(ConnectionStatus::Connected);
-                
+
                 info!(
                     total_duration_us = lifecycle_start.elapsed().as_micros(),
                     connection_duration_us = connection_duration.as_micros(),
                     response_status = response.status().as_u16(),
                     "WebSocket connection established successfully"
                 );
-                
+
                 Some(stream)
             }
             Ok(Err(e)) => {
@@ -278,10 +286,10 @@ impl BinanceSpotWebSocketClient {
                     let _ = status_sender.send(ConnectionStatus::Failed);
                     return None;
                 }
-                
+
                 *reconnect_attempts += 1;
                 let delay = Self::calculate_retry_delay(*reconnect_attempts, ws_config);
-                
+
                 warn!(
                     attempt = *reconnect_attempts,
                     connection_duration_us = connection_duration.as_micros(),
@@ -303,10 +311,10 @@ impl BinanceSpotWebSocketClient {
                     let _ = status_sender.send(ConnectionStatus::Failed);
                     return None;
                 }
-                
+
                 *reconnect_attempts += 1;
                 let delay = Self::calculate_retry_delay(*reconnect_attempts, ws_config);
-                
+
                 warn!(
                     attempt = *reconnect_attempts,
                     timeout_us = ws_config.connection_timeout.as_micros(),
@@ -332,12 +340,17 @@ impl BinanceSpotWebSocketClient {
      */
     async fn handle_client_request(
         req: RequestMessage,
-        write: &mut futures_util::stream::SplitSink<tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>, Message>,
+        write: &mut futures_util::stream::SplitSink<
+            tokio_tungstenite::WebSocketStream<
+                tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>,
+            >,
+            Message,
+        >,
         pending_requests: &mut HashMap<String, oneshot::Sender<Result<Value>>>,
     ) -> bool {
         let task_start = std::time::Instant::now();
         let serialize_start = std::time::Instant::now();
-        
+
         let mut ws_request = json!({
             "id": req.id.clone(),
             "method": req.method
@@ -350,24 +363,26 @@ impl BinanceSpotWebSocketClient {
         let request_text = match serde_json::to_string(&ws_request) {
             Ok(text) => text,
             Err(e) => {
-                let _ = req.response_sender.send(Err(anyhow::Error::from(e)
-                    .context("Failed to serialize request")));
+                let _ = req.response_sender.send(Err(
+                    anyhow::Error::from(e).context("Failed to serialize request")
+                ));
                 return true;
             }
         };
-        
+
         let serialize_duration = serialize_start.elapsed();
-        
+
         let send_start = std::time::Instant::now();
         if let Err(e) = write.send(Message::Text(request_text)).await {
-            let _ = req.response_sender.send(Err(anyhow::Error::from(e)
-                .context("Failed to send WebSocket message")));
+            let _ = req.response_sender.send(Err(
+                anyhow::Error::from(e).context("Failed to send WebSocket message")
+            ));
             return false;
         }
         let send_duration = send_start.elapsed();
 
         pending_requests.insert(req.id.clone(), req.response_sender);
-        
+
         info!(
             request_id = req.id,
             method = req.method,
@@ -377,7 +392,7 @@ impl BinanceSpotWebSocketClient {
             pending_count = pending_requests.len(),
             "Background task processed client request"
         );
-        
+
         true
     }
 
@@ -394,11 +409,16 @@ impl BinanceSpotWebSocketClient {
      */
     async fn handle_websocket_message(
         message: Option<std::result::Result<Message, tokio_tungstenite::tungstenite::Error>>,
-        write: &mut futures_util::stream::SplitSink<tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>, Message>,
+        write: &mut futures_util::stream::SplitSink<
+            tokio_tungstenite::WebSocketStream<
+                tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>,
+            >,
+            Message,
+        >,
         pending_requests: &mut HashMap<String, oneshot::Sender<Result<Value>>>,
     ) -> bool {
         let message_start = std::time::Instant::now();
-        
+
         match message {
             Some(Ok(Message::Text(text))) => {
                 let parse_start = std::time::Instant::now();
@@ -425,7 +445,7 @@ impl BinanceSpotWebSocketClient {
                     let _ = response_sender.send(result);
                 }
                 let process_duration = process_start.elapsed();
-                
+
                 info!(
                     request_id = request_id,
                     message_duration_us = message_start.elapsed().as_micros(),
@@ -434,7 +454,7 @@ impl BinanceSpotWebSocketClient {
                     pending_count = pending_requests.len(),
                     "Background task processed WebSocket response"
                 );
-                
+
                 true
             }
             Some(Ok(Message::Ping(data))) => {
@@ -482,46 +502,54 @@ impl BinanceSpotWebSocketClient {
      */
     async fn handle_shutdown(
         response_sender: oneshot::Sender<Result<()>>,
-        write: &mut futures_util::stream::SplitSink<tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>, Message>,
-        read: &mut futures_util::stream::SplitStream<tokio_tungstenite::WebSocketStream<tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>>>,
+        write: &mut futures_util::stream::SplitSink<
+            tokio_tungstenite::WebSocketStream<
+                tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>,
+            >,
+            Message,
+        >,
+        read: &mut futures_util::stream::SplitStream<
+            tokio_tungstenite::WebSocketStream<
+                tokio_tungstenite::MaybeTlsStream<tokio::net::TcpStream>,
+            >,
+        >,
         pending_requests: &mut HashMap<String, oneshot::Sender<Result<Value>>>,
         status_sender: &watch::Sender<ConnectionStatus>,
     ) {
         let _ = status_sender.send(ConnectionStatus::Disconnected);
-        
+
         if let Err(e) = write.send(Message::Close(None)).await {
-            let _ = response_sender.send(Err(anyhow::Error::from(e)
-                .context("Failed to send close frame")));
+            let _ = response_sender.send(Err(
+                anyhow::Error::from(e).context("Failed to send close frame")
+            ));
             return;
         }
-        
-        let close_timeout = tokio::time::timeout(
-            std::time::Duration::from_secs(5),
-            async {
-                while let Some(message) = read.next().await {
-                    match message {
-                        Ok(Message::Close(_)) => break,
-                        Ok(Message::Text(text)) => {
-                            if let Ok(response) = serde_json::from_str::<Value>(&text) {
-                                if let Some(id) = response.get("id").and_then(|id| id.as_str()) {
-                                    if let Some(sender) = pending_requests.remove(id) {
-                                        let result = Self::parse_websocket_response(response);
-                                        let _ = sender.send(result);
-                                    }
+
+        let close_timeout = tokio::time::timeout(std::time::Duration::from_secs(5), async {
+            while let Some(message) = read.next().await {
+                match message {
+                    Ok(Message::Close(_)) => break,
+                    Ok(Message::Text(text)) => {
+                        if let Ok(response) = serde_json::from_str::<Value>(&text) {
+                            if let Some(id) = response.get("id").and_then(|id| id.as_str()) {
+                                if let Some(sender) = pending_requests.remove(id) {
+                                    let result = Self::parse_websocket_response(response);
+                                    let _ = sender.send(result);
                                 }
                             }
                         }
-                        Err(_) => break,
-                        _ => {}
                     }
+                    Err(_) => break,
+                    _ => {}
                 }
             }
-        ).await;
-        
+        })
+        .await;
+
         for (_, sender) in pending_requests.drain() {
             let _ = sender.send(Err(anyhow::anyhow!("Connection closed during shutdown")));
         }
-        
+
         match close_timeout {
             Ok(_) => {
                 let _ = response_sender.send(Ok(()));
@@ -542,27 +570,35 @@ impl BinanceSpotWebSocketClient {
      * - `status_sender`: Channel to send connection status updates.
      */
     async fn connection_task(
-        url: String, 
+        url: String,
         mut request_receiver: mpsc::UnboundedReceiver<TaskMessage>,
         ws_config: WebSocketConfig,
         status_sender: watch::Sender<ConnectionStatus>,
     ) {
         let mut reconnect_attempts = 0;
-        
+
         loop {
-            let ws_stream = match Self::establish_connection(&url, &ws_config, &mut reconnect_attempts, &status_sender).await {
+            let ws_stream = match Self::establish_connection(
+                &url,
+                &ws_config,
+                &mut reconnect_attempts,
+                &status_sender,
+            )
+            .await
+            {
                 Some(stream) => stream,
                 None => break,
             };
 
             let (mut write, mut read) = ws_stream.split();
-            let mut pending_requests: HashMap<String, oneshot::Sender<Result<Value>>> = HashMap::new();
+            let mut pending_requests: HashMap<String, oneshot::Sender<Result<Value>>> =
+                HashMap::new();
 
             // Track message processing stats
             let mut message_count = 0u64;
             let mut last_stats_time = std::time::Instant::now();
             const STATS_INTERVAL: std::time::Duration = std::time::Duration::from_secs(10);
-            
+
             loop {
                 tokio::select! {
                     request = request_receiver.recv() => {
@@ -573,14 +609,14 @@ impl BinanceSpotWebSocketClient {
                                     pending_requests = pending_requests.len(),
                                     "Channel pressure check"
                                 );
-                                
+
                                 if pending_requests.len() > 100 {
                                     warn!(
                                         pending_requests = pending_requests.len(),
                                         "High channel pressure detected"
                                     );
                                 }
-                                
+
                                 if !Self::handle_client_request(req, &mut write, &mut pending_requests).await {
                                     break;
                                 }
@@ -597,7 +633,7 @@ impl BinanceSpotWebSocketClient {
                     }
                     message = read.next() => {
                         message_count += 1;
-                        
+
                         // Log message processing rates periodically
                         if last_stats_time.elapsed() >= STATS_INTERVAL {
                             let rate = message_count as f64 / last_stats_time.elapsed().as_secs_f64();
@@ -610,7 +646,7 @@ impl BinanceSpotWebSocketClient {
                             message_count = 0;
                             last_stats_time = std::time::Instant::now();
                         }
-                        
+
                         if !Self::handle_websocket_message(message, &mut write, &mut pending_requests).await {
                             break;
                         }
@@ -641,8 +677,9 @@ impl BinanceSpotWebSocketClient {
                 if let (Some(code_num), Some(msg_str)) = (code.as_i64(), msg.as_str()) {
                     return Err(BinanceError::Api(crate::errors::ApiError::new(
                         code_num as i32,
-                        msg_str.to_string()
-                    )).into());
+                        msg_str.to_string(),
+                    ))
+                    .into());
                 }
             }
             return Err(anyhow::anyhow!("WebSocket error: {}", error));
@@ -672,21 +709,28 @@ impl BinanceSpotWebSocketClient {
      * - `Value`: The response result.
      */
     #[instrument(skip(self, params), fields(method = method))]
-    pub(crate) async fn send_request<T: Serialize>(&self, method: &str, params: T) -> Result<Value> {
+    pub(crate) async fn send_request<T: Serialize>(
+        &self,
+        method: &str,
+        params: T,
+    ) -> Result<Value> {
         let start = std::time::Instant::now();
         let prep_start = std::time::Instant::now();
-        
-        let request_sender = self.request_sender.as_ref()
+
+        let request_sender = self
+            .request_sender
+            .as_ref()
             .ok_or_else(|| anyhow::anyhow!("WebSocket client not initialized"))?;
 
         let request_id = Uuid::new_v4().to_string();
         let (response_sender, response_receiver) = oneshot::channel();
 
-        let json_params = serde_json::to_value(&params)
-            .context("Failed to serialize parameters")?;
-        
-        let params_option = if json_params.is_null() || 
-            (json_params.is_object() && json_params.as_object().unwrap().is_empty()) {
+        let json_params =
+            serde_json::to_value(&params).context("Failed to serialize parameters")?;
+
+        let params_option = if json_params.is_null()
+            || (json_params.is_object() && json_params.as_object().unwrap().is_empty())
+        {
             None
         } else {
             Some(json_params)
@@ -708,19 +752,18 @@ impl BinanceSpotWebSocketClient {
         );
 
         let channel_start = std::time::Instant::now();
-        request_sender.send(TaskMessage::Request(request_message))
+        request_sender
+            .send(TaskMessage::Request(request_message))
             .context("Failed to send request to WebSocket task")?;
         let channel_send_duration = channel_start.elapsed();
 
         let wait_start = std::time::Instant::now();
-        let result = tokio::time::timeout(
-            std::time::Duration::from_secs(30),
-            response_receiver
-        ).await
-        .context("WebSocket request timeout")?
-        .context("Failed to receive WebSocket response")?;
+        let result = tokio::time::timeout(std::time::Duration::from_secs(30), response_receiver)
+            .await
+            .context("WebSocket request timeout")?
+            .context("Failed to receive WebSocket response")?;
         let wait_duration = wait_start.elapsed();
-        
+
         info!(
             method = method,
             request_id = request_id,
@@ -731,7 +774,7 @@ impl BinanceSpotWebSocketClient {
             success = result.is_ok(),
             "WebSocket API request completed"
         );
-        
+
         result
     }
 
@@ -753,11 +796,14 @@ impl BinanceSpotWebSocketClient {
     ) -> Result<Value> {
         let start = std::time::Instant::now();
         let prep_start = std::time::Instant::now();
-        
-        let signer = self.config.signer()
+
+        let signer = self
+            .config
+            .signer()
             .ok_or_else(|| anyhow::anyhow!("No authentication configured"))?;
 
-        let (signature, query_string) = generate_signature(&params, signer.as_ref(), self.config.recv_window(), true).await?;
+        let (signature, query_string) =
+            generate_signature(&params, signer.as_ref(), self.config.recv_window(), true).await?;
 
         let mut final_params = serde_json::Map::new();
         for pair in query_string.split('&') {
@@ -774,8 +820,10 @@ impl BinanceSpotWebSocketClient {
             "Signed WebSocket request preparation completed"
         );
 
-        let result = self.send_request(method, serde_json::Value::Object(final_params)).await;
-        
+        let result = self
+            .send_request(method, serde_json::Value::Object(final_params))
+            .await;
+
         info!(
             method = method,
             total_duration_us = start.elapsed().as_micros(),
@@ -783,7 +831,7 @@ impl BinanceSpotWebSocketClient {
             success = result.is_ok(),
             "Signed WebSocket API request completed"
         );
-        
+
         result
     }
 
@@ -798,8 +846,8 @@ impl BinanceSpotWebSocketClient {
      * - `R`: Parsed response object.
      */
     pub(crate) async fn request<S, R>(&self, method_name: &str, spec: S) -> Result<R>
-    where 
-        S: Serialize, 
+    where
+        S: Serialize,
         R: DeserializeOwned,
     {
         let mut response = self.send_request(method_name, spec).await?;
@@ -807,7 +855,7 @@ impl BinanceSpotWebSocketClient {
         if response.is_object() && std::any::type_name::<R>().starts_with("alloc::vec::Vec<") {
             response = serde_json::Value::Array(vec![response]);
         }
-        
+
         serde_json::from_value(response).context("Failed to parse response")
     }
 
@@ -822,8 +870,8 @@ impl BinanceSpotWebSocketClient {
      * - `R`: Parsed response object.
      */
     pub(crate) async fn signed_request<S, R>(&self, method_name: &str, spec: S) -> Result<R>
-    where 
-        S: Serialize, 
+    where
+        S: Serialize,
         R: DeserializeOwned,
     {
         let response = self.send_signed_request(method_name, spec).await?;
@@ -835,13 +883,13 @@ impl Drop for BinanceSpotWebSocketClient {
     /**
      * Cleanup when the client is dropped.
      * Signals shutdown by dropping the request sender and aborts the background task.
-     * 
+     *
      * Note: Graceful shutdown must be done explicitly by calling `close()` before drop.
      * This implementation only does immediate cleanup to avoid runtime conflicts.
      */
     fn drop(&mut self) {
         self.request_sender.take();
-        
+
         if let Some(handle) = self.connection_handle.take() {
             handle.abort();
         }
@@ -851,11 +899,7 @@ impl Drop for BinanceSpotWebSocketClient {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        BinanceConfig,
-        WebSocketConfig,
-        errors::BinanceError,
-    };
+    use crate::{BinanceConfig, WebSocketConfig, errors::BinanceError};
     use serde_json::json;
     use std::time::Duration;
 
@@ -962,7 +1006,12 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("WebSocket status error"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("WebSocket status error")
+        );
     }
 
     /**
@@ -981,7 +1030,12 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Missing result field"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Missing result field")
+        );
     }
 
     /**
@@ -1001,7 +1055,12 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("No authentication configured"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("No authentication configured")
+        );
     }
 
     /**
@@ -1015,7 +1074,7 @@ mod tests {
             .build()
             .expect("Config creation");
         let mut client = BinanceSpotWebSocketClient::new(config).unwrap();
-        
+
         client.request_sender = None;
 
         // Act
@@ -1023,7 +1082,12 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("WebSocket client not initialized"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("WebSocket client not initialized")
+        );
     }
 
     /**
@@ -1073,14 +1137,15 @@ mod tests {
 
         // Assert
         match result {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 let error_string = e.to_string();
                 assert!(
-                    error_string.contains("WebSocket request timeout") ||
-                    error_string.contains("Failed to send request") ||
-                    error_string.contains("WebSocket client not initialized"),
-                    "Should be timeout or connection error, not serialization error: {}", error_string
+                    error_string.contains("WebSocket request timeout")
+                        || error_string.contains("Failed to send request")
+                        || error_string.contains("WebSocket client not initialized"),
+                    "Should be timeout or connection error, not serialization error: {}",
+                    error_string
                 );
             }
         }
@@ -1103,14 +1168,15 @@ mod tests {
 
         // Assert
         match result {
-            Ok(_) => {},
+            Ok(_) => {}
             Err(e) => {
                 let error_string = e.to_string();
                 assert!(
-                    error_string.contains("WebSocket request timeout") ||
-                    error_string.contains("Failed to receive WebSocket response") ||
-                    error_string.contains("Failed to parse response"),
-                    "Should be timeout or parse error: {}", error_string
+                    error_string.contains("WebSocket request timeout")
+                        || error_string.contains("Failed to receive WebSocket response")
+                        || error_string.contains("Failed to parse response"),
+                    "Should be timeout or parse error: {}",
+                    error_string
                 );
             }
         }
@@ -1133,6 +1199,11 @@ mod tests {
 
         // Assert
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("No authentication configured"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("No authentication configured")
+        );
     }
 }

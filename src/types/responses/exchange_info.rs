@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::enums::{Permission, RateLimitType, SymbolStatus};
 use crate::filters::ExchangeFilter;
-use crate::enums::{RateLimitType, SymbolStatus, Permission};
 use crate::types::responses::{RateLimit, SymbolInfo};
 
 /**
@@ -51,10 +51,10 @@ pub struct ExchangeInfo {
 impl ExchangeInfo {
     /**
      * Finds symbol information by symbol name.
-     * 
+     *
      * # Arguments
      * - `symbol_name`: The symbol to search for (e.g., "BTCUSDT").
-     * 
+     *
      * # Returns
      * - `Option<&SymbolInfo>`: Symbol information if found.
      */
@@ -64,10 +64,10 @@ impl ExchangeInfo {
 
     /**
      * Gets all symbols with a specific trading status.
-     * 
+     *
      * # Arguments
      * - `status`: The status to filter by.
-     * 
+     *
      * # Returns
      * - `Vec<&SymbolInfo>`: All symbols with the specified status.
      */
@@ -77,38 +77,41 @@ impl ExchangeInfo {
 
     /**
      * Gets all symbols that require specific permissions.
-     * 
+     *
      * # Arguments
      * - `required_permission`: The permission to filter by.
-     * 
+     *
      * # Returns
      * - `Vec<&SymbolInfo>`: All symbols requiring the specified permission.
      */
     pub fn symbols_with_permission(&self, required_permission: Permission) -> Vec<&SymbolInfo> {
-        self.symbols.iter()
+        self.symbols
+            .iter()
             .filter(|s| s.permissions.contains(&required_permission))
             .collect()
     }
 
     /**
      * Gets rate limit information by type.
-     * 
+     *
      * # Arguments
      * - `limit_type`: The rate limit type to search for.
-     * 
+     *
      * # Returns
      * - `Option<&RateLimit>`: Rate limit information if found.
      */
     pub fn get_rate_limit(&self, limit_type: RateLimitType) -> Option<&RateLimit> {
-        self.rate_limits.iter().find(|rl| rl.rate_limit_type == limit_type)
+        self.rate_limits
+            .iter()
+            .find(|rl| rl.rate_limit_type == limit_type)
     }
 
     /**
      * Gets exchange filter by type.
-     * 
+     *
      * # Arguments
      * - `filter_type`: A function to match the desired filter type.
-     * 
+     *
      * # Returns
      * - `Option<&ExchangeFilter>`: Exchange filter if found.
      */
@@ -121,7 +124,7 @@ impl ExchangeInfo {
 
     /**
      * Gets the maximum number of orders allowed on the exchange.
-     * 
+     *
      * # Returns
      * - `Option<u32>`: Maximum orders if the filter exists.
      */

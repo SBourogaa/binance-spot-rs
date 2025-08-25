@@ -1,12 +1,12 @@
-use serde::{Deserialize, Serialize};
 use crate::types::responses::Balance;
+use serde::{Deserialize, Serialize};
 
 /**
  * Outbound Account Position Event.
- * 
+ *
  * Sent whenever there's a change in account balances.
  * Contains all asset balances that have changed.
- * 
+ *
  * # Fields
  * - `event_type`: Always "outboundAccountPosition".
  * - `event_time`: The time the event was generated, in milliseconds since epoch.

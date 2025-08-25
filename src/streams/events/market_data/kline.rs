@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::types::responses::Kline;
+use serde::{Deserialize, Serialize};
 
 /**
  * Kline Stream Data

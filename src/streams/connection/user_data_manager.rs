@@ -1,13 +1,13 @@
 use tokio::sync::{mpsc, watch};
 use tracing::{info, instrument};
 
+use super::{
+    common::{ConnectionManager, ConnectionUtils},
+    handler::UnifiedConnectionHandler,
+    types::{ConnectionStatus, StreamMessage},
+};
 use crate::Result;
 use crate::{BinanceConfig, StreamConfig};
-use super::{
-    types::{ConnectionStatus, StreamMessage},
-    handler::UnifiedConnectionHandler,
-    common::{ConnectionManager, ConnectionUtils},
-};
 
 /**
  * Connection manager for User Data WebSocket streams.
@@ -39,7 +39,9 @@ impl UserDataConnectionManager {
      * - Tuple containing the connection manager and message sender channel.
      */
     #[instrument(skip(config))]
-    pub fn new(config: BinanceConfig<StreamConfig>) -> Result<(Self, mpsc::UnboundedSender<StreamMessage>)> {
+    pub fn new(
+        config: BinanceConfig<StreamConfig>,
+    ) -> Result<(Self, mpsc::UnboundedSender<StreamMessage>)> {
         let start = std::time::Instant::now();
         if !config.has_authentication() {
             return Err(anyhow::anyhow!(
@@ -49,19 +51,17 @@ impl UserDataConnectionManager {
 
         let (status_sender, status_receiver) = watch::channel(ConnectionStatus::Connecting);
         let (message_sender, message_receiver) = mpsc::unbounded_channel();
-        
+
         let url = config.user_data_url().to_string();
         let stream_config = config.stream_config().clone();
         let signer = config.signer().clone();
 
-        let task_handle = tokio::spawn(
-            ConnectionUtils::run_connection(
-                url, 
-                stream_config, 
-                status_sender, 
-                UnifiedConnectionHandler::new_dynamic(message_receiver, signer)
-            )
-        );
+        let task_handle = tokio::spawn(ConnectionUtils::run_connection(
+            url,
+            stream_config,
+            status_sender,
+            UnifiedConnectionHandler::new_dynamic(message_receiver, signer),
+        ));
 
         let manager = Self {
             config,

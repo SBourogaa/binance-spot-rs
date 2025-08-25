@@ -3,10 +3,10 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Aggregate trade from Binance API.
- * 
- * Represents one or more individual trades that filled at the same time, 
+ *
+ * Represents one or more individual trades that filled at the same time,
  * from the same taker order, with the same price aggregated together.
- * 
+ *
  * # Fields
  * - `id`: Unique aggregate trade ID.
  * - `price`: Trade execution price.

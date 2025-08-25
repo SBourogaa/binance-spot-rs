@@ -1,11 +1,11 @@
-use serde::{Deserialize, Serialize};
 use crate::types::responses::TickerStatisticsFull;
+use serde::{Deserialize, Serialize};
 
 /**
  * Individual Rolling Window Ticker Stream Event
- * 
+ *
  * Rolling window ticker statistics for a single symbol, computed over a specific window.
- * 
+ *
  * Fields:
  * - `event_type`: Event type identifier (e.g., "1hTicker", "4hTicker", "1dTicker")
  * - `event_time`: Event timestamp in milliseconds
@@ -27,10 +27,10 @@ pub struct RollingWindowTickerStreamEvent {
 
 /**
  * All Market Rolling Window Tickers Stream Event
- * 
+ *
  * Contains an array of rolling window ticker data for all symbols that changed.
  * Uses transparent serialization to directly serialize/deserialize as an array.
- * 
+ *
  * Fields:
  * - `tickers`: Array of rolling window ticker data for symbols that changed
  */

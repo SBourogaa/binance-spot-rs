@@ -5,21 +5,21 @@ use serde::Serialize;
 
 use crate::Result;
 use crate::{
-    types::requests::{Unvalidated, Validated},
     errors::InvalidParameter,
+    types::requests::{Unvalidated, Validated},
 };
 
 /**
  * Open orders query specification.
- * 
+ *
  * This specification handles parameters for querying open orders
  * for a specific symbol or all symbols.
- * 
+ *
  * # Fields
  * - `symbol`: Optional symbol filter - if None, returns orders for all symbols.
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct OpenOrdersSpec<S=Unvalidated> {
+pub struct OpenOrdersSpec<S = Unvalidated> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
     #[serde(skip)]
@@ -29,7 +29,7 @@ pub struct OpenOrdersSpec<S=Unvalidated> {
 impl OpenOrdersSpec<Unvalidated> {
     /**
      * Creates a new open orders specification.
-     * 
+     *
      * # Returns
      * - `Self`: New open orders specification.
      */
@@ -39,13 +39,13 @@ impl OpenOrdersSpec<Unvalidated> {
             _state: PhantomData,
         }
     }
-    
+
     /**
      * Sets the symbol filter.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to filter orders.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -56,19 +56,20 @@ impl OpenOrdersSpec<Unvalidated> {
 
     /**
      * Builds the open orders specification.
-     * 
+     *
      * # Returns
      * - `OpenOrdersSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<OpenOrdersSpec<Validated>> {
-        self.validate().context("Failed to validate OpenOrdersSpecification")?;
+        self.validate()
+            .context("Failed to validate OpenOrdersSpecification")?;
 
         Ok(OpenOrdersSpec {
             symbol: self.symbol,
             _state: PhantomData::<Validated>,
         })
     }
-    
+
     /**
      * Validates the open orders specification parameters.
      *

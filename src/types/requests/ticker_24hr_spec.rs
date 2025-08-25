@@ -1,11 +1,11 @@
-use std::marker::PhantomData;
-use anyhow::Context;
-use serde::Serialize;
 use crate::Result;
 use crate::{
     errors::InvalidParameter,
     types::requests::{Unvalidated, Validated},
 };
+use anyhow::Context;
+use serde::Serialize;
+use std::marker::PhantomData;
 
 /**
  * 24hr ticker statistics query specification.
@@ -19,7 +19,7 @@ use crate::{
  * - `ticker_type`: Optional ticker type ("FULL" or "MINI").
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct Ticker24HrSpec<S=Unvalidated> {
+pub struct Ticker24HrSpec<S = Unvalidated> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub symbol: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -97,7 +97,8 @@ impl Ticker24HrSpec<Unvalidated> {
      * - `Ticker24HrSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<Ticker24HrSpec<Validated>> {
-        self.validate().context("Failed to validate Ticker24HrSpecification")?;
+        self.validate()
+            .context("Failed to validate Ticker24HrSpecification")?;
         Ok(Ticker24HrSpec {
             symbol: self.symbol,
             symbols: self.symbols,
@@ -142,19 +143,19 @@ impl Ticker24HrSpec<Unvalidated> {
 
         if let Some(ref ticker_type) = self.ticker_type {
             match ticker_type.as_str() {
-                "FULL" | "MINI" => {},
-                _ => return Err(InvalidParameter::new(
-                    "ticker_type", 
-                    "must be either FULL or MINI"
-                ).into()),
+                "FULL" | "MINI" => {}
+                _ => {
+                    return Err(InvalidParameter::new(
+                        "ticker_type",
+                        "must be either FULL or MINI",
+                    )
+                    .into());
+                }
             }
         }
 
         if self.symbol.is_some() && self.symbols.is_some() {
-            return Err(InvalidParameter::mutually_exclusive(
-                "symbol",
-                "symbols"
-            ).into());
+            return Err(InvalidParameter::mutually_exclusive("symbol", "symbols").into());
         }
 
         Ok(())

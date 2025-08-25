@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use anyhow::Context;
-use serde::Serialize;
 use rust_decimal::Decimal;
+use serde::Serialize;
 
 use crate::Result;
 use crate::{
@@ -12,11 +12,11 @@ use crate::{
 
 /**
  * Amendment order specification for reducing order quantity while keeping priority.
- * 
+ *
  * This struct handles order amendment parameters with validation to ensure
  * either orderId or origClientOrderId is provided (but not both), and that
  * the new quantity is valid.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol to amend the order for.
  * - `order_id`: Optional order ID to amend (mutually exclusive with origClientOrderId).
@@ -26,7 +26,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AmendOrderSpec<S=Unvalidated> {
+pub struct AmendOrderSpec<S = Unvalidated> {
     pub symbol: String,
     pub order_id: Option<u64>,
     #[serde(rename = "origClientOrderId")]
@@ -42,11 +42,11 @@ pub struct AmendOrderSpec<S=Unvalidated> {
 impl AmendOrderSpec<Unvalidated> {
     /**
      * Creates a new amend order specification with required parameters.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to amend the order for.
      * - `new_quantity`: New quantity to set for the order (must be greater than 0 and less than the original order quantity).
-     * 
+     *
      * # Returns
      * - `Self`: New amend order specification.
      */
@@ -63,10 +63,10 @@ impl AmendOrderSpec<Unvalidated> {
 
     /**
      * Sets the order ID to amend.
-     * 
+     *
      * # Arguments
      * - `order_id`: Order ID to amend.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -77,10 +77,10 @@ impl AmendOrderSpec<Unvalidated> {
 
     /**
      * Sets the original client order ID to amend.
-     * 
+     *
      * # Arguments
      * - `original_id`: Original client order ID to amend.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -91,10 +91,10 @@ impl AmendOrderSpec<Unvalidated> {
 
     /**
      * Sets a new client order ID for the amended order.
-     * 
+     *
      * # Arguments
      * - `new_id`: New client order ID to set for the amended order
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -105,12 +105,13 @@ impl AmendOrderSpec<Unvalidated> {
 
     /**
      * Builds the amend order specification.
-     * 
+     *
      * # Returns
      * - `AmendOrderSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<AmendOrderSpec<Validated>> {
-        self.validate().context("Failed to validate AmendOrderSpecification")?;
+        self.validate()
+            .context("Failed to validate AmendOrderSpecification")?;
 
         Ok(AmendOrderSpec {
             symbol: self.symbol,
@@ -124,7 +125,7 @@ impl AmendOrderSpec<Unvalidated> {
 
     /**
      * Validates the amend order specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -138,9 +139,13 @@ impl AmendOrderSpec<Unvalidated> {
                 return Err(InvalidParameter::required("order_id or orig_client_order_id").into());
             }
             (Some(_), Some(_)) => {
-                return Err(InvalidParameter::mutually_exclusive("order_id", "orig_client_order_id").into());
+                return Err(InvalidParameter::mutually_exclusive(
+                    "order_id",
+                    "orig_client_order_id",
+                )
+                .into());
             }
-            _ => {} 
+            _ => {}
         }
 
         if let Some(ref orig_client_id) = self.original_client_order_id {

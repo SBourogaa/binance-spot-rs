@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
-use crate::types::responses::{CommissionRates, Balance};
+use crate::types::responses::{Balance, CommissionRates};
 
 /**
  * Account information response from Binance API.
@@ -59,7 +59,8 @@ impl AccountInfo {
      * - `Option<Decimal>`: Total balance (free + locked) or None if asset not found.
      */
     pub fn total_balance(&self, asset: &str) -> Option<Decimal> {
-        self.balances.iter()
+        self.balances
+            .iter()
             .find(|b| b.asset == asset)
             .map(|b| b.free + b.locked)
     }
@@ -74,7 +75,8 @@ impl AccountInfo {
      * - `Option<Decimal>`: Free balance or None if asset not found.
      */
     pub fn free_balance(&self, asset: &str) -> Option<Decimal> {
-        self.balances.iter()
+        self.balances
+            .iter()
             .find(|b| b.asset == asset)
             .map(|b| b.free)
     }
@@ -89,7 +91,8 @@ impl AccountInfo {
      * - `Option<Decimal>`: Locked balance or None if asset not found.
      */
     pub fn locked_balance(&self, asset: &str) -> Option<Decimal> {
-        self.balances.iter()
+        self.balances
+            .iter()
             .find(|b| b.asset == asset)
             .map(|b| b.locked)
     }
@@ -101,7 +104,8 @@ impl AccountInfo {
      * - `Vec<&Balance>`: Assets with positive total balance.
      */
     pub fn non_zero_balances(&self) -> Vec<&Balance> {
-        self.balances.iter()
+        self.balances
+            .iter()
             .filter(|b| (b.free + b.locked) > Decimal::ZERO)
             .collect()
     }
@@ -117,7 +121,8 @@ impl AccountInfo {
      * - `Decimal`: Total account value in quote asset.
      */
     pub fn total_value_in(&self, quote_asset: &str, prices: &HashMap<String, Decimal>) -> Decimal {
-        self.balances.iter()
+        self.balances
+            .iter()
             .map(|balance| {
                 let total_balance = balance.free + balance.locked;
                 if balance.asset == quote_asset {

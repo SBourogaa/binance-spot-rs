@@ -1,5 +1,5 @@
-use std::hash::Hash;
 use phf::phf_map;
+use std::hash::Hash;
 
 /**
  * Filter validation failure types for order placement.
@@ -9,21 +9,21 @@ use phf::phf_map;
  */
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FilterFailure {
-    PriceFilter, 
+    PriceFilter,
     PercentPrice,
-    PercentPriceBySide, 
-    LotSize, 
-    MinNotional, 
-    Notional, 
+    PercentPriceBySide,
+    LotSize,
+    MinNotional,
+    Notional,
     IcebergParts,
-    MarketLotSize, 
-    MaxPosition, 
-    MaxNumOrders, 
-    MaxNumAlgoOrders, 
+    MarketLotSize,
+    MaxPosition,
+    MaxNumOrders,
+    MaxNumAlgoOrders,
     MaxNumIcebergOrders,
-    TrailingDelta, 
-    ExchangeMaxNumOrders, 
-    ExchangeMaxNumAlgoOrders, 
+    TrailingDelta,
+    ExchangeMaxNumOrders,
+    ExchangeMaxNumAlgoOrders,
     ExchangeMaxNumIcebergOrders,
 }
 
@@ -59,7 +59,9 @@ static FILTER_MAP: phf::Map<&'static str, FilterFailure> = phf_map! {
  * - `Option<FilterFailure>`: The detected filter failure type, if any.
  */
 pub fn parse_filter_failure(msg: &str) -> Option<FilterFailure> {
-    FILTER_MAP.entries().find_map(|(k, v)| msg.contains(k).then_some(*v))
+    FILTER_MAP
+        .entries()
+        .find_map(|(k, v)| msg.contains(k).then_some(*v))
 }
 
 #[cfg(test)]
@@ -78,15 +80,39 @@ mod tests {
             ("Filter failure: MIN_NOTIONAL", FilterFailure::MinNotional),
             ("Filter failure: NOTIONAL", FilterFailure::Notional),
             ("Filter failure: ICEBERG_PARTS", FilterFailure::IcebergParts),
-            ("Filter failure: MARKET_LOT_SIZE", FilterFailure::MarketLotSize),
+            (
+                "Filter failure: MARKET_LOT_SIZE",
+                FilterFailure::MarketLotSize,
+            ),
             ("Filter failure: MAX_POSITION", FilterFailure::MaxPosition),
-            ("Filter failure: MAX_NUM_ORDERS", FilterFailure::MaxNumOrders),
-            ("Filter failure: MAX_NUM_ALGO_ORDERS", FilterFailure::MaxNumAlgoOrders),
-            ("Filter failure: MAX_NUM_ICEBERG_ORDERS", FilterFailure::MaxNumIcebergOrders),
-            ("Filter failure: TRAILING_DELTA", FilterFailure::TrailingDelta),
-            ("Filter failure: EXCHANGE_MAX_NUM_ORDERS", FilterFailure::ExchangeMaxNumOrders),
-            ("Filter failure: EXCHANGE_MAX_NUM_ALGO_ORDERS", FilterFailure::ExchangeMaxNumAlgoOrders),
-            ("Filter failure: EXCHANGE_MAX_NUM_ICEBERG_ORDERS", FilterFailure::ExchangeMaxNumIcebergOrders),
+            (
+                "Filter failure: MAX_NUM_ORDERS",
+                FilterFailure::MaxNumOrders,
+            ),
+            (
+                "Filter failure: MAX_NUM_ALGO_ORDERS",
+                FilterFailure::MaxNumAlgoOrders,
+            ),
+            (
+                "Filter failure: MAX_NUM_ICEBERG_ORDERS",
+                FilterFailure::MaxNumIcebergOrders,
+            ),
+            (
+                "Filter failure: TRAILING_DELTA",
+                FilterFailure::TrailingDelta,
+            ),
+            (
+                "Filter failure: EXCHANGE_MAX_NUM_ORDERS",
+                FilterFailure::ExchangeMaxNumOrders,
+            ),
+            (
+                "Filter failure: EXCHANGE_MAX_NUM_ALGO_ORDERS",
+                FilterFailure::ExchangeMaxNumAlgoOrders,
+            ),
+            (
+                "Filter failure: EXCHANGE_MAX_NUM_ICEBERG_ORDERS",
+                FilterFailure::ExchangeMaxNumIcebergOrders,
+            ),
         ];
 
         for (message, expected) in test_cases {

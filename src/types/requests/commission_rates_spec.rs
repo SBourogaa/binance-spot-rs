@@ -11,15 +11,15 @@ use crate::{
 
 /**
  * Commission rates query specification.
- * 
+ *
  * This specification handles parameters for querying commission rates
  * for a specific trading symbol.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol to get commission rates for.
  */
 #[derive(Debug, Clone, Serialize)]
-pub struct CommissionRatesSpec<S=Unvalidated> {
+pub struct CommissionRatesSpec<S = Unvalidated> {
     pub symbol: String,
     #[serde(skip)]
     _state: PhantomData<S>,
@@ -28,10 +28,10 @@ pub struct CommissionRatesSpec<S=Unvalidated> {
 impl CommissionRatesSpec<Unvalidated> {
     /**
      * Creates a new commission rates specification.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query.
-     * 
+     *
      * # Returns
      * - `Self`: New commission rates specification.
      */
@@ -44,22 +44,23 @@ impl CommissionRatesSpec<Unvalidated> {
 
     /**
      * Builds the commission rates specification.
-     * 
+     *
      * # Returns
      * - `CommissionRatesSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<CommissionRatesSpec<Validated>> {
-        self.validate().context("Failed to validate CommissionRatesSpecification")?;
+        self.validate()
+            .context("Failed to validate CommissionRatesSpecification")?;
 
         Ok(CommissionRatesSpec {
             symbol: self.symbol,
             _state: PhantomData::<Validated>,
         })
     }
-    
+
     /**
      * Validates the commission rates specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -67,7 +68,7 @@ impl CommissionRatesSpec<Unvalidated> {
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());
         }
-        
+
         Ok(())
     }
 }

@@ -5,10 +5,10 @@ use crate::enums::AllocationType;
 
 /**
  * Allocation information from SOR (Smart Order Routing) order placement.
- * 
+ *
  * Contains details about allocations resulting from SOR order placement,
  * showing how orders were distributed across different venues/liquidity sources.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol for the allocation.
  * - `allocation_id`: Unique identifier for this allocation.

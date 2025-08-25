@@ -1,9 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::types::responses::{
-    DiscountInfo,
-    CommissionRates 
-};
+use crate::types::responses::{CommissionRates, DiscountInfo};
 
 /**
  * Symbol-specific commission rates response.

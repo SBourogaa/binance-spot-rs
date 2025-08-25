@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /**
  * This filter defines the allowed maximum position an account can have on the base asset of a symbol.
- * 
+ *
  * An account's position defined as the sum of the account's:
  * - free balance of the base asset
  * - locked balance of the base asset

@@ -1,18 +1,10 @@
-use thiserror::Error;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 use tracing::{error, warn};
 
-use crate::errors::{
-    ErrorCategory,
-    ServerError,
-    RequestError,
-    TradingError,
-};
+use crate::errors::{ErrorCategory, RequestError, ServerError, TradingError};
 use crate::filters::{
-    FilterFailure, 
-    parse_filter_failure,
-    TradingRejectionMessage, 
-    parse_trading_rejection
+    FilterFailure, TradingRejectionMessage, parse_filter_failure, parse_trading_rejection,
 };
 
 /**
@@ -42,23 +34,23 @@ pub struct ApiError {
     /// Categorized error type for easier handling (not serialized)
     #[serde(skip)]
     pub category: ErrorCategory,
-    
+
     /// Specific server error type if this is a 10xx error (not serialized)
     #[serde(skip)]
     pub server_error: Option<ServerError>,
-    
+
     /// Specific request error type if this is a 11xx error (not serialized)
     #[serde(skip)]
     pub request_error: Option<RequestError>,
-    
+
     /// Specific trading error type if this is a 20xx error (not serialized)
     #[serde(skip)]
     pub trading_error: Option<TradingError>,
-    
+
     /// Parsed filter failure information (not serialized)
     #[serde(skip)]
     pub filter_failure: Option<FilterFailure>,
-    
+
     /// Parsed trading rejection message (not serialized)
     #[serde(skip)]
     pub trading_rejection: Option<TradingRejectionMessage>,
@@ -78,7 +70,7 @@ impl ApiError {
     pub fn new(code: i32, msg: impl Into<String>) -> Self {
         let msg = msg.into();
         let category = ErrorCategory::from_code(code);
-        
+
         match category {
             ErrorCategory::ServerOrNetwork => {
                 error!(
@@ -96,10 +88,7 @@ impl ApiError {
                         "Binance authentication/authorization error"
                     );
                 } else if code == -1003 {
-                    warn!(
-                        error_code = code,
-                        "Binance rate limit hit"
-                    );
+                    warn!(error_code = code, "Binance rate limit hit");
                 } else {
                     error!(
                         error_code = code,
@@ -116,7 +105,7 @@ impl ApiError {
                 );
             }
         }
-        
+
         Self {
             code,
             category,
@@ -147,9 +136,9 @@ impl ApiError {
      * Checks if the error is retryable (typically server/network issues).
      */
     pub fn is_retryable(&self) -> bool {
-        !self.is_auth_error() &&
-        (matches!(self.category, ErrorCategory::ServerOrNetwork) ||
-         matches!(self.code, -1003 | -1007 | -1008))
+        !self.is_auth_error()
+            && (matches!(self.category, ErrorCategory::ServerOrNetwork)
+                || matches!(self.code, -1003 | -1007 | -1008))
     }
 
     /**

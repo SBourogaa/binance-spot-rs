@@ -1,21 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-use crate::enums::{
-    OrderType, 
-    Permission, 
-    SymbolStatus, 
-    SelfTradePreventionMode
-};
-use crate::filters::{
-    PriceFilter, 
-    SymbolFilter, 
-    LotSizeFilter, 
-    MinNotionalFilter
-};
+use crate::enums::{OrderType, Permission, SelfTradePreventionMode, SymbolStatus};
+use crate::filters::{LotSizeFilter, MinNotionalFilter, PriceFilter, SymbolFilter};
 
 /**
  * Symbol information from exchange.
- * 
+ *
  * # Fields
  * - `symbol`: The trading symbol name (e.g., "BTCUSDT").
  * - `status`: Current trading status of the symbol.
@@ -78,7 +68,7 @@ pub struct SymbolInfo {
 impl SymbolInfo {
     /**
      * Gets the PRICE_FILTER for this symbol, if it exists.
-     * 
+     *
      * # Returns
      * - `Option<&PriceFilter>`: The price filter if present.
      */
@@ -91,7 +81,7 @@ impl SymbolInfo {
 
     /**
      * Gets the LOT_SIZE filter for this symbol, if it exists.
-     * 
+     *
      * # Returns
      * - `Option<&LotSizeFilter>`: The lot size filter if present.
      */
@@ -104,7 +94,7 @@ impl SymbolInfo {
 
     /**
      * Gets the MIN_NOTIONAL filter for this symbol, if it exists.
-     * 
+     *
      * # Returns
      * - `Option<&MinNotionalFilter>`: The min notional filter if present.
      */

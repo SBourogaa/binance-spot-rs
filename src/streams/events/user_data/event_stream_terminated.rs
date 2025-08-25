@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Event Stream Terminated Event
- * 
+ *
  * Appears only when subscribed on the WebSocket API. Sent when the user data
  * stream is stopped (e.g., after unsubscribe or session logout).
  */

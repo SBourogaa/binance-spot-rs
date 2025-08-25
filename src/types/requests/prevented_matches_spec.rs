@@ -11,10 +11,10 @@ use crate::{
 
 /**
  * Prevented matches query specification with builder pattern.
- * 
+ *
  * This struct handles the complex parameter combinations and mutual exclusions
  * for the myPreventedMatches endpoint using a clean builder pattern.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol to query prevented matches for (required).
  * - `prevented_match_id`: Specific prevented match ID to query.
@@ -24,7 +24,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PreventedMatchesSpec<S=Unvalidated> {
+pub struct PreventedMatchesSpec<S = Unvalidated> {
     pub symbol: String,
     pub prevented_match_id: Option<u64>,
     pub order_id: Option<u64>,
@@ -37,10 +37,10 @@ pub struct PreventedMatchesSpec<S=Unvalidated> {
 impl PreventedMatchesSpec<Unvalidated> {
     /**
      * Creates a new prevented matches specification with required parameters.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query prevented matches for.
-     * 
+     *
      * # Returns
      * - `Self`: New prevented matches specification.
      */
@@ -57,10 +57,10 @@ impl PreventedMatchesSpec<Unvalidated> {
 
     /**
      * Sets the specific prevented match ID to query.
-     * 
+     *
      * # Arguments
      * - `prevented_match_id`: ID of the prevented match to query.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -71,10 +71,10 @@ impl PreventedMatchesSpec<Unvalidated> {
 
     /**
      * Sets the order ID to filter prevented matches.
-     * 
+     *
      * # Arguments
      * - `order_id`: Order ID to filter matches.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -85,10 +85,10 @@ impl PreventedMatchesSpec<Unvalidated> {
 
     /**
      * Sets the pagination starting point for prevented matches.
-     * 
+     *
      * # Arguments
      * - `from_prevented_match_id`: ID to start pagination from.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -99,10 +99,10 @@ impl PreventedMatchesSpec<Unvalidated> {
 
     /**
      * Sets the result limit.
-     * 
+     *
      * # Arguments
      * - `limit`: Maximum number of results to return (1-1000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -113,14 +113,15 @@ impl PreventedMatchesSpec<Unvalidated> {
 
     /**
      * Builds the prevented matches specification.
-     * 
+     *
      * Validates the parameters and returns a fully constructed specification.
-     * 
+     *
      * # Returns
      * - `PreventedMatchesSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<PreventedMatchesSpec<Validated>> {
-        self.validate().context("Failed to validate PreventedMatchesSpecification")?;
+        self.validate()
+            .context("Failed to validate PreventedMatchesSpecification")?;
 
         Ok(PreventedMatchesSpec {
             symbol: self.symbol,
@@ -131,10 +132,10 @@ impl PreventedMatchesSpec<Unvalidated> {
             _state: PhantomData::<Validated>,
         })
     }
-    
+
     /**
      * Validates the prevented matches specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -144,32 +145,33 @@ impl PreventedMatchesSpec<Unvalidated> {
         }
 
         if self.prevented_match_id.is_some() && self.order_id.is_some() {
-            return Err(InvalidParameter::mutually_exclusive(
-                "prevented_match_id",
-                "order_id"
-            ).into());
+            return Err(
+                InvalidParameter::mutually_exclusive("prevented_match_id", "order_id").into(),
+            );
         }
-        
+
         if self.prevented_match_id.is_none() && self.order_id.is_none() {
             return Err(InvalidParameter::new(
                 "prevented_match_id or order_id",
-                "must be specified"
-            ).into());
+                "must be specified",
+            )
+            .into());
         }
-        
+
         if self.from_prevented_match_id.is_some() && self.order_id.is_none() {
             return Err(InvalidParameter::new(
                 "from_prevented_match_id",
-                "requires order_id to be specified"
-            ).into());
+                "requires order_id to be specified",
+            )
+            .into());
         }
-        
+
         if let Some(limit) = self.limit {
             if limit == 0 || limit > 1000 {
                 return Err(InvalidParameter::range("limit", 1, 1000).into());
             }
         }
-        
+
         Ok(())
     }
 }

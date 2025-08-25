@@ -1,12 +1,12 @@
-use serde::{Deserialize, Serialize};
 use crate::types::responses::TickerStatisticsFull;
+use serde::{Deserialize, Serialize};
 
 /**
  * Individual Ticker Stream Event
- * 
+ *
  * 24hr rolling window ticker statistics for a single symbol.
  * These are NOT the statistics of the UTC day, but a 24hr rolling window for the previous 24hrs.
- * 
+ *
  * # Fields:
  * - `event_type`: Event type identifier (always "24hrTicker")
  * - `event_time`: Event timestamp in milliseconds
@@ -25,10 +25,10 @@ pub struct TickerStreamEvent {
 
 /**
  * All Market Tickers Stream Event
- * 
+ *
  * Contains an array of ticker data for all symbols that changed.
  * Uses transparent serialization to directly serialize/deserialize as an array.
- * 
+ *
  * # Fields:
  * - `tickers`: Array of ticker data for symbols that changed
  */

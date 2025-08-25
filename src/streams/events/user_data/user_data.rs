@@ -1,21 +1,17 @@
 use serde::{Deserialize, Serialize};
 
 use super::{
-    ExecutionReportEvent,
-    OutboundAccountPositionEvent,
-    BalanceUpdateEvent,
-    ListStatusEvent,
-    ExternalLockUpdateEvent,
-    EventStreamTerminatedEvent,
+    BalanceUpdateEvent, EventStreamTerminatedEvent, ExecutionReportEvent, ExternalLockUpdateEvent,
+    ListStatusEvent, OutboundAccountPositionEvent,
 };
 
 /**
  * Unified User Data Event Enum
- * 
+ *
  * Represents all possible user data stream events from Binance.
  * Uses serde tag-based deserialization on the "e" field to automatically
  * route to the correct event variant.
- * 
+ *
  * # Variants
  * - `ExecutionReport`: For order execution reports.
  * - `OutboundAccountPosition`: For account position updates.

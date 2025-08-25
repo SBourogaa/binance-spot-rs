@@ -1,12 +1,12 @@
-use super::window_size::WindowSize;
 use super::super::r#trait::StreamSpec;
+use super::window_size::WindowSize;
 use crate::StreamConfig;
 
 /**
  * Specification for Binance Individual Symbol Rolling Window Statistics Stream
  *
  * Rolling window ticker statistics for a single symbol, computed over multiple windows.
- * 
+ *
  * # Fields
  * - `symbol`: Trading pair symbol (e.g., "BTCUSDT")
  * - `window`: Rolling window size (1h, 4h, or 1d)

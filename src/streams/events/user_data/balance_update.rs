@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Balance Update Event
- * 
+ *
  * Sent whenever there's a balance update for a single asset.
- * 
+ *
  * # Fields
  * - `event_type`: Always "balanceUpdate".
  * - `event_time`: The time the event was generated, in milliseconds since epoch.

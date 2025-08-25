@@ -2,65 +2,21 @@ use async_trait::async_trait;
 
 use crate::Result;
 use crate::{
-    types::responses::{
-        ServerTime, 
-        OrderBook, 
-        ExchangeInfo, 
-        Trade, 
-        AggregateTrade,
-        Kline,
-        AveragePrice,
-        TickerStatistics,
-        TickerPrice,
-        TickerBook,
-        AccountInfo,
-        Order,
-        TestOrder,
-        CancelledOrder,
-        CancelReplaceOrder,
-        AmendedOrder,
-        SymbolCommissionRates,
-        RateLimit,
-        AccountTrade,
-        PreventedMatch,
-        Allocation,
-        OrderList,
-    },
     types::requests::{
-        Validated,
-        OrderSpec,
-        AllocationSpec,
-        AmendOrderSpec,
-        QueryOrderSpec,
-        CancelOrderSpec,
-        CancelReplaceSpec,
-        PreventedMatchesSpec,
-        OrderBookSpec,
-        Ticker24HrSpec,
-        RecentTradesSpec,
-        KlinesSpec,
-        ExchangeInfoSpec,
-        HistoricalTradesSpec,
-        AggregateTradesSpec,
-        AveragePriceSpec,
-        TickerPriceSpec,
-        TickerBookSpec,
-        TickerRollingWindowSpec,
-        TickerTradingDaySpec,
-        CommissionRatesSpec,
-        OpenOrdersSpec,
-        AllOrdersSpec,
-        MyTradesSpec,
-        CancelAllOrdersSpec,
-        OcoOrderSpec,
-        OtoOrderSpec,
-        OtocoOrderSpec,
-        CancelOrderListSpec,
-        OrderListStatusSpec,
-        AllOrderListsSpec,
-        OpenOrderListsSpec,
-        SorOrderSpec,
-    }
+        AggregateTradesSpec, AllOrderListsSpec, AllOrdersSpec, AllocationSpec, AmendOrderSpec,
+        AveragePriceSpec, CancelAllOrdersSpec, CancelOrderListSpec, CancelOrderSpec,
+        CancelReplaceSpec, CommissionRatesSpec, ExchangeInfoSpec, HistoricalTradesSpec, KlinesSpec,
+        MyTradesSpec, OcoOrderSpec, OpenOrderListsSpec, OpenOrdersSpec, OrderBookSpec,
+        OrderListStatusSpec, OrderSpec, OtoOrderSpec, OtocoOrderSpec, PreventedMatchesSpec,
+        QueryOrderSpec, RecentTradesSpec, SorOrderSpec, Ticker24HrSpec, TickerBookSpec,
+        TickerPriceSpec, TickerRollingWindowSpec, TickerTradingDaySpec, Validated,
+    },
+    types::responses::{
+        AccountInfo, AccountTrade, AggregateTrade, Allocation, AmendedOrder, AveragePrice,
+        CancelReplaceOrder, CancelledOrder, ExchangeInfo, Kline, Order, OrderBook, OrderList,
+        PreventedMatch, RateLimit, ServerTime, SymbolCommissionRates, TestOrder, TickerBook,
+        TickerPrice, TickerStatistics, Trade,
+    },
 };
 
 /**
@@ -70,7 +26,7 @@ use crate::{
 pub trait GeneralClient {
     /**
      * Tests connectivity to the Binance API.
-     * 
+     *
      * # Returns
      * - `()`: Ok if connection successful, error otherwise.
      */
@@ -78,7 +34,7 @@ pub trait GeneralClient {
 
     /**
      * Gets the current server time from Binance.
-     * 
+     *
      * # Returns
      * - `ServerTime`: Server timestamp.
      */
@@ -86,14 +42,17 @@ pub trait GeneralClient {
 
     /**
      * Gets exchange trading rules, rate limits, and symbol information.
-     * 
+     *
      * # Arguments
      * - `specification`: Exchange info query specification.
-     * 
+     *
      * # Returns
      * - `ExchangeInfo`: Exchange information.
      */
-    async fn exchange_info(&self, specification: ExchangeInfoSpec<Validated>) -> Result<ExchangeInfo>;
+    async fn exchange_info(
+        &self,
+        specification: ExchangeInfoSpec<Validated>,
+    ) -> Result<ExchangeInfo>;
 }
 
 /**
@@ -103,10 +62,10 @@ pub trait GeneralClient {
 pub trait MarketDataClient {
     /**
      * Gets current order book for a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Order book query specification.
-     * 
+     *
      * # Returns
      * - `OrderBook`: Order book with bids and asks.
      */
@@ -114,43 +73,50 @@ pub trait MarketDataClient {
 
     /**
      * Gets recent trades for a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Recent trades query specification.
-     * 
+     *
      * # Returns
      * - `Vec<Trade>`: Vector of recent trades.
      */
-    async fn recent_trades(&self, specification: RecentTradesSpec<Validated>) -> Result<Vec<Trade>>;
+    async fn recent_trades(&self, specification: RecentTradesSpec<Validated>)
+    -> Result<Vec<Trade>>;
 
     /**
      * Gets historical trades for a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Historical trades query specification.
-     * 
+     *
      * # Returns
      * - `Vec<Trade>`: Vector of historical trades.
      */
-    async fn historical_trades(&self, specification: HistoricalTradesSpec<Validated>) -> Result<Vec<Trade>>;
+    async fn historical_trades(
+        &self,
+        specification: HistoricalTradesSpec<Validated>,
+    ) -> Result<Vec<Trade>>;
 
     /**
      * Gets compressed/aggregate trades for a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Aggregate trades query specification.
-     * 
+     *
      * # Returns
      * - `Vec<AggregateTrade>`: Vector of aggregate trades.
      */
-    async fn aggregate_trades(&self, specification: AggregateTradesSpec<Validated>) -> Result<Vec<AggregateTrade>>;
+    async fn aggregate_trades(
+        &self,
+        specification: AggregateTradesSpec<Validated>,
+    ) -> Result<Vec<AggregateTrade>>;
 
     /**
      * Gets kline/candlestick data for a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Klines query specification.
-     * 
+     *
      * # Returns
      * - `Vec<Kline>`: Array of kline data.
      */
@@ -158,10 +124,10 @@ pub trait MarketDataClient {
 
     /**
      * Gets UI-optimized kline/candlestick data for a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Klines query specification.
-     * 
+     *
      * # Returns
      * - `Vec<Kline>`: Array of UI-optimized kline data.
      */
@@ -169,14 +135,17 @@ pub trait MarketDataClient {
 
     /**
      * Gets current average price for a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Average price query specification.
-     * 
+     *
      * # Returns
      * - `AveragePrice`: Average price information.
      */
-    async fn average_price(&self, specification: AveragePriceSpec<Validated>) -> Result<AveragePrice>;
+    async fn average_price(
+        &self,
+        specification: AveragePriceSpec<Validated>,
+    ) -> Result<AveragePrice>;
 }
 
 /**
@@ -186,58 +155,73 @@ pub trait MarketDataClient {
 pub trait TickerClient {
     /**
      * Gets 24hr ticker price change statistics.
-     * 
+     *
      * # Arguments
      * - `specification`: 24hr ticker query specification.
-     * 
+     *
      * # Returns
      * - `Vec<TickerStatistics>`: Vector of ticker statistics.
      */
-    async fn ticker_24hr(&self, specification: Ticker24HrSpec<Validated>) -> Result<Vec<TickerStatistics>>;
+    async fn ticker_24hr(
+        &self,
+        specification: Ticker24HrSpec<Validated>,
+    ) -> Result<Vec<TickerStatistics>>;
 
     /**
      * Gets latest price for symbol(s).
-     * 
+     *
      * # Arguments
      * - `specification`: Ticker price query specification.
-     * 
+     *
      * # Returns
      * - `Vec<TickerPrice>`: Vector of ticker prices.
      */
-    async fn ticker_price(&self, specification: TickerPriceSpec<Validated>) -> Result<Vec<TickerPrice>>;
+    async fn ticker_price(
+        &self,
+        specification: TickerPriceSpec<Validated>,
+    ) -> Result<Vec<TickerPrice>>;
 
     /**
      * Gets best bid/ask prices for symbol(s).
-     * 
+     *
      * # Arguments
      * - `specification`: Ticker book query specification.
-     * 
+     *
      * # Returns
      * - `Vec<TickerBook>`: Vector of ticker book prices.
      */
-    async fn ticker_book(&self, specification: TickerBookSpec<Validated>) -> Result<Vec<TickerBook>>;
+    async fn ticker_book(
+        &self,
+        specification: TickerBookSpec<Validated>,
+    ) -> Result<Vec<TickerBook>>;
 
     /**
      * Gets rolling window price change statistics.
-     * 
+     *
      * # Arguments
      * - `specification`: Rolling window ticker query specification.
-     * 
+     *
      * # Returns
      * - `Vec<TickerStatistics>`: Vector of rolling window ticker statistics.
      */
-    async fn ticker_rolling_window(&self, specification: TickerRollingWindowSpec<Validated>) -> Result<Vec<TickerStatistics>>;
+    async fn ticker_rolling_window(
+        &self,
+        specification: TickerRollingWindowSpec<Validated>,
+    ) -> Result<Vec<TickerStatistics>>;
 
     /**
      * Gets trading day ticker statistics.
-     * 
+     *
      * # Arguments
      * - `specification`: Trading day ticker query specification.
-     * 
+     *
      * # Returns
      * - `Vec<TickerStatistics>`: Vector of trading day ticker statistics.
      */
-    async fn ticker_trading_day(&self, specification: TickerTradingDaySpec<Validated>) -> Result<Vec<TickerStatistics>>;
+    async fn ticker_trading_day(
+        &self,
+        specification: TickerTradingDaySpec<Validated>,
+    ) -> Result<Vec<TickerStatistics>>;
 }
 
 /**
@@ -247,7 +231,7 @@ pub trait TickerClient {
 pub trait AccountClient {
     /**
      * Gets current account information including balances and permissions.
-     * 
+     *
      * # Returns
      * - `AccountInfo`: Account information.
      */
@@ -255,18 +239,21 @@ pub trait AccountClient {
 
     /**
      * Gets commission rates for a specific trading symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Commission rates query specification.
-     * 
+     *
      * # Returns
      * - `SymbolCommissionRates`: Commission rates for the symbol.
      */
-    async fn commission_rates(&self, specification: CommissionRatesSpec<Validated>) -> Result<SymbolCommissionRates>;
+    async fn commission_rates(
+        &self,
+        specification: CommissionRatesSpec<Validated>,
+    ) -> Result<SymbolCommissionRates>;
 
     /**
      * Gets current unfilled order count rate limits for the account.
-     * 
+     *
      * # Returns
      * - `Vec<RateLimit>`: List of rate limits.
      */
@@ -274,10 +261,10 @@ pub trait AccountClient {
 
     /**
      * Gets the status of a specific order.
-     * 
+     *
      * # Arguments
      * - `specification`: Query order specification.
-     * 
+     *
      * # Returns
      * - `Order`: Order status information.
      */
@@ -325,7 +312,10 @@ pub trait AccountClient {
      * # Returns
      * - `Vec<PreventedMatch>`: List of prevented matches.
      */
-    async fn prevented_matches(&self, specification: PreventedMatchesSpec<Validated>) -> Result<Vec<PreventedMatch>>;
+    async fn prevented_matches(
+        &self,
+        specification: PreventedMatchesSpec<Validated>,
+    ) -> Result<Vec<PreventedMatch>>;
 
     /**
      * Gets account allocations resulting from Smart Order Routing.
@@ -336,7 +326,10 @@ pub trait AccountClient {
      * # Returns
      * - `Vec<Allocation>`: List of allocations.
      */
-    async fn allocations(&self, specification: AllocationSpec<Validated>) -> Result<Vec<Allocation>>;
+    async fn allocations(
+        &self,
+        specification: AllocationSpec<Validated>,
+    ) -> Result<Vec<Allocation>>;
 }
 
 /**
@@ -346,10 +339,10 @@ pub trait AccountClient {
 pub trait TradingClient {
     /**
      * Places a new order on the exchange.
-     * 
+     *
      * # Arguments
      * - `specification`: Order specification.
-     * 
+     *
      * # Returns
      * - `Order`: Order placement result.
      */
@@ -357,10 +350,10 @@ pub trait TradingClient {
 
     /**
      * Tests order placement without actually executing the order.
-     * 
+     *
      * # Arguments
      * - `specification`: Order specification.
-     * 
+     *
      * # Returns
      * - `TestOrder`: Test order result.
      */
@@ -368,10 +361,10 @@ pub trait TradingClient {
 
     /**
      * Cancels an active order on the exchange.
-     * 
+     *
      * # Arguments
      * - `specification`: Cancel order specification.
-     * 
+     *
      * # Returns
      * - `Order`: Cancelled order information.
      */
@@ -379,14 +372,17 @@ pub trait TradingClient {
 
     /**
      * Cancels all active orders on a symbol.
-     * 
+     *
      * # Arguments
      * - `specification`: Cancel all orders specification.
-     * 
+     *
      * # Returns
      * - `Vec<CancelledOrder>`: List of cancelled orders.
      */
-    async fn cancel_all_orders(&self, specification: CancelAllOrdersSpec<Validated>) -> Result<Vec<CancelledOrder>>;
+    async fn cancel_all_orders(
+        &self,
+        specification: CancelAllOrdersSpec<Validated>,
+    ) -> Result<Vec<CancelledOrder>>;
 
     /**
      * Cancels an existing order and immediately places a new order.
@@ -397,7 +393,10 @@ pub trait TradingClient {
      * # Returns
      * - `CancelReplaceOrder`: Cancel-replaced order.
      */
-    async fn cancel_replace_order(&self, specification: CancelReplaceSpec<Validated>) -> Result<CancelReplaceOrder>;
+    async fn cancel_replace_order(
+        &self,
+        specification: CancelReplaceSpec<Validated>,
+    ) -> Result<CancelReplaceOrder>;
 
     /**
      * Amends an existing order by reducing its quantity while keeping its priority.
@@ -412,10 +411,10 @@ pub trait TradingClient {
 
     /**
      * Places a new OCO (One-Cancels-Other) order.
-     * 
+     *
      * # Arguments
      * - `specification`: OCO order specification.
-     * 
+     *
      * # Returns
      * - `OrderList`: OCO order list result.
      */
@@ -423,10 +422,10 @@ pub trait TradingClient {
 
     /**
      * Places a new OTO (One-Triggers-Other) order.
-     * 
+     *
      * # Arguments
      * - `specification`: OTO order specification.
-     * 
+     *
      * # Returns
      * - `OrderList`: OTO order list result.
      */
@@ -434,62 +433,77 @@ pub trait TradingClient {
 
     /**
      * Places a new OTOCO (One-Triggers-One-Cancels-Other) order.
-     * 
+     *
      * # Arguments
      * - `specification`: OTOCO order specification.
-     * 
+     *
      * # Returns
      * - `OrderList`: OTOCO order list result.
      */
-    async fn place_otoco_order(&self, specification: OtocoOrderSpec<Validated>) -> Result<OrderList>;
+    async fn place_otoco_order(
+        &self,
+        specification: OtocoOrderSpec<Validated>,
+    ) -> Result<OrderList>;
 
     /**
      * Cancels an order list (OCO/OTO/OTOCO).
-     * 
+     *
      * # Arguments
      * - `specification`: Cancel order list specification.
-     * 
+     *
      * # Returns
      * - `OrderList`: Cancelled order list.
      */
-    async fn cancel_order_list(&self, specification: CancelOrderListSpec<Validated>) -> Result<OrderList>;
+    async fn cancel_order_list(
+        &self,
+        specification: CancelOrderListSpec<Validated>,
+    ) -> Result<OrderList>;
 
     /**
      * Gets the status of a specific order list.
-     * 
+     *
      * # Arguments
      * - `specification`: Order list status query specification.
-     * 
+     *
      * # Returns
      * - `OrderList`: Order list information.
      */
-    async fn order_list_status(&self, specification: OrderListStatusSpec<Validated>) -> Result<OrderList>;
+    async fn order_list_status(
+        &self,
+        specification: OrderListStatusSpec<Validated>,
+    ) -> Result<OrderList>;
 
     /**
      * Gets all order lists for the account.
-     * 
+     *
      * # Arguments
      * - `specification`: All order lists query specification.
-     * 
+     *
      * # Returns
      * - `Vec<OrderList>`: List of all order lists.
      */
-    async fn all_order_lists(&self, specification: AllOrderListsSpec<Validated>) -> Result<Vec<OrderList>>;
+    async fn all_order_lists(
+        &self,
+        specification: AllOrderListsSpec<Validated>,
+    ) -> Result<Vec<OrderList>>;
 
     /**
      * Gets all open order lists for the account.
-     * 
+     *
      * # Returns
      * - `Vec<OrderList>`: List of open order lists.
      */
-    async fn open_order_lists(&self, specification: OpenOrderListsSpec<Validated>) -> Result<Vec<OrderList>>;
+    async fn open_order_lists(
+        &self,
+        specification: OpenOrderListsSpec<Validated>,
+    ) -> Result<Vec<OrderList>>;
 
     /**
      * Places a new SOR (Smart Order Routing) order.
-     * 
+     *
      * # Arguments
      * - `specification`: SOR order specification.
-     * 
+     *
      * # Returns
      * - `Order`: SOR order result.
      */
@@ -497,10 +511,10 @@ pub trait TradingClient {
 
     /**
      * Tests SOR order placement without execution.
-     * 
+     *
      * # Arguments
      * - `specification`: SOR order specification.
-     * 
+     *
      * # Returns
      * - `TestOrder`: Test SOR order result.
      */
@@ -510,9 +524,15 @@ pub trait TradingClient {
 /**
  * Main client trait that combines all Binance API functionality.
  */
-pub trait BinanceSpotClient: GeneralClient + MarketDataClient + TickerClient + AccountClient + TradingClient {}
+pub trait BinanceSpotClient:
+    GeneralClient + MarketDataClient + TickerClient + AccountClient + TradingClient
+{
+}
 
 /**
  * Blanket implementation of BinanceClient for any type that implements all component traits.
  */
-impl<T> BinanceSpotClient for T where T: GeneralClient + MarketDataClient + TickerClient + AccountClient + TradingClient {}
+impl<T> BinanceSpotClient for T where
+    T: GeneralClient + MarketDataClient + TickerClient + AccountClient + TradingClient
+{
+}

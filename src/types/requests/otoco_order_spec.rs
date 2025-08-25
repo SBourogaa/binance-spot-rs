@@ -5,24 +5,18 @@ use serde::Serialize;
 
 use crate::Result;
 use crate::{
+    enums::{OrderResponseType, OrderSide, OrderType, SelfTradePreventionMode, TimeInForce},
     errors::InvalidParameter,
-    enums::{
-        OrderSide, 
-        OrderType,
-        TimeInForce, 
-        OrderResponseType, 
-        SelfTradePreventionMode,
-    },
     types::requests::{Unvalidated, Validated},
 };
 
 /**
  * OTOCO (One-Triggers-One-Cancels-Other) order specification builder.
- * 
+ *
  * OTOCO orders consist of a working order and two pending orders (above/below)
  * that form an OCO pair. When the working order is filled, the OCO pending
  * orders are automatically placed.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol for the order.
  * - `list_client_order_id`: Client-specified order list identifier.
@@ -60,11 +54,11 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct OtocoOrderSpec<S=Unvalidated> {
+pub struct OtocoOrderSpec<S = Unvalidated> {
     pub symbol: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub list_client_order_id: Option<String>,
-    
+
     // Working order
     pub working_type: OrderType,
     pub working_side: OrderSide,
@@ -74,7 +68,11 @@ pub struct OtocoOrderSpec<S=Unvalidated> {
     pub working_price: rust_decimal::Decimal,
     #[serde(with = "rust_decimal::serde::str")]
     pub working_quantity: rust_decimal::Decimal,
-    #[serde(rename = "workingIcebergQty", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "workingIcebergQty",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub working_iceberg_quantity: Option<rust_decimal::Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub working_time_in_force: Option<TimeInForce>,
@@ -82,23 +80,36 @@ pub struct OtocoOrderSpec<S=Unvalidated> {
     pub working_strategy_id: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub working_strategy_type: Option<u32>,
-    
+
     // Pending orders
     pub pending_side: OrderSide,
     #[serde(with = "rust_decimal::serde::str")]
     pub pending_quantity: rust_decimal::Decimal,
-    
+
     // Pending above order
     pub pending_above_type: OrderType,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_above_client_order_id: Option<String>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_above_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_above_stop_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_above_trailing_delta: Option<rust_decimal::Decimal>,
-    #[serde(rename = "pendingAboveIcebergQty", with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "pendingAboveIcebergQty",
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_above_iceberg_quantity: Option<rust_decimal::Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_above_time_in_force: Option<TimeInForce>,
@@ -106,19 +117,31 @@ pub struct OtocoOrderSpec<S=Unvalidated> {
     pub pending_above_strategy_id: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_above_strategy_type: Option<u32>,
-    
+
     // Pending below order
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_below_type: Option<OrderType>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_below_client_order_id: Option<String>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_below_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_below_stop_price: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_below_trailing_delta: Option<rust_decimal::Decimal>,
-    #[serde(with = "rust_decimal::serde::str_option", skip_serializing_if = "Option::is_none")]
+    #[serde(
+        with = "rust_decimal::serde::str_option",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub pending_below_iceberg_quantity: Option<rust_decimal::Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pending_below_time_in_force: Option<TimeInForce>,
@@ -139,7 +162,7 @@ pub struct OtocoOrderSpec<S=Unvalidated> {
 impl OtocoOrderSpec<Unvalidated> {
     /**
      * Creates a new OTOCO order specification with required parameters.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol for the order.
      * - `working_type`: Type of working order.
@@ -149,7 +172,7 @@ impl OtocoOrderSpec<Unvalidated> {
      * - `pending_side`: Side of pending orders.
      * - `pending_quantity`: Quantity for the pending orders.
      * - `pending_above_type`: Type of pending above order.
-     * 
+     *
      * # Returns
      * - `Self`: New OTOCO order specification.
      */
@@ -203,10 +226,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the list client order ID.
-     * 
+     *
      * # Arguments
      * - `client_id`: Custom client order list ID.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -217,10 +240,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the pending above order price.
-     * 
+     *
      * # Arguments
      * - `price`: Price for the pending above order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -231,10 +254,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the pending above order stop price.
-     * 
+     *
      * # Arguments
      * - `stop_price`: Stop price for the pending above order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -245,10 +268,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the pending above order time in force.
-     * 
+     *
      * # Arguments
      * - `time_in_force`: Time in force for the pending above order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -259,10 +282,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the pending below order type.
-     * 
+     *
      * # Arguments
      * - `below_type`: Type for the pending below order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -273,10 +296,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the pending below order price.
-     * 
+     *
      * # Arguments
      * - `price`: Price for the pending below order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -287,10 +310,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the pending below order stop price.
-     * 
+     *
      * # Arguments
      * - `stop_price`: Stop price for the pending below order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -301,10 +324,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the pending below order time in force.
-     * 
+     *
      * # Arguments
      * - `time_in_force`: Time in force for the pending below order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -315,10 +338,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the working order time in force.
-     * 
+     *
      * # Arguments
      * - `time_in_force`: Time in force for the working order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -329,10 +352,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the response type.
-     * 
+     *
      * # Arguments
      * - `response_type`: Response type for the order (ACK, RESULT, FULL).
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -343,10 +366,10 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Sets the self-trade prevention mode.
-     * 
+     *
      * # Arguments
      * - `stp_mode`: Self-trade prevention mode to use.
-     * 
+     *
      * # Returns
      * - `Self`: Updated OTOCO order specification.
      */
@@ -357,12 +380,13 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Builds the OTOCO order specification.
-     * 
+     *
      * # Returns
      * - `OtocoOrderSpec<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<OtocoOrderSpec<Validated>> {
-        self.validate().context("Failed to validate OtocoOrderSpec")?;
+        self.validate()
+            .context("Failed to validate OtocoOrderSpec")?;
 
         Ok(OtocoOrderSpec {
             symbol: self.symbol,
@@ -404,7 +428,7 @@ impl OtocoOrderSpec<Unvalidated> {
 
     /**
      * Validates the OTOCO order parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -414,7 +438,9 @@ impl OtocoOrderSpec<Unvalidated> {
         }
 
         if !matches!(self.working_type, OrderType::Limit | OrderType::LimitMaker) {
-            return Err(InvalidParameter::new("working_type", "must be LIMIT or LIMIT_MAKER").into());
+            return Err(
+                InvalidParameter::new("working_type", "must be LIMIT or LIMIT_MAKER").into(),
+            );
         }
 
         if self.working_type == OrderType::Limit && self.working_time_in_force.is_none() {
@@ -438,7 +464,9 @@ impl OtocoOrderSpec<Unvalidated> {
         }
 
         if matches!(self.pending_above_type, OrderType::Unknown) {
-            return Err(InvalidParameter::new("pending_above_type", "must be a valid order type").into());
+            return Err(
+                InvalidParameter::new("pending_above_type", "must be a valid order type").into(),
+            );
         }
 
         match self.pending_above_type {
@@ -446,23 +474,33 @@ impl OtocoOrderSpec<Unvalidated> {
                 if self.pending_above_price.is_none() {
                     return Err(InvalidParameter::empty("pending_above_price").into());
                 }
-            },
+            }
             OrderType::StopLoss | OrderType::TakeProfit => {
-                if self.pending_above_stop_price.is_none() && self.pending_above_trailing_delta.is_none() {
-                    return Err(InvalidParameter::empty("pending_above_stop_price or pending_above_trailing_delta").into());
+                if self.pending_above_stop_price.is_none()
+                    && self.pending_above_trailing_delta.is_none()
+                {
+                    return Err(InvalidParameter::empty(
+                        "pending_above_stop_price or pending_above_trailing_delta",
+                    )
+                    .into());
                 }
-            },
+            }
             OrderType::StopLossLimit | OrderType::TakeProfitLimit => {
                 if self.pending_above_price.is_none() {
                     return Err(InvalidParameter::empty("pending_above_price").into());
                 }
-                if self.pending_above_stop_price.is_none() && self.pending_above_trailing_delta.is_none() {
-                    return Err(InvalidParameter::empty("pending_above_stop_price or pending_above_trailing_delta").into());
+                if self.pending_above_stop_price.is_none()
+                    && self.pending_above_trailing_delta.is_none()
+                {
+                    return Err(InvalidParameter::empty(
+                        "pending_above_stop_price or pending_above_trailing_delta",
+                    )
+                    .into());
                 }
                 if self.pending_above_time_in_force.is_none() {
                     return Err(InvalidParameter::empty("pending_above_time_in_force").into());
                 }
-            },
+            }
             _ => {
                 return Err(InvalidParameter::new("pending_above_type", "must be STOP_LOSS_LIMIT, STOP_LOSS, LIMIT_MAKER, TAKE_PROFIT, or TAKE_PROFIT_LIMIT").into());
             }
@@ -474,25 +512,39 @@ impl OtocoOrderSpec<Unvalidated> {
                     if self.pending_below_price.is_none() {
                         return Err(InvalidParameter::empty("pending_below_price").into());
                     }
-                },
+                }
                 OrderType::StopLoss | OrderType::TakeProfit => {
-                    if self.pending_below_stop_price.is_none() && self.pending_below_trailing_delta.is_none() {
-                        return Err(InvalidParameter::empty("pending_below_stop_price or pending_below_trailing_delta").into());
+                    if self.pending_below_stop_price.is_none()
+                        && self.pending_below_trailing_delta.is_none()
+                    {
+                        return Err(InvalidParameter::empty(
+                            "pending_below_stop_price or pending_below_trailing_delta",
+                        )
+                        .into());
                     }
-                },
+                }
                 OrderType::StopLossLimit | OrderType::TakeProfitLimit => {
                     if self.pending_below_price.is_none() {
                         return Err(InvalidParameter::empty("pending_below_price").into());
                     }
-                    if self.pending_below_stop_price.is_none() && self.pending_below_trailing_delta.is_none() {
-                        return Err(InvalidParameter::empty("pending_below_stop_price or pending_below_trailing_delta").into());
+                    if self.pending_below_stop_price.is_none()
+                        && self.pending_below_trailing_delta.is_none()
+                    {
+                        return Err(InvalidParameter::empty(
+                            "pending_below_stop_price or pending_below_trailing_delta",
+                        )
+                        .into());
                     }
                     if self.pending_below_time_in_force.is_none() {
                         return Err(InvalidParameter::empty("pending_below_time_in_force").into());
                     }
-                },
+                }
                 _ => {
-                    return Err(InvalidParameter::new("pending_below_type", "must be STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, or TAKE_PROFIT_LIMIT").into());
+                    return Err(InvalidParameter::new(
+                        "pending_below_type",
+                        "must be STOP_LOSS, STOP_LOSS_LIMIT, TAKE_PROFIT, or TAKE_PROFIT_LIMIT",
+                    )
+                    .into());
                 }
             }
         }

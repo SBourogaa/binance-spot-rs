@@ -1,12 +1,12 @@
-use super::update_speed::UpdateSpeed;
 use super::super::r#trait::StreamSpec;
+use super::update_speed::UpdateSpeed;
 use crate::StreamConfig;
 
 /**
  * Specification for Binance Partial Book Depth Stream
  *
  * Top bids and asks for a specified number of levels, pushed every second or every 100ms.
- * 
+ *
  * # Fields
  * - `symbol`: Trading pair symbol (e.g., "BTCUSDT")
  * - `levels`: Number of price levels (5, 10, or 20)
@@ -148,7 +148,9 @@ impl StreamSpec for PartialBookDepthStreamSpec {
     fn stream_name(&self) -> String {
         match self.update_speed {
             UpdateSpeed::Standard => format!("{}@depth{}", self.symbol.to_lowercase(), self.levels),
-            UpdateSpeed::Fast100ms => format!("{}@depth{}@100ms", self.symbol.to_lowercase(), self.levels),
+            UpdateSpeed::Fast100ms => {
+                format!("{}@depth{}@100ms", self.symbol.to_lowercase(), self.levels)
+            }
         }
     }
 

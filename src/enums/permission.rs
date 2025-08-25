@@ -1,9 +1,4 @@
-use serde::{
-    Deserialize,
-    Deserializer, 
-    Serialize, 
-    Serializer
-};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use crate::enums::TradeGroup;
 
@@ -38,7 +33,9 @@ impl Serialize for Permission {
             Permission::TradeGroup(group) => {
                 serializer.serialize_str(&format!("TRD_GRP_{:03}", group.0))
             }
-            Permission::Unknown => Err(serde::ser::Error::custom("Cannot serialize Unknown permission")),
+            Permission::Unknown => Err(serde::ser::Error::custom(
+                "Cannot serialize Unknown permission",
+            )),
         }
     }
 }
@@ -54,12 +51,13 @@ impl<'de> Deserialize<'de> for Permission {
             "MARGIN" => Ok(Permission::Margin),
             "LEVERAGED" => Ok(Permission::Leveraged),
             s if s.starts_with("TRD_GRP_") => {
-                let digits = s.strip_prefix("TRD_GRP_")
+                let digits = s
+                    .strip_prefix("TRD_GRP_")
                     .ok_or_else(|| serde::de::Error::custom("Invalid TRD_GRP format"))?;
-                let id: u8 = digits.parse()
+                let id: u8 = digits
+                    .parse()
                     .map_err(|_| serde::de::Error::custom("Invalid trade group ID"))?;
-                let group = TradeGroup::try_from(id)
-                    .map_err(serde::de::Error::custom)?;
+                let group = TradeGroup::try_from(id).map_err(serde::de::Error::custom)?;
                 Ok(Permission::TradeGroup(group))
             }
             _ => Ok(Permission::Unknown),

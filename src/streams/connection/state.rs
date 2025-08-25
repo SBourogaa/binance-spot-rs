@@ -52,7 +52,7 @@ impl ConnectionState {
             self.active_subscriptions.retain(|s| s != stream_name);
         }
         let removed_count = initial_count - self.active_subscriptions.len();
-        
+
         if removed_count > 0 {
             debug!(
                 removed_streams = removed_count,

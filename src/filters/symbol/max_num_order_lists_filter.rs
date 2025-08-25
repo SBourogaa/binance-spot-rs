@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /**
  * This filter defines the maximum number of open order lists an account can have on a symbol.
- * 
+ *
  * Note that OTOCOs count as one order list.
  */
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

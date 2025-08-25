@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Order fill information for executed trades.
- * 
+ *
  * # Fields
  * - `price`: Price at which the trade was executed.
  * - `quantity`: Quantity filled in this trade.

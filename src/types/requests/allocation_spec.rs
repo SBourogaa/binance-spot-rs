@@ -11,10 +11,10 @@ use crate::{
 
 /**
  * Allocation query specification with builder pattern.
- * 
+ *
  * This struct handles the complex parameter combinations and mutual exclusions
  * for the myAllocations endpoint using a clean builder pattern.
- * 
+ *
  * # Fields
  * - `symbol`: Required trading symbol to query allocations for.
  * - `start_time`: Optional start time in milliseconds.
@@ -25,10 +25,10 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct AllocationSpec<S=Unvalidated> {
+pub struct AllocationSpec<S = Unvalidated> {
     // Required field
     pub symbol: String,
-    
+
     // Optional fields
     pub start_time: Option<u64>,
     pub end_time: Option<u64>,
@@ -42,10 +42,10 @@ pub struct AllocationSpec<S=Unvalidated> {
 impl AllocationSpec<Unvalidated> {
     /**
      * Creates a new allocation specification with required parameters.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol to query allocations for.
-     * 
+     *
      * # Returns
      * - `Self`: New allocation specification.
      */
@@ -63,10 +63,10 @@ impl AllocationSpec<Unvalidated> {
 
     /**
      * Sets the start time filter for allocations.
-     * 
+     *
      * # Arguments
      * - `start_time`: Start time in milliseconds (inclusive).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -77,10 +77,10 @@ impl AllocationSpec<Unvalidated> {
 
     /**
      * Sets the end time filter for allocations.
-     * 
+     *
      * # Arguments
      * - `end_time`: End time in milliseconds (inclusive).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -91,10 +91,10 @@ impl AllocationSpec<Unvalidated> {
 
     /**
      * Sets the pagination starting point for allocations.
-     * 
+     *
      * # Arguments
      * - `from_allocation_id`: Allocation ID to start from (inclusive).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -105,10 +105,10 @@ impl AllocationSpec<Unvalidated> {
 
     /**
      * Sets the result limit.
-     * 
+     *
      * # Arguments
      * - `limit`: Maximum number of results to return (default: 500, max: 1000).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -119,10 +119,10 @@ impl AllocationSpec<Unvalidated> {
 
     /**
      * Sets the order ID to filter allocations.
-     * 
+     *
      * # Arguments
      * - `order_id`: Order ID to filter allocations.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -133,12 +133,13 @@ impl AllocationSpec<Unvalidated> {
 
     /**
      * Builds the allocation specification.
-     * 
+     *
      * # Returns
      * - `AllocationSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<AllocationSpec<Validated>> {
-        self.validate().context("Failed to validate AllocationSpecification")?;
+        self.validate()
+            .context("Failed to validate AllocationSpecification")?;
         Ok(AllocationSpec {
             symbol: self.symbol,
             start_time: self.start_time,
@@ -152,7 +153,7 @@ impl AllocationSpec<Unvalidated> {
 
     /**
      * Validates the allocation specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -160,7 +161,7 @@ impl AllocationSpec<Unvalidated> {
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());
         }
-        
+
         if let Some(limit) = self.limit {
             if limit > 1000 {
                 return Err(InvalidParameter::range("limit", 1, 1000).into());
@@ -169,18 +170,22 @@ impl AllocationSpec<Unvalidated> {
 
         if let (Some(start), Some(end)) = (self.start_time, self.end_time) {
             if end <= start {
-                return Err(
-                    InvalidParameter::new("start_time/end_time", "end_time must be greater than start_time").into()
-                );
+                return Err(InvalidParameter::new(
+                    "start_time/end_time",
+                    "end_time must be greater than start_time",
+                )
+                .into());
             }
             let duration = end - start;
             if duration > 24 * 60 * 60 * 1000 {
-                return Err(
-                    InvalidParameter::new("start_time/end_time", "end_time - start_time can not be longer than 24 hours").into()
-                );
+                return Err(InvalidParameter::new(
+                    "start_time/end_time",
+                    "end_time - start_time can not be longer than 24 hours",
+                )
+                .into());
             }
         }
-        
+
         Ok(())
     }
 }

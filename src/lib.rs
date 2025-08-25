@@ -1,18 +1,18 @@
 mod auth;
-pub mod enums;
-pub mod types;
-mod errors;
-mod filters;
 pub mod clients;
 mod config;
+pub mod enums;
+mod errors;
+mod filters;
 pub mod streams;
+pub mod types;
 
 pub use auth::Ed25519Signer;
-pub use errors::BinanceError;
-pub use config::{BinanceConfig, WebSocketConfig, RestConfig, StreamConfig};
 pub use clients::r#trait::BinanceSpotClient;
+pub use config::{BinanceConfig, RestConfig, StreamConfig, WebSocketConfig};
 pub use enums::BINANCE_ENUM_VERSION;
 pub use errors::BINANCE_ERROR_VERSION;
+pub use errors::BinanceError;
 pub use filters::BINANCE_FILTER_VERSION;
 
 pub mod rest {

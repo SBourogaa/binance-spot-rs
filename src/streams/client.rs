@@ -2,23 +2,16 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use tokio::sync::{broadcast, mpsc, oneshot};
-use tracing::{info, debug, instrument};
+use tracing::{debug, info, instrument};
 
-use crate::Result;
-use crate::{
-    BinanceConfig, 
-    StreamConfig
-};
-use crate::config::{StreamMode, StreamType};
-use super::specs::StreamSpec;
 use super::connection::{
-    MarketDataConnectionManager, 
-    UserDataConnectionManager,
-    ConnectionManager,
-    StreamMessage, 
-    ConnectionStatus, 
-    ValueSender, ValueReceiver
+    ConnectionManager, ConnectionStatus, MarketDataConnectionManager, StreamMessage,
+    UserDataConnectionManager, ValueReceiver, ValueSender,
 };
+use super::specs::StreamSpec;
+use crate::Result;
+use crate::config::{StreamMode, StreamType};
+use crate::{BinanceConfig, StreamConfig};
 
 type TypedReceiver<T> = broadcast::Receiver<T>;
 
@@ -50,7 +43,7 @@ impl<T: Clone> TypedSubscription<T> {
     pub async fn recv(&mut self) -> std::result::Result<T, broadcast::error::RecvError> {
         self.receiver.recv().await
     }
-    
+
     /**
      * Gets a mutable reference to the underlying receiver.
      *
@@ -87,7 +80,7 @@ enum ClientMode {
     Dynamic {
         sender: mpsc::UnboundedSender<StreamMessage>,
     },
-    
+
     /**
      * Static mode with pre-configured streams.
      *
@@ -100,7 +93,6 @@ enum ClientMode {
         senders: HashMap<String, ValueSender>,
     },
 }
-
 
 /**
  * Market data stream client type.
@@ -161,13 +153,20 @@ impl StreamClient<MarketDataConnectionManager> {
     pub(crate) fn new_market_data(config: BinanceConfig<StreamConfig>) -> Result<Self> {
         match config.stream_config().stream_mode() {
             StreamMode::Dynamic => {
-                let (connection_manager, message_sender) = MarketDataConnectionManager::new_dynamic(config)?;
-                let mode = ClientMode::Dynamic { sender: message_sender };
+                let (connection_manager, message_sender) =
+                    MarketDataConnectionManager::new_dynamic(config)?;
+                let mode = ClientMode::Dynamic {
+                    sender: message_sender,
+                };
                 Ok(Self::new_with_manager(connection_manager, mode))
             }
             StreamMode::Raw(_) | StreamMode::Combined(_) => {
-                let (connection_manager, message_sender, senders) = MarketDataConnectionManager::new_static(config)?;
-                let mode = ClientMode::Static { sender: message_sender, senders };
+                let (connection_manager, message_sender, senders) =
+                    MarketDataConnectionManager::new_static(config)?;
+                let mode = ClientMode::Static {
+                    sender: message_sender,
+                    senders,
+                };
                 Ok(Self::new_with_manager(connection_manager, mode))
             }
         }
@@ -186,7 +185,9 @@ impl StreamClient<UserDataConnectionManager> {
      */
     pub(crate) fn new_user_data(config: BinanceConfig<StreamConfig>) -> Result<Self> {
         let (connection_manager, message_sender) = UserDataConnectionManager::new(config)?;
-        let mode = ClientMode::Dynamic { sender: message_sender };
+        let mode = ClientMode::Dynamic {
+            sender: message_sender,
+        };
         Ok(Self::new_with_manager(connection_manager, mode))
     }
 }
@@ -207,7 +208,10 @@ impl StreamClientFactory {
      * # Returns
      * - New BinanceSpotStreamClient instance.
      */
-    pub fn for_stream<S: StreamSpec>(config: BinanceConfig<StreamConfig>, _spec: &S) -> Result<BinanceSpotStreamClient> {
+    pub fn for_stream<S: StreamSpec>(
+        config: BinanceConfig<StreamConfig>,
+        _spec: &S,
+    ) -> Result<BinanceSpotStreamClient> {
         Self::new(config)
     }
 
@@ -255,47 +259,54 @@ impl<M: ConnectionManager> StreamClient<M> {
      * - TypedSubscription for receiving stream events.
      */
     #[instrument(skip(self, spec), fields(stream_name = spec.stream_name()))]
-    pub(crate) async fn subscribe<S: StreamSpec>(&mut self, spec: &S) -> Result<TypedSubscription<S::Event>> 
-    where 
-        S::Event: serde::de::DeserializeOwned + Clone + Send + 'static
+    pub(crate) async fn subscribe<S: StreamSpec>(
+        &mut self,
+        spec: &S,
+    ) -> Result<TypedSubscription<S::Event>>
+    where
+        S::Event: serde::de::DeserializeOwned + Clone + Send + 'static,
     {
         let start = std::time::Instant::now();
         spec.validate()?;
         let buffer_size = spec.buffer_size(self.connection_manager.stream_config());
         let stream_name = spec.stream_name();
-        
+
         let raw_receiver = match &self.mode {
             ClientMode::Dynamic { sender } => {
                 let (tx, rx) = broadcast::channel(buffer_size);
                 let (response_tx, response_rx) = oneshot::channel();
-                
-                sender.send(StreamMessage::Subscribe {
-                    stream_name: stream_name.clone(),
-                    sender: tx,
-                    response: response_tx,
-                }).context("Failed to send subscribe message")?;
-                
-                response_rx.await
+
+                sender
+                    .send(StreamMessage::Subscribe {
+                        stream_name: stream_name.clone(),
+                        sender: tx,
+                        response: response_tx,
+                    })
+                    .context("Failed to send subscribe message")?;
+
+                response_rx
+                    .await
                     .context("Failed to receive subscribe response")??;
-                
+
                 rx
             }
-            ClientMode::Static { senders, .. } => {
-                senders.get(&stream_name)
-                    .map(|sender| sender.subscribe())
-                    .ok_or_else(|| anyhow::anyhow!("Stream '{}' not configured in static mode", stream_name))?
-            }
+            ClientMode::Static { senders, .. } => senders
+                .get(&stream_name)
+                .map(|sender| sender.subscribe())
+                .ok_or_else(|| {
+                    anyhow::anyhow!("Stream '{}' not configured in static mode", stream_name)
+                })?,
         };
-        
+
         let subscription = self.create_typed_subscription::<S>(raw_receiver, buffer_size);
-        
+
         info!(
             stream = %stream_name,
             buffer_size = buffer_size,
             duration_us = start.elapsed().as_micros(),
             "Stream subscription completed"
         );
-        
+
         Ok(subscription)
     }
 
@@ -314,15 +325,18 @@ impl<M: ConnectionManager> StreamClient<M> {
         match &self.mode {
             ClientMode::Dynamic { sender } => {
                 let (response_tx, response_rx) = oneshot::channel();
-                
-                sender.send(StreamMessage::Unsubscribe {
-                    stream_names: vec![spec.stream_name()],
-                    response: response_tx,
-                }).context("Failed to send unsubscribe message")?;
-                
-                response_rx.await
+
+                sender
+                    .send(StreamMessage::Unsubscribe {
+                        stream_names: vec![spec.stream_name()],
+                        response: response_tx,
+                    })
+                    .context("Failed to send unsubscribe message")?;
+
+                response_rx
+                    .await
                     .context("Failed to receive unsubscribe response")??;
-                
+
                 Ok(())
             }
             ClientMode::Static { .. } => {
@@ -341,21 +355,21 @@ impl<M: ConnectionManager> StreamClient<M> {
     pub(crate) async fn close(&mut self) -> Result<()> {
         let start = std::time::Instant::now();
         let (response_tx, response_rx) = oneshot::channel();
-        
+
         let sender = match &self.mode {
             ClientMode::Dynamic { sender } => sender,
             ClientMode::Static { sender, .. } => sender,
         };
-        
+
         let _ = sender.send(StreamMessage::Shutdown(response_tx));
-        
+
         match tokio::time::timeout(std::time::Duration::from_secs(10), response_rx).await {
             Ok(Ok(result)) => result?,
-            Ok(Err(_)) | Err(_) => {},
+            Ok(Err(_)) | Err(_) => {}
         }
 
         self.connection_manager.abort_connection();
-        
+
         info!(
             duration_us = start.elapsed().as_micros(),
             "Stream client closed"
@@ -377,20 +391,20 @@ impl<M: ConnectionManager> StreamClient<M> {
         &self,
         mut raw_receiver: ValueReceiver,
         buffer_size: usize,
-    ) -> TypedSubscription<S::Event> 
-    where 
-        S::Event: serde::de::DeserializeOwned + Clone + Send + 'static
+    ) -> TypedSubscription<S::Event>
+    where
+        S::Event: serde::de::DeserializeOwned + Clone + Send + 'static,
     {
         let (typed_sender, typed_receiver) = broadcast::channel(buffer_size);
-        
+
         let task_handle = tokio::spawn(async move {
             let mut message_count = 0u64;
             let mut parse_errors = 0u64;
             let last_stats_time = std::time::Instant::now();
-            
+
             while let Ok(value) = raw_receiver.recv().await {
                 message_count += 1;
-                
+
                 match serde_json::from_value::<S::Event>(value.clone()) {
                     Ok(typed_event) => {
                         if typed_sender.send(typed_event).is_err() {
@@ -407,7 +421,7 @@ impl<M: ConnectionManager> StreamClient<M> {
                         continue;
                     }
                 }
-                
+
                 if message_count % 1000 == 0 {
                     let rate = message_count as f64 / last_stats_time.elapsed().as_secs_f64();
                     debug!(
@@ -419,13 +433,12 @@ impl<M: ConnectionManager> StreamClient<M> {
                 }
             }
         });
-        
+
         TypedSubscription {
             receiver: typed_receiver,
             task_handle,
         }
     }
-
 
     pub(crate) fn connection_status(&self) -> ConnectionStatus {
         self.connection_manager.connection_status()
@@ -485,7 +498,10 @@ impl BinanceSpotStreamClient {
      * # Returns
      * - New BinanceSpotStreamClient instance.
      */
-    pub fn for_stream<S: StreamSpec>(config: BinanceConfig<StreamConfig>, spec: &S) -> Result<Self> {
+    pub fn for_stream<S: StreamSpec>(
+        config: BinanceConfig<StreamConfig>,
+        spec: &S,
+    ) -> Result<Self> {
         StreamClientFactory::for_stream(config, spec)
     }
 
@@ -524,9 +540,12 @@ impl BinanceSpotStreamClient {
      * # Returns
      * - TypedSubscription for receiving stream events.
      */
-    pub async fn subscribe<S: StreamSpec>(&mut self, spec: &S) -> Result<TypedSubscription<S::Event>> 
-    where 
-        S::Event: serde::de::DeserializeOwned + Clone + Send + 'static
+    pub async fn subscribe<S: StreamSpec>(
+        &mut self,
+        spec: &S,
+    ) -> Result<TypedSubscription<S::Event>>
+    where
+        S::Event: serde::de::DeserializeOwned + Clone + Send + 'static,
     {
         match self {
             BinanceSpotStreamClient::MarketData(client) => client.subscribe(spec).await,

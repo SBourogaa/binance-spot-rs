@@ -3,33 +3,31 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Depth Level
- * 
+ *
  * Represents a single price level in the order book with price and quantity.
  * Serialized as a two-element array: [price, quantity]
  */
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DepthLevel(
-    #[serde(with = "rust_decimal::serde::str")]
-    pub Decimal,
-    #[serde(with = "rust_decimal::serde::str")]
-    pub Decimal,
+    #[serde(with = "rust_decimal::serde::str")] pub Decimal,
+    #[serde(with = "rust_decimal::serde::str")] pub Decimal,
 );
 
 #[allow(dead_code)]
 impl DepthLevel {
     /**
      * Gets the price level
-     * 
+     *
      * # Returns
      * - Price as Decimal
      */
     pub fn price(&self) -> Decimal {
         self.0
     }
-    
+
     /**
      * Gets the quantity at this price level
-     * 
+     *
      * # Returns
      * - Quantity as Decimal
      */
@@ -40,10 +38,10 @@ impl DepthLevel {
 
 /**
  * Partial Book Depth Stream Event
- * 
+ *
  * Top bids and asks snapshot, pushed at specified intervals.
  * Used for partial book depth streams with specific level counts.
- * 
+ *
  * # Fields:
  * - `symbol`: Trading pair symbol (for internal tracking, not serialized)
  * - `levels`: Number of levels (for internal tracking, not serialized)
@@ -69,10 +67,10 @@ pub struct PartialBookDepthStreamEvent {
 
 /**
  * Diff Depth Stream Event
- * 
+ *
  * Order book price and quantity depth updates used to locally manage an order book.
  * Contains incremental updates to apply to a local order book.
- * 
+ *
  * # Fields:
  * - `event_type`: Event type identifier (always "depthUpdate")
  * - `event_time`: Event timestamp in milliseconds

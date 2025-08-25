@@ -11,16 +11,16 @@
  */
 pub const BINANCE_FILTER_VERSION: &str = "2025-06-11";
 
-pub mod symbol;
 pub mod exchange;
-mod symbol_filter;
 mod exchange_filter;
 mod parse_filter_failure;
 mod parse_trading_rejection;
+pub mod symbol;
+mod symbol_filter;
 
-pub use symbol::*;
 pub use exchange::*;
-pub use symbol_filter::SymbolFilter;
 pub use exchange_filter::ExchangeFilter;
 pub use parse_filter_failure::{FilterFailure, parse_filter_failure};
 pub use parse_trading_rejection::{TradingRejectionMessage, parse_trading_rejection};
+pub use symbol::*;
+pub use symbol_filter::SymbolFilter;

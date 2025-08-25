@@ -1,22 +1,16 @@
 use std::marker::PhantomData;
 
 use anyhow::Context;
-use serde::Serialize;
 use rust_decimal::Decimal;
+use serde::Serialize;
 
 use crate::Result;
 use crate::{
-    errors::InvalidParameter,
     enums::{
-        OrderSide, 
-        OrderType, 
-        TimeInForce, 
-        OrderResponseType, 
-        SelfTradePreventionMode, 
-        CancelRestrictions,
-        CancelReplaceMode,
-        OrderRateLimitExceededMode,
+        CancelReplaceMode, CancelRestrictions, OrderRateLimitExceededMode, OrderResponseType,
+        OrderSide, OrderType, SelfTradePreventionMode, TimeInForce,
     },
+    errors::InvalidParameter,
     types::requests::{Unvalidated, Validated},
 };
 
@@ -25,7 +19,7 @@ use crate::{
  *
  * Cancel-replace atomically cancels an existing order and places a new order.
  * This operation can have partial success (e.g., cancel succeeds but new order fails).
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol for the order.
  * - `cancel_replace_mode`: Mode for the cancel-replace operation.
@@ -42,7 +36,7 @@ use crate::{
  * - `price`: Optional price for the new order.
  * - `new_client_order_id`: Optional new client order ID for the new order.
  * - `strategy_id`: Optional strategy ID for the new order.
- * - `strategy_type`: Optional strategy type for the new order. 
+ * - `strategy_type`: Optional strategy type for the new order.
  * - `stop_price`: Optional stop price for the new order.
  * - `trailing_delta`: Optional trailing delta for the new order.
  * - `iceberg_quantity`: Optional iceberg quantity for the new order.
@@ -51,7 +45,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CancelReplaceSpec<S=Unvalidated> {
+pub struct CancelReplaceSpec<S = Unvalidated> {
     // Cancel-specific fields
     pub symbol: String,
     pub cancel_replace_mode: CancelReplaceMode,
@@ -61,7 +55,7 @@ pub struct CancelReplaceSpec<S=Unvalidated> {
     pub cancel_new_client_order_id: Option<String>,
     pub cancel_restrictions: Option<CancelRestrictions>,
     pub order_rate_limit_exceeded_mode: Option<OrderRateLimitExceededMode>,
-    
+
     // New order fields
     pub side: OrderSide,
     #[serde(rename = "type")]
@@ -100,13 +94,13 @@ pub struct CancelReplaceSpec<S=Unvalidated> {
 impl CancelReplaceSpec<Unvalidated> {
     /**
      * Creates a new cancel-replace specification with required parameters.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol for the order.
      * - `cancel_replace_mode`: Mode for the cancel-replace operation.
      * - `side`: Side of the new order (buy/sell).
      * - `order_type`: Type of the new order (e.g., limit, market).
-     * 
+     *
      * # Returns
      * - `Self`: New cancel-replace specification.
      */
@@ -144,10 +138,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the order ID to cancel.
-     * 
+     *
      * # Arguments
      * - `order_id`: The ID of the order to cancel.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -158,10 +152,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the client order ID to cancel.
-     * 
+     *
      * # Arguments
      * - `original_id`: The original client order ID to cancel.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -172,10 +166,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the new client order ID for the canceled order.
-     * 
+     *
      * # Arguments
      * - `new_id`: The new client order ID to assign to the canceled order
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -186,12 +180,12 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets cancel restrictions.
-     * 
+     *
      * # Arguments
      * - `restrictions`: Restrictions on the cancellation based on order status:
-     *      * ONLY_NEW: only cancel if status is NEW, 
+     *      * ONLY_NEW: only cancel if status is NEW,
      *      * ONLY_PARTIALLY_FILLED: only cancel if partially filled.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -202,11 +196,11 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the order rate limit exceeded mode.
-     * 
+     *
      * # Arguments
      * - `mode`: Mode for handling order rate limit exceeded (e.g., retry,
      *   fail, ignore).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -217,10 +211,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the time in force for the new order.
-     * 
+     *
      * # Arguments
      * - `tif`: Time in force for the new order (e.g., GTC, IOC, FOK).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -231,10 +225,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the quantity for the new order.
-     * 
+     *
      * # Arguments
      * - `quantity`: Quantity for the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -245,10 +239,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the quote order quantity for the new order.
-     * 
+     *
      * # Arguments
      * - `quote_quantity`: Quote order quantity for the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -259,10 +253,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the price for the new order.
-     * 
+     *
      * # Arguments
      * - `price`: Price for the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -273,10 +267,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the client order ID for the new order.
-     * 
+     *
      * # Arguments
      * - `new_id`: The new client order ID to assign to the new order
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -287,10 +281,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the strategy ID for the new order.
-     * 
+     *
      * # Arguments
      * - `strategy_id`: The strategy ID to assign to the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -301,10 +295,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the strategy type for the new order.
-     * 
+     *
      * # Arguments
      * - `strategy_type`: The strategy type to assign to the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -315,10 +309,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the stop price for the new order.
-     * 
+     *
      * # Arguments
      * - `stop_price`: The stop price for the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -329,10 +323,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the trailing delta for the new order.
-     * 
+     *
      * # Arguments
      * - `trailing_delta`: The trailing delta for the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -343,10 +337,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the iceberg quantity for the new order.
-     * 
+     *
      * # Arguments
      * - `iceberg_quantity`: The iceberg quantity for the new order.
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -357,10 +351,10 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the response type for the new order.
-     * 
+     *
      * # Arguments
      * - `response_type`: The response type for the new order (e.g., ACK, RESULT, FULL).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -371,11 +365,11 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Sets the self-trade prevention mode for the new order.
-     * 
+     *
      * # Arguments
-     * - `stp_mode`: The self-trade prevention mode for the new order 
+     * - `stp_mode`: The self-trade prevention mode for the new order
      *   (e.g., EXPIRE_TAKER, EXPIRE_MAKER, CANCEL_OLDEST).
-     * 
+     *
      * # Returns
      * - `Self`: Updated specification.
      */
@@ -386,12 +380,13 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Builds the cancel-replace specification.
-     * 
+     *
      * # Returns
      * - `CancelReplaceSpecification<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<CancelReplaceSpec<Validated>> {
-        self.validate().context("Failed to validate CancelReplaceSpecification")?;
+        self.validate()
+            .context("Failed to validate CancelReplaceSpecification")?;
 
         Ok(CancelReplaceSpec {
             symbol: self.symbol,
@@ -421,76 +416,83 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Validates the cancel-replace specification parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
     fn validate(&self) -> Result<()> {
-
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());
         }
 
-        match (self.cancel_order_id.is_some(), self.cancel_origin_client_order_id.is_some()) {
+        match (
+            self.cancel_order_id.is_some(),
+            self.cancel_origin_client_order_id.is_some(),
+        ) {
             (false, false) => {
-                return Err(InvalidParameter::required("cancel_order_id or cancel_origin_client_order_id").into());
+                return Err(InvalidParameter::required(
+                    "cancel_order_id or cancel_origin_client_order_id",
+                )
+                .into());
             }
             _ => {}
         }
 
         if let Some(strategy_type) = self.strategy_type {
             if strategy_type < 1000000 {
-                return Err(InvalidParameter::range(
-                    "strategy_type", 1000000, i32::MAX
-                ).into());
+                return Err(InvalidParameter::range("strategy_type", 1000000, i32::MAX).into());
             }
         }
 
         if let Some(qty) = self.quantity {
             if qty <= Decimal::ZERO {
-                return Err(InvalidParameter::range(
-                    "quantity", Decimal::ZERO, Decimal::MAX
-                ).into());
+                return Err(
+                    InvalidParameter::range("quantity", Decimal::ZERO, Decimal::MAX).into(),
+                );
             }
         }
 
         if let Some(quote_qty) = self.quote_order_quantity {
             if quote_qty <= Decimal::ZERO {
                 return Err(InvalidParameter::range(
-                    "quote_order_quantity", Decimal::ZERO, Decimal::MAX
-                ).into());
+                    "quote_order_quantity",
+                    Decimal::ZERO,
+                    Decimal::MAX,
+                )
+                .into());
             }
         }
 
         if let Some(price) = self.price {
             if price <= Decimal::ZERO {
-                return Err(InvalidParameter::range(
-                    "price", Decimal::ZERO, Decimal::MAX
-                ).into());
+                return Err(InvalidParameter::range("price", Decimal::ZERO, Decimal::MAX).into());
             }
         }
 
         if let Some(stop_price) = self.stop_price {
             if stop_price <= Decimal::ZERO {
-                return Err(InvalidParameter::range(
-                    "stop_price", Decimal::ZERO, Decimal::MAX
-                ).into());
+                return Err(
+                    InvalidParameter::range("stop_price", Decimal::ZERO, Decimal::MAX).into(),
+                );
             }
         }
 
         if let Some(trailing_delta) = self.trailing_delta {
             if trailing_delta <= Decimal::ZERO {
-                return Err(InvalidParameter::range(
-                    "trailing_delta", Decimal::ZERO, Decimal::MAX
-                ).into());
+                return Err(
+                    InvalidParameter::range("trailing_delta", Decimal::ZERO, Decimal::MAX).into(),
+                );
             }
         }
 
         if let Some(iceberg_qty) = self.iceberg_quantity {
             if iceberg_qty <= Decimal::ZERO {
                 return Err(InvalidParameter::range(
-                    "iceberg_quantity", Decimal::ZERO, Decimal::MAX
-                ).into());
+                    "iceberg_quantity",
+                    Decimal::ZERO,
+                    Decimal::MAX,
+                )
+                .into());
             }
         }
 
@@ -501,7 +503,7 @@ impl CancelReplaceSpec<Unvalidated> {
 
     /**
      * Validates new order parameters based on the order type.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -530,12 +532,16 @@ impl CancelReplaceSpec<Unvalidated> {
             }
             Market => {
                 if self.quantity.is_none() && self.quote_order_quantity.is_none() {
-                    return Err(InvalidParameter::required("quantity or quote_order_quantity").into());
+                    return Err(
+                        InvalidParameter::required("quantity or quote_order_quantity").into(),
+                    );
                 }
                 if self.quantity.is_some() && self.quote_order_quantity.is_some() {
                     return Err(InvalidParameter::mutually_exclusive(
-                        "quantity", "quote_order_quantity"
-                    ).into());
+                        "quantity",
+                        "quote_order_quantity",
+                    )
+                    .into());
                 }
             }
             StopLoss => {
@@ -582,7 +588,7 @@ impl CancelReplaceSpec<Unvalidated> {
                     return Err(InvalidParameter::required("stop_price or trailing_delta").into());
                 }
             }
-            _ => {} 
+            _ => {}
         }
 
         Ok(())

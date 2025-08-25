@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-use crate::enums::{RateLimitType, RateLimitInterval};
+use crate::enums::{RateLimitInterval, RateLimitType};
 
 /**
  * Rate limit information from exchange.
- * 
+ *
  * # Fields
  * - `rate_limit_type`: The type of rate limit (REQUEST_WEIGHT, ORDERS, etc.).
  * - `interval`: The time interval for the rate limit.

@@ -11,7 +11,7 @@ use crate::{
 
 /**
  * Cancel order list specification for canceling OCO/OTO/OTOCO orders.
- * 
+ *
  * # Fields
  * - `symbol`: Trading symbol for the order list (required).
  * - `order_list_id`: Optional order list ID to cancel (mutually exclusive with list_client_order_id).
@@ -20,7 +20,7 @@ use crate::{
  */
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CancelOrderListSpec<S=Unvalidated> {
+pub struct CancelOrderListSpec<S = Unvalidated> {
     pub symbol: String,
     pub order_list_id: Option<u64>,
     pub list_client_order_id: Option<String>,
@@ -32,10 +32,10 @@ pub struct CancelOrderListSpec<S=Unvalidated> {
 impl CancelOrderListSpec<Unvalidated> {
     /**
      * Creates a new cancel order list specification with symbol.
-     * 
+     *
      * # Arguments
      * - `symbol`: Trading symbol for the order list.
-     * 
+     *
      * # Returns
      * - `Self`: New cancel order list specification.
      */
@@ -51,10 +51,10 @@ impl CancelOrderListSpec<Unvalidated> {
 
     /**
      * Sets the order list ID to cancel.
-     * 
+     *
      * # Arguments
      * - `order_list_id`: Order list ID to cancel.
-     * 
+     *
      * # Returns
      * - `Self`: Updated cancel order list specification.
      */
@@ -65,10 +65,10 @@ impl CancelOrderListSpec<Unvalidated> {
 
     /**
      * Sets the list client order ID to cancel.
-     * 
+     *
      * # Arguments
      * - `list_client_order_id`: Client order list ID to cancel.
-     * 
+     *
      * # Returns
      * - `Self`: Updated cancel order list specification.
      */
@@ -79,10 +79,10 @@ impl CancelOrderListSpec<Unvalidated> {
 
     /**
      * Sets the new client order ID to cancel.
-     * 
+     *
      * # Arguments
      * - `new_client_order_id`: New client order ID used to uniquely identify this cancel operation.
-     * 
+     *
      * # Returns
      * - `Self`: Updated cancel order list specification.
      */
@@ -93,12 +93,13 @@ impl CancelOrderListSpec<Unvalidated> {
 
     /**
      * Builds the cancel order list specification.
-     * 
+     *
      * # Returns
      * - `CancelOrderListSpec<Validated>`: Validated specification or error if validation fails.
      */
     pub fn build(self) -> Result<CancelOrderListSpec<Validated>> {
-        self.validate().context("Failed to validate CancelOrderListSpec")?;
+        self.validate()
+            .context("Failed to validate CancelOrderListSpec")?;
 
         Ok(CancelOrderListSpec {
             symbol: self.symbol,
@@ -111,7 +112,7 @@ impl CancelOrderListSpec<Unvalidated> {
 
     /**
      * Validates the cancel order list parameters.
-     * 
+     *
      * # Returns
      * - `()`: Ok if valid, error if invalid parameters.
      */
@@ -127,8 +128,9 @@ impl CancelOrderListSpec<Unvalidated> {
         if self.order_list_id.is_some() && self.list_client_order_id.is_some() {
             return Err(InvalidParameter::mutually_exclusive(
                 "order_list_id",
-                "list_client_order_id"
-            ).into());
+                "list_client_order_id",
+            )
+            .into());
         }
 
         if let Some(ref list_client_id) = self.list_client_order_id {

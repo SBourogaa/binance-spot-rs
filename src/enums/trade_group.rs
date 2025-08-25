@@ -13,7 +13,7 @@ pub struct TradeGroup(pub u8);
 
 impl TryFrom<u8> for TradeGroup {
     type Error = &'static str;
-    
+
     /**
      * Creates a TradeGroup from a u8 value.
      *
@@ -26,7 +26,7 @@ impl TryFrom<u8> for TradeGroup {
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
             2..=255 => Ok(TradeGroup(value)),
-            _       => Err("trade-group id must be ≥ 2 and ≤ 255."),
+            _ => Err("trade-group id must be ≥ 2 and ≤ 255."),
         }
     }
 }

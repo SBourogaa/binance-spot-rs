@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 
 /**
  * Average price data from Binance API.
- * 
+ *
  * Represents current average price for a symbol over a time window.
- * 
+ *
  * # Fields
  * - `mins`: Average price interval in minutes.
  * - `price`: Current average price for the symbol.
