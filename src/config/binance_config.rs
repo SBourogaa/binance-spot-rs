@@ -632,8 +632,6 @@ impl UserDataStreamBuilder {
         Ok(self)
     }
 
-    // User data streams only support dynamic mode - no raw_stream or combined_streams methods
-
     pub fn build(self) -> Result<BinanceConfig<StreamConfig>> {
         if !self.stream_config.market_data_url.starts_with("wss://") {
             return Err(InvalidUrl::invalid_scheme(

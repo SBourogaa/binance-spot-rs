@@ -1,5 +1,3 @@
-pub type Result<T> = anyhow::Result<T>;
-
 mod auth;
 pub mod enums;
 pub mod types;
@@ -28,3 +26,5 @@ pub mod websocket {
 pub mod stream {
     pub use super::streams::client;
 }
+
+pub type Result<T> = anyhow::Result<T>;

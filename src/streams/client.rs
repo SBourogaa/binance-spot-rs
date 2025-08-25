@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::Context;
 use tokio::sync::{broadcast, mpsc, oneshot};
+use tracing::{info, debug, instrument};
 
 use crate::Result;
 use crate::{
@@ -253,10 +254,12 @@ impl<M: ConnectionManager> StreamClient<M> {
      * # Returns
      * - TypedSubscription for receiving stream events.
      */
+    #[instrument(skip(self, spec), fields(stream_name = spec.stream_name()))]
     pub(crate) async fn subscribe<S: StreamSpec>(&mut self, spec: &S) -> Result<TypedSubscription<S::Event>> 
     where 
         S::Event: serde::de::DeserializeOwned + Clone + Send + 'static
     {
+        let start = std::time::Instant::now();
         spec.validate()?;
         let buffer_size = spec.buffer_size(self.connection_manager.stream_config());
         let stream_name = spec.stream_name();
@@ -267,7 +270,7 @@ impl<M: ConnectionManager> StreamClient<M> {
                 let (response_tx, response_rx) = oneshot::channel();
                 
                 sender.send(StreamMessage::Subscribe {
-                    stream_name,
+                    stream_name: stream_name.clone(),
                     sender: tx,
                     response: response_tx,
                 }).context("Failed to send subscribe message")?;
@@ -284,7 +287,16 @@ impl<M: ConnectionManager> StreamClient<M> {
             }
         };
         
-        Ok(self.create_typed_subscription::<S>(raw_receiver, buffer_size))
+        let subscription = self.create_typed_subscription::<S>(raw_receiver, buffer_size);
+        
+        info!(
+            stream = %stream_name,
+            buffer_size = buffer_size,
+            duration_us = start.elapsed().as_micros(),
+            "Stream subscription completed"
+        );
+        
+        Ok(subscription)
     }
 
     /**
@@ -296,7 +308,9 @@ impl<M: ConnectionManager> StreamClient<M> {
      * # Returns
      * - `()` on successful unsubscription.
      */
+    #[instrument(skip(self, spec), fields(stream_name = spec.stream_name()))]
     pub(crate) async fn unsubscribe<S: StreamSpec>(&self, spec: S) -> Result<()> {
+        let _start = std::time::Instant::now();
         match &self.mode {
             ClientMode::Dynamic { sender } => {
                 let (response_tx, response_rx) = oneshot::channel();
@@ -323,7 +337,9 @@ impl<M: ConnectionManager> StreamClient<M> {
      * # Returns
      * - `()` on successful closure.
      */
+    #[instrument(skip(self))]
     pub(crate) async fn close(&mut self) -> Result<()> {
+        let start = std::time::Instant::now();
         let (response_tx, response_rx) = oneshot::channel();
         
         let sender = match &self.mode {
@@ -339,6 +355,11 @@ impl<M: ConnectionManager> StreamClient<M> {
         }
 
         self.connection_manager.abort_connection();
+        
+        info!(
+            duration_us = start.elapsed().as_micros(),
+            "Stream client closed"
+        );
         Ok(())
     }
 
@@ -363,16 +384,38 @@ impl<M: ConnectionManager> StreamClient<M> {
         let (typed_sender, typed_receiver) = broadcast::channel(buffer_size);
         
         let task_handle = tokio::spawn(async move {
+            let mut message_count = 0u64;
+            let mut parse_errors = 0u64;
+            let last_stats_time = std::time::Instant::now();
+            
             while let Ok(value) = raw_receiver.recv().await {
+                message_count += 1;
+                
                 match serde_json::from_value::<S::Event>(value.clone()) {
                     Ok(typed_event) => {
                         if typed_sender.send(typed_event).is_err() {
+                            debug!(
+                                messages_processed = message_count,
+                                parse_errors = parse_errors,
+                                "Typed subscription channel closed, terminating"
+                            );
                             break;
                         }
                     }
                     Err(_) => {
+                        parse_errors += 1;
                         continue;
                     }
+                }
+                
+                if message_count % 1000 == 0 {
+                    let rate = message_count as f64 / last_stats_time.elapsed().as_secs_f64();
+                    debug!(
+                        messages_processed = message_count,
+                        parse_errors = parse_errors,
+                        messages_per_second = rate,
+                        "Typed subscription processing stats"
+                    );
                 }
             }
         });

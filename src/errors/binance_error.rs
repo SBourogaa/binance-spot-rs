@@ -1,4 +1,5 @@
 use thiserror::Error;
+use tracing::debug;
 
 use super::{
     ApiError,
@@ -114,9 +115,17 @@ impl BinanceError {
      * Checks if this error might be retryable.
      */
     pub fn is_retryable(&self) -> bool {
-        match self {
+        let retryable = match self {
             BinanceError::Api(api_error) => api_error.is_retryable(),
             _ => false,
-        }
+        };
+        
+        debug!(
+            error_type = std::any::type_name::<Self>(),
+            is_retryable = retryable,
+            "Determined error retryability"
+        );
+        
+        retryable
     }
 }

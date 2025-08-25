@@ -201,22 +201,13 @@ The library supports three main configuration types:
 
 ## REST/WebSocket API
 
-The library supports **33 out of 47** endpoints for both REST and WebSocket API clients. The library is not supporting **deprecated endpoints and the following (yet)**:
+The library supports **42 out of 47** endpoints for both REST and WebSocket API clients. The library is not supporting **deprecated endpoints and the following**:
 
-- `place_oco_order()` - Place OCO orders
-- `place_oto_order()` - Place OTO orders  
-- `place_otoco_order()` - Place OTOCO orders
-- `cancel_order_list()` - Cancel order lists
-- `order_list_status()` - Query order lists
-- `all_order_lists()` - Query all order lists
-- `open_order_lists()` - Query open order lists
-- `place_sor_order()` - Place SOR orders
-- `test_sor_order()` - Test SOR orders
-- `session_login()` - Session login (WebSocket only) - Used in the streaming client instead. 
-- `session_status()` - Session status (WebSocket only) - Used in the streaming client instead.
-- `session_logout()` - Session logout (WebSocket only) - Used in the streaming client instead.
-- `subscribe_user_data()` - Subscribe to user data stream (WebSocket only) - Used in the streaming client instead.
-- `unsubscribe_user_data()` - Unsubscribe from user data stream (WebSocket only) - Used in the streaming client instead.
+- `session_login()` - Session login (WebSocket only) - Used in the websocket streams client. 
+- `session_status()` - Session status (WebSocket only) - Used in the websocket streams client.
+- `session_logout()` - Session logout (WebSocket only) - Used in the websocket streams client.
+- `subscribe_user_data()` - Subscribe to user data stream (WebSocket only) - Used in the websocket streams client.
+- `unsubscribe_user_data()` - Unsubscribe from user data stream (WebSocket only) - Used in the websocket streams client.
 
 ## WebSocket Streams
 
@@ -225,13 +216,15 @@ The library supports **33 out of 47** endpoints for both REST and WebSocket API 
 
 ## Testing
 
-Integration tests run against Binance TESTNET:
+Integration tests run against Binance TESTNET, around ~170 integration tests in total, covering all supported endpoints and stream types. 
+
+Something missing? Open issue or PR. 
 
 ```bash
 cargo test
 ```
 
-Compatible with Binance API as of **August 22, 2025**.
+Updated for Binance API changelog dated [**2025-08-12**](https://developers.binance.com/docs/binance-spot-api-docs#2025-08-12).
 
 ---
 

@@ -1,6 +1,7 @@
 use anyhow::Context;
 use futures_util::{SinkExt, StreamExt};
 use tokio_tungstenite::tungstenite::protocol::Message;
+use tracing::{info, instrument};
 
 use crate::Result;
 use super::types::{WsStream, WsSink, WsRead};
@@ -46,11 +47,21 @@ impl WebSocketConnection {
      * # Returns
      * - Result indicating success or failure of the send operation
      */
+    #[instrument(skip(self, message))]
     pub async fn send_message(&mut self, message: Message) -> Result<()> {
-        self.write
+        let start = std::time::Instant::now();
+        let result = self.write
             .send(message)
             .await
-            .context("Failed to send WebSocket message")
+            .context("Failed to send WebSocket message");
+        
+        info!(
+            duration_us = start.elapsed().as_micros(),
+            success = result.is_ok(),
+            "WebSocket message send completed"
+        );
+        
+        result
     }
 
     /**
@@ -73,10 +84,13 @@ impl WebSocketConnection {
      * # Returns
      * - Result indicating success or failure of the close operation
      */
+    #[instrument(skip(self))]
     pub async fn close(&mut self) -> Result<()> {
-        self.write
+        let result = self.write
             .send(Message::Close(None))
             .await
-            .context("Failed to send close frame")
+            .context("Failed to send close frame");
+        
+        result
     }
 }

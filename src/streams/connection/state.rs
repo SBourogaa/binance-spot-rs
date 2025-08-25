@@ -1,3 +1,5 @@
+use tracing::{debug, trace};
+
 /**
  * Connection state tracker.
  *
@@ -30,7 +32,12 @@ impl ConnectionState {
      * - `stream_name`: Name of the stream that was subscribed to.
      */
     pub fn add_subscription(&mut self, stream_name: String) {
-        self.active_subscriptions.push(stream_name);
+        self.active_subscriptions.push(stream_name.clone());
+        debug!(
+            stream = %stream_name,
+            total_subscriptions = self.active_subscriptions.len(),
+            "Added subscription to state"
+        );
     }
 
     /**
@@ -40,8 +47,18 @@ impl ConnectionState {
      * - `stream_names`: Names of streams to remove from active list.
      */
     pub fn remove_subscriptions(&mut self, stream_names: &[String]) {
+        let initial_count = self.active_subscriptions.len();
         for stream_name in stream_names {
             self.active_subscriptions.retain(|s| s != stream_name);
+        }
+        let removed_count = initial_count - self.active_subscriptions.len();
+        
+        if removed_count > 0 {
+            debug!(
+                removed_streams = removed_count,
+                remaining_subscriptions = self.active_subscriptions.len(),
+                "Removed subscriptions from state"
+            );
         }
     }
 
@@ -62,7 +79,13 @@ impl ConnectionState {
      * - `true` if there are active subscriptions, `false` otherwise.
      */
     pub fn has_active_subscriptions(&self) -> bool {
-        !self.active_subscriptions.is_empty()
+        let has_active = !self.active_subscriptions.is_empty();
+        trace!(
+            subscription_count = self.active_subscriptions.len(),
+            has_active = has_active,
+            "Checked active subscription status"
+        );
+        has_active
     }
 
     /**

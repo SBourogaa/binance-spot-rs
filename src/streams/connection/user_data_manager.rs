@@ -1,4 +1,5 @@
 use tokio::sync::{mpsc, watch};
+use tracing::{info, instrument};
 
 use crate::Result;
 use crate::{BinanceConfig, StreamConfig};
@@ -37,7 +38,9 @@ impl UserDataConnectionManager {
      * # Returns
      * - Tuple containing the connection manager and message sender channel.
      */
+    #[instrument(skip(config))]
     pub fn new(config: BinanceConfig<StreamConfig>) -> Result<(Self, mpsc::UnboundedSender<StreamMessage>)> {
+        let start = std::time::Instant::now();
         if !config.has_authentication() {
             return Err(anyhow::anyhow!(
                 "User data streams require authentication credentials (API key)"
@@ -49,7 +52,7 @@ impl UserDataConnectionManager {
         
         let url = config.user_data_url().to_string();
         let stream_config = config.stream_config().clone();
-        let signer = config.signer().clone(); // Get the full signer
+        let signer = config.signer().clone();
 
         let task_handle = tokio::spawn(
             ConnectionUtils::run_connection(
@@ -65,6 +68,13 @@ impl UserDataConnectionManager {
             status_receiver,
             _task_handles: vec![task_handle],
         };
+
+        info!(
+            duration_us = start.elapsed().as_micros(),
+            mode = "dynamic",
+            stream_type = "user_data",
+            "User data connection manager created"
+        );
 
         Ok((manager, message_sender))
     }

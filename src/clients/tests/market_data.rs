@@ -127,7 +127,6 @@ mod tests {
         assert_valid_order_book(&rest_order_book);
         assert_valid_order_book(&ws_order_book);
         
-        // Default limit should be 100
         assert!(rest_order_book.bids.len() <= 100, "Bids should not exceed default limit");
         assert!(rest_order_book.asks.len() <= 100, "Asks should not exceed default limit");
         assert!(ws_order_book.bids.len() <= 100, "Bids should not exceed default limit");
@@ -234,7 +233,6 @@ mod tests {
             assert_valid_trade(trade);
         }
         
-        // Default limit should be 500
         assert!(rest_trades.len() <= 500, "REST trades should not exceed default limit");
         assert!(ws_trades.len() <= 500, "WebSocket trades should not exceed default limit");
     }
@@ -345,7 +343,6 @@ mod tests {
             assert_valid_trade(trade);
         }
         
-        // Default limit should be 500
         assert!(rest_trades.len() <= 500, "REST trades should not exceed default limit");
         assert!(ws_trades.len() <= 500, "WebSocket trades should not exceed default limit");
     }
@@ -359,7 +356,7 @@ mod tests {
         let rest_client = create_rest_client().expect("REST client creation");
         let ws_client = create_websocket_client().expect("WebSocket client creation");
         let test_symbol = "BTCUSDT";
-        let from_id = 1000000; // Use a reasonable trade ID
+        let from_id = 1000000;
         
         // Act
         let rest_spec = HistoricalTradesSpec::new(test_symbol).with_from_id(from_id).build().expect("Spec validation");
@@ -455,7 +452,6 @@ mod tests {
             assert_valid_aggregate_trade(agg_trade);
         }
         
-        // Default limit should be 500
         assert!(rest_agg_trades.len() <= 500, "REST aggregate trades should not exceed default limit");
         assert!(ws_agg_trades.len() <= 500, "WebSocket aggregate trades should not exceed default limit");
     }
@@ -470,9 +466,8 @@ mod tests {
         let ws_client = create_websocket_client().expect("WebSocket client creation");
         let test_symbol = "BTCUSDT";
         
-        // Use a time range from 1 hour ago to now
         let end_time = chrono::Utc::now().timestamp_millis() as u64;
-        let start_time = end_time - (60 * 60 * 1000); // 1 hour ago
+        let start_time = end_time - (60 * 60 * 1000);
         
         // Act
         let rest_spec = AggregateTradesSpec::new(test_symbol)
@@ -579,7 +574,6 @@ mod tests {
             assert_valid_kline(kline);
         }
         
-        // Default limit should be 500
         assert!(rest_klines.len() <= 500, "REST klines should not exceed default limit");
         assert!(ws_klines.len() <= 500, "WebSocket klines should not exceed default limit");
     }
@@ -596,9 +590,8 @@ mod tests {
         let interval = "5m";
         let limit = 100;
         
-        // Use a time range from 24 hours ago to now
         let end_time = chrono::Utc::now().timestamp_millis() as u64;
-        let start_time = end_time - (24 * 60 * 60 * 1000); // 24 hours ago
+        let start_time = end_time - (24 * 60 * 60 * 1000);
         
         // Act
         let rest_spec = KlinesSpec::new(test_symbol, interval)
@@ -710,7 +703,6 @@ mod tests {
             assert_valid_kline(kline);
         }
         
-        // Default limit should be 500
         assert!(rest_ui_klines.len() <= 500, "REST UI klines should not exceed default limit");
         assert!(ws_ui_klines.len() <= 500, "WebSocket UI klines should not exceed default limit");
     }
@@ -725,7 +717,7 @@ mod tests {
         let ws_client = create_websocket_client().expect("WebSocket client creation");
         let test_symbol = "BTCUSDT";
         let interval = "1d";
-        let timezone = "8"; // GMT+8
+        let timezone = "8";
         let limit = 30;
         
         // Act
@@ -823,10 +815,9 @@ mod tests {
         assert_valid_average_price(&rest_avg_price);
         assert_valid_average_price(&ws_avg_price);
         
-        // Average prices should be reasonably close
         let price_diff = (rest_avg_price.price - ws_avg_price.price).abs();
         let price_ratio = price_diff / rest_avg_price.price;
-        assert!(price_ratio < Decimal::new(1, 2), "REST and WebSocket average prices should be close"); // Less than 1% difference
+        assert!(price_ratio < Decimal::new(1, 2), "REST and WebSocket average prices should be close");
     }
 
     /**

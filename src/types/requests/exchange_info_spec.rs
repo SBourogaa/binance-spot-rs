@@ -170,7 +170,6 @@ impl ExchangeInfoSpec<Unvalidated> {
                     if symbols_array.is_empty() {
                         return Err(InvalidParameter::empty("symbols").into());
                     }
-                    // Validate each symbol in the array is not empty
                     for symbol in symbols_array {
                         if symbol.trim().is_empty() {
                             return Err(InvalidParameter::empty("symbols element").into());

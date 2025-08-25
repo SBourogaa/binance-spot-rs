@@ -24,6 +24,7 @@ use crate::{
         AccountTrade,
         PreventedMatch,
         Allocation,
+        OrderList,
     },
     types::requests::{
         Validated,
@@ -51,6 +52,14 @@ use crate::{
         AllOrdersSpec,
         MyTradesSpec,
         CancelAllOrdersSpec,
+        OcoOrderSpec,
+        OtoOrderSpec,
+        OtocoOrderSpec,
+        CancelOrderListSpec,
+        OrderListStatusSpec,
+        AllOrderListsSpec,
+        OpenOrderListsSpec,
+        SorOrderSpec,
     }
 };
 
@@ -400,6 +409,102 @@ pub trait TradingClient {
      * - `AmendedOrder`: Amended order.
      */
     async fn amend_order(&self, specification: AmendOrderSpec<Validated>) -> Result<AmendedOrder>;
+
+    /**
+     * Places a new OCO (One-Cancels-Other) order.
+     * 
+     * # Arguments
+     * - `specification`: OCO order specification.
+     * 
+     * # Returns
+     * - `OrderList`: OCO order list result.
+     */
+    async fn place_oco_order(&self, specification: OcoOrderSpec<Validated>) -> Result<OrderList>;
+
+    /**
+     * Places a new OTO (One-Triggers-Other) order.
+     * 
+     * # Arguments
+     * - `specification`: OTO order specification.
+     * 
+     * # Returns
+     * - `OrderList`: OTO order list result.
+     */
+    async fn place_oto_order(&self, specification: OtoOrderSpec<Validated>) -> Result<OrderList>;
+
+    /**
+     * Places a new OTOCO (One-Triggers-One-Cancels-Other) order.
+     * 
+     * # Arguments
+     * - `specification`: OTOCO order specification.
+     * 
+     * # Returns
+     * - `OrderList`: OTOCO order list result.
+     */
+    async fn place_otoco_order(&self, specification: OtocoOrderSpec<Validated>) -> Result<OrderList>;
+
+    /**
+     * Cancels an order list (OCO/OTO/OTOCO).
+     * 
+     * # Arguments
+     * - `specification`: Cancel order list specification.
+     * 
+     * # Returns
+     * - `OrderList`: Cancelled order list.
+     */
+    async fn cancel_order_list(&self, specification: CancelOrderListSpec<Validated>) -> Result<OrderList>;
+
+    /**
+     * Gets the status of a specific order list.
+     * 
+     * # Arguments
+     * - `specification`: Order list status query specification.
+     * 
+     * # Returns
+     * - `OrderList`: Order list information.
+     */
+    async fn order_list_status(&self, specification: OrderListStatusSpec<Validated>) -> Result<OrderList>;
+
+    /**
+     * Gets all order lists for the account.
+     * 
+     * # Arguments
+     * - `specification`: All order lists query specification.
+     * 
+     * # Returns
+     * - `Vec<OrderList>`: List of all order lists.
+     */
+    async fn all_order_lists(&self, specification: AllOrderListsSpec<Validated>) -> Result<Vec<OrderList>>;
+
+    /**
+     * Gets all open order lists for the account.
+     * 
+     * # Returns
+     * - `Vec<OrderList>`: List of open order lists.
+     */
+    async fn open_order_lists(&self, specification: OpenOrderListsSpec<Validated>) -> Result<Vec<OrderList>>;
+
+    /**
+     * Places a new SOR (Smart Order Routing) order.
+     * 
+     * # Arguments
+     * - `specification`: SOR order specification.
+     * 
+     * # Returns
+     * - `Order`: SOR order result.
+     */
+    async fn place_sor_order(&self, specification: SorOrderSpec<Validated>) -> Result<Order>;
+
+    /**
+     * Tests SOR order placement without execution.
+     * 
+     * # Arguments
+     * - `specification`: SOR order specification.
+     * 
+     * # Returns
+     * - `TestOrder`: Test SOR order result.
+     */
+    async fn test_sor_order(&self, specification: SorOrderSpec<Validated>) -> Result<TestOrder>;
 }
 
 /**

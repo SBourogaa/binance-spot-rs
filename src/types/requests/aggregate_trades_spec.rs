@@ -23,6 +23,7 @@ use crate::{
  * - `limit`: Optional number of trades to return (default: 500, max: 1000).
  */
 #[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AggregateTradesSpec<S=Unvalidated> {
     pub symbol: String,
     #[serde(skip_serializing_if = "Option::is_none", rename = "fromId")]

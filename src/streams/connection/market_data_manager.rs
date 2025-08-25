@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use tokio::sync::{mpsc, watch};
+use tracing::{info, instrument};
 
 use crate::Result;
 use crate::{BinanceConfig, StreamConfig};
@@ -40,7 +41,9 @@ impl MarketDataConnectionManager {
      * # Returns
      * - Tuple containing the connection manager and message sender channel.
      */
+    #[instrument(skip(config))]
     pub fn new_dynamic(config: BinanceConfig<StreamConfig>) -> Result<(Self, mpsc::UnboundedSender<StreamMessage>)> {
+        let start = std::time::Instant::now();
         let (status_sender, status_receiver) = watch::channel(ConnectionStatus::Connecting);
         let (message_sender, message_receiver) = mpsc::unbounded_channel();
         
@@ -57,6 +60,12 @@ impl MarketDataConnectionManager {
             _task_handles: vec![task_handle],
         };
 
+        info!(
+            duration_us = start.elapsed().as_micros(),
+            mode = "dynamic",
+            "Market data connection manager created"
+        );
+
         Ok((manager, message_sender))
     }
 
@@ -72,7 +81,9 @@ impl MarketDataConnectionManager {
      * # Returns
      * - Tuple containing manager, message sender, and stream broadcast senders.
      */
+    #[instrument(skip(config))]
     pub fn new_static(config: BinanceConfig<StreamConfig>) -> Result<(Self, mpsc::UnboundedSender<StreamMessage>, HashMap<String, ValueSender>)> {
+        let start = std::time::Instant::now();
         let stream_infos = match config.stream_config().stream_mode() {
             crate::config::StreamMode::Raw(info) => vec![info.clone()],
             crate::config::StreamMode::Combined(infos) => infos.clone(),
@@ -103,6 +114,13 @@ impl MarketDataConnectionManager {
             status_receiver,
             _task_handles: vec![task_handle],
         };
+
+        info!(
+            duration_us = start.elapsed().as_micros(),
+            mode = "static",
+            stream_count = senders.len(),
+            "Market data connection manager created"
+        );
 
         Ok((manager, message_sender, senders))
     }

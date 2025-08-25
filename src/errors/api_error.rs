@@ -1,5 +1,6 @@
 use thiserror::Error;
 use serde::{Deserialize, Serialize};
+use tracing::{error, warn};
 
 use crate::errors::{
     ErrorCategory,
@@ -76,9 +77,49 @@ impl ApiError {
      */
     pub fn new(code: i32, msg: impl Into<String>) -> Self {
         let msg = msg.into();
+        let category = ErrorCategory::from_code(code);
+        
+        match category {
+            ErrorCategory::ServerOrNetwork => {
+                error!(
+                    error_code = code,
+                    category = ?category,
+                    "Binance server/network error"
+                );
+            }
+            ErrorCategory::RequestIssues => {
+                // Check if it's an auth error based on code
+                if matches!(code, -1002 | -1021 | -1022 | -2014 | -2015) {
+                    warn!(
+                        error_code = code,
+                        category = ?category,
+                        "Binance authentication/authorization error"
+                    );
+                } else if code == -1003 {
+                    warn!(
+                        error_code = code,
+                        "Binance rate limit hit"
+                    );
+                } else {
+                    error!(
+                        error_code = code,
+                        category = ?category,
+                        "Binance request error"
+                    );
+                }
+            }
+            _ => {
+                error!(
+                    error_code = code,
+                    category = ?category,
+                    "Binance API error"
+                );
+            }
+        }
+        
         Self {
             code,
-            category: ErrorCategory::from_code(code),
+            category,
             server_error: ServerError::maybe(code),
             request_error: RequestError::maybe(code),
             trading_error: TradingError::maybe(code),
@@ -116,11 +157,9 @@ impl ApiError {
      */
     pub fn retry_after_seconds(&self) -> Option<u64> {
         if self.is_rate_limit() {
-            // Parse retry delay from message if present
-            // Default to exponential backoff if not specified
-            Some(60) // Default 1 minute for rate limits
+            Some(60)
         } else if self.is_retryable() {
-            Some(5) // Default 5 seconds for retryable errors
+            Some(5)
         } else {
             None
         }

@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use rust_decimal::Decimal;
+    use tracing::warn;
     use crate::{
         clients::{
             r#trait::AccountClient,
@@ -281,7 +282,7 @@ mod tests {
         let all_orders_spec = AllOrdersSpec::new(test_symbol).with_limit(1).build().expect("Spec validation");
         let orders = with_timeout(rest_client.all_orders(all_orders_spec)).await.expect("Get orders to find order ID");
         if orders.is_empty() {
-            println!("Skipping order_status test - no existing orders found for {}", test_symbol);
+            warn!(symbol = %test_symbol, "Skipping order_status test - no existing orders found");
             return;
         }
         
@@ -320,7 +321,7 @@ mod tests {
         let orders = with_timeout(rest_client.all_orders(all_orders_spec)).await.expect("Get orders to find client order ID");
         
         if orders.is_empty() {
-            println!("Skipping order_status by client order ID test - no existing orders found for {}", test_symbol);
+            warn!(symbol = %test_symbol, "Skipping order_status by client order ID test - no existing orders found");
             return;
         }
         
@@ -352,7 +353,7 @@ mod tests {
         // Arrange
         let rest_client = create_authenticated_rest_client().expect("REST client creation");
         let ws_client = create_authenticated_websocket_client().expect("WebSocket client creation");
-        let fake_order_id = 999999999; // Use a high fake order ID
+        let fake_order_id = 999999999;
 
         // Act
         let rest_spec = QueryOrderSpec::new("INVALID")
@@ -635,7 +636,7 @@ mod tests {
         let ws_client = create_authenticated_websocket_client().expect("WebSocket client creation");
         let test_symbol = "BTCUSDT";
         let end_time = chrono::Utc::now().timestamp_millis() as u64;
-        let start_time = end_time - (24 * 60 * 60 * 1000); // 24 hours ago
+        let start_time = end_time - (24 * 60 * 60 * 1000);
         
         // Act
         let rest_spec = MyTradesSpec::new(test_symbol)
@@ -723,7 +724,7 @@ mod tests {
         let all_orders_spec = AllOrdersSpec::new(test_symbol).with_limit(1).build().expect("Spec validation");
         let orders = with_timeout(rest_client.all_orders(all_orders_spec)).await.expect("Get orders to find order ID");
         if orders.is_empty() {
-            println!("Skipping prevented matches test - no existing orders found for {}", test_symbol);
+            warn!(symbol = %test_symbol, "Skipping prevented matches test - no existing orders found");
             return;
         }
         let order_id = orders[0].order_id;
@@ -762,7 +763,7 @@ mod tests {
         let all_orders_spec = AllOrdersSpec::new(test_symbol).with_limit(1).build().expect("Spec validation");
         let orders = with_timeout(rest_client.all_orders(all_orders_spec)).await.expect("Get orders to find order ID");
         if orders.is_empty() {
-            println!("Skipping prevented matches custom limit test - no existing orders found for {}", test_symbol);
+            warn!(symbol = %test_symbol, "Skipping prevented matches custom limit test - no existing orders found");
             return;
         }
         let order_id = orders[0].order_id;
@@ -873,7 +874,7 @@ mod tests {
         let ws_client = create_authenticated_websocket_client().expect("WebSocket client creation");
         let test_symbol = "BTCUSDT";
         let end_time = chrono::Utc::now().timestamp_millis() as u64;
-        let start_time = end_time - (24 * 60 * 60 * 1000); // 24 hours ago
+        let start_time = end_time - (24 * 60 * 60 * 1000);
         
         // Act
         let rest_spec = AllocationSpec::new(test_symbol)

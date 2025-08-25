@@ -42,7 +42,6 @@ pub async fn generate_signature<T: Serialize>(
         }
     }
     
-    // Add apiKey if needed (for WebSocket)
     if include_api_key {
         all_params.insert("apiKey".to_string(), signer.get_api_key().to_string());
     }

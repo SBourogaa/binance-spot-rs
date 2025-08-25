@@ -460,7 +460,7 @@ mod tests {
     #[tokio::test]
     async fn test_all_rolling_window_tickers_stream_raw() {
         // Arrange
-        let spec = AllRollingWindowTickersStreamSpec::hourly(); // Test 1-hour window
+        let spec = AllRollingWindowTickersStreamSpec::hourly(); 
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
         
         // Act
@@ -517,17 +517,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to all rolling window tickers stream (1-day window)
         let all_rolling_spec = AllRollingWindowTickersStreamSpec::daily();
         let mut all_rolling_subscription = with_timeout(client.subscribe(&all_rolling_spec)).await.expect("All rolling window tickers subscription");
         let all_rolling_event = with_recv_timeout(all_rolling_subscription.recv()).await.expect("Receive all rolling window event");
         
-        // Subscribe to aggregate trade stream (different spec type)
         let agg_trade_spec = AggregateTradeStreamSpec::new(agg_trade_symbol);
         let mut agg_trade_subscription = with_timeout(client.subscribe(&agg_trade_spec)).await.expect("Aggregate trade subscription");
         let agg_trade_event = with_recv_timeout(agg_trade_subscription.recv()).await.expect("Receive aggregate trade event");
         
-        // Subscribe to book ticker stream (different spec type)
         let book_ticker_spec = BookTickerStreamSpec::new(book_ticker_symbol);
         let mut book_ticker_subscription = with_timeout(client.subscribe(&book_ticker_spec)).await.expect("Book ticker subscription");
         let book_ticker_event = with_recv_timeout(book_ticker_subscription.recv()).await.expect("Receive book ticker event");
@@ -607,17 +604,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to all tickers stream
         let all_tickers_spec = AllTickersStreamSpec::new();
         let mut all_tickers_subscription = with_timeout(client.subscribe(&all_tickers_spec)).await.expect("All tickers subscription");
         let all_tickers_event = with_recv_timeout(all_tickers_subscription.recv()).await.expect("Receive all tickers event");
         
-        // Subscribe to trade stream (different spec type)
         let trade_spec = TradeStreamSpec::new(trade_symbol);
         let mut trade_subscription = with_timeout(client.subscribe(&trade_spec)).await.expect("Trade subscription");
         let trade_event = with_recv_timeout(trade_subscription.recv()).await.expect("Receive trade event");
         
-        // Subscribe to mini ticker stream (different spec type)
         let mini_ticker_spec = MiniTickerStreamSpec::new(mini_ticker_symbol);
         let mut mini_ticker_subscription = with_timeout(client.subscribe(&mini_ticker_spec)).await.expect("Mini ticker subscription");
         let mini_ticker_event = with_recv_timeout(mini_ticker_subscription.recv()).await.expect("Receive mini ticker event");
@@ -700,17 +694,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to average price stream
         let avg_price_spec = AveragePriceStreamSpec::new(avg_price_symbol);
         let mut avg_price_subscription = with_timeout(client.subscribe(&avg_price_spec)).await.expect("Average price subscription");
         let avg_price_event = with_recv_timeout(avg_price_subscription.recv()).await.expect("Receive average price event");
         
-        // Subscribe to kline stream (different spec type)
         let kline_spec = KlineStreamSpec::five_minutes(kline_symbol);
         let mut kline_subscription = with_timeout(client.subscribe(&kline_spec)).await.expect("Kline subscription");
         let kline_event = with_recv_timeout(kline_subscription.recv()).await.expect("Receive kline event");
         
-        // Subscribe to ticker stream (different spec type)
         let ticker_spec = TickerStreamSpec::new(ticker_symbol);
         let mut ticker_subscription = with_timeout(client.subscribe(&ticker_spec)).await.expect("Ticker subscription");
         let ticker_event = with_recv_timeout(ticker_subscription.recv()).await.expect("Receive ticker event");
@@ -794,17 +785,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to book ticker stream
         let book_ticker_spec = BookTickerStreamSpec::new(book_ticker_symbol);
         let mut book_ticker_subscription = with_timeout(client.subscribe(&book_ticker_spec)).await.expect("Book ticker subscription");
         let book_ticker_event = with_recv_timeout(book_ticker_subscription.recv()).await.expect("Receive book ticker event");
         
-        // Subscribe to trade stream (different spec type)
         let trade_spec = TradeStreamSpec::new(trade_symbol);
         let mut trade_subscription = with_timeout(client.subscribe(&trade_spec)).await.expect("Trade subscription");
         let trade_event = with_recv_timeout(trade_subscription.recv()).await.expect("Receive trade event");
         
-        // Subscribe to average price stream (different spec type)
         let avg_price_spec = AveragePriceStreamSpec::new(avg_price_symbol);
         let mut avg_price_subscription = with_timeout(client.subscribe(&avg_price_spec)).await.expect("Average price subscription");
         let avg_price_event = with_recv_timeout(avg_price_subscription.recv()).await.expect("Receive average price event");
@@ -887,17 +875,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to diff depth stream (fast updates)
         let diff_depth_spec = DiffDepthStreamSpec::with_fast_updates(diff_depth_symbol);
         let mut diff_depth_subscription = with_timeout(client.subscribe(&diff_depth_spec)).await.expect("Diff depth subscription");
         let diff_depth_event = with_recv_timeout(diff_depth_subscription.recv()).await.expect("Receive diff depth event");
         
-        // Subscribe to book ticker stream (different spec type)
         let book_ticker_spec = BookTickerStreamSpec::new(book_ticker_symbol);
         let mut book_ticker_subscription = with_timeout(client.subscribe(&book_ticker_spec)).await.expect("Book ticker subscription");
         let book_ticker_event = with_recv_timeout(book_ticker_subscription.recv()).await.expect("Receive book ticker event");
         
-        // Subscribe to aggregate trade stream (different spec type)
         let agg_trade_spec = AggregateTradeStreamSpec::new(agg_trade_symbol);
         let mut agg_trade_subscription = with_timeout(client.subscribe(&agg_trade_spec)).await.expect("Aggregate trade subscription");
         let agg_trade_event = with_recv_timeout(agg_trade_subscription.recv()).await.expect("Receive aggregate trade event");
@@ -983,17 +968,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to kline stream (daily interval)
         let kline_spec = KlineStreamSpec::daily(kline_symbol);
         let mut kline_subscription = with_timeout(client.subscribe(&kline_spec)).await.expect("Kline subscription");
         let kline_event = with_recv_timeout(kline_subscription.recv()).await.expect("Receive kline event");
         
-        // Subscribe to trade stream (different spec type)
         let trade_spec = TradeStreamSpec::new(trade_symbol);
         let mut trade_subscription = with_timeout(client.subscribe(&trade_spec)).await.expect("Trade subscription");
         let trade_event = with_recv_timeout(trade_subscription.recv()).await.expect("Receive trade event");
         
-        // Subscribe to diff depth stream (different spec type)
         let diff_depth_spec = DiffDepthStreamSpec::standard(diff_depth_symbol);
         let mut diff_depth_subscription = with_timeout(client.subscribe(&diff_depth_spec)).await.expect("Diff depth subscription");
         let diff_depth_event = with_recv_timeout(diff_depth_subscription.recv()).await.expect("Receive diff depth event");
@@ -1080,17 +1062,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to kline with timezone stream (daily UTC+8)
         let kline_tz_spec = KlineWithTimezoneStreamSpec::daily_utc_plus_8(kline_tz_symbol);
         let mut kline_tz_subscription = with_timeout(client.subscribe(&kline_tz_spec)).await.expect("Kline timezone subscription");
         let kline_tz_event = with_recv_timeout(kline_tz_subscription.recv()).await.expect("Receive kline timezone event");
         
-        // Subscribe to average price stream (different spec type)
         let avg_price_spec = AveragePriceStreamSpec::new(avg_price_symbol);
         let mut avg_price_subscription = with_timeout(client.subscribe(&avg_price_spec)).await.expect("Average price subscription");
         let avg_price_event = with_recv_timeout(avg_price_subscription.recv()).await.expect("Receive average price event");
         
-        // Subscribe to book ticker stream (different spec type)
         let book_ticker_spec = BookTickerStreamSpec::new(book_ticker_symbol);
         let mut book_ticker_subscription = with_timeout(client.subscribe(&book_ticker_spec)).await.expect("Book ticker subscription");
         let book_ticker_event = with_recv_timeout(book_ticker_subscription.recv()).await.expect("Receive book ticker event");
@@ -1174,17 +1153,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to mini ticker stream
         let mini_ticker_spec = MiniTickerStreamSpec::new(mini_ticker_symbol);
         let mut mini_ticker_subscription = with_timeout(client.subscribe(&mini_ticker_spec)).await.expect("Mini ticker subscription");
         let mini_ticker_event = with_recv_timeout(mini_ticker_subscription.recv()).await.expect("Receive mini ticker event");
         
-        // Subscribe to kline stream (different spec type)
         let kline_spec = KlineStreamSpec::three_minutes(kline_symbol);
         let mut kline_subscription = with_timeout(client.subscribe(&kline_spec)).await.expect("Kline subscription");
         let kline_event = with_recv_timeout(kline_subscription.recv()).await.expect("Receive kline event");
         
-        // Subscribe to diff depth stream (different spec type)
         let diff_depth_spec = DiffDepthStreamSpec::fast(diff_depth_symbol);
         let mut diff_depth_subscription = with_timeout(client.subscribe(&diff_depth_spec)).await.expect("Diff depth subscription");
         let diff_depth_event = with_recv_timeout(diff_depth_subscription.recv()).await.expect("Receive diff depth event");
@@ -1271,17 +1247,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to partial book depth stream (20 levels, fast updates)
         let partial_depth_spec = PartialBookDepthStreamSpec::levels_20_fast(partial_depth_symbol);
         let mut partial_depth_subscription = with_timeout(client.subscribe(&partial_depth_spec)).await.expect("Partial depth subscription");
         let partial_depth_event = with_recv_timeout(partial_depth_subscription.recv()).await.expect("Receive partial depth event");
         
-        // Subscribe to mini ticker stream (different spec type)
         let mini_ticker_spec = MiniTickerStreamSpec::new(mini_ticker_symbol);
         let mut mini_ticker_subscription = with_timeout(client.subscribe(&mini_ticker_spec)).await.expect("Mini ticker subscription");
         let mini_ticker_event = with_recv_timeout(mini_ticker_subscription.recv()).await.expect("Receive mini ticker event");
         
-        // Subscribe to aggregate trade stream (different spec type)
         let agg_trade_spec = AggregateTradeStreamSpec::new(agg_trade_symbol);
         let mut agg_trade_subscription = with_timeout(client.subscribe(&agg_trade_spec)).await.expect("Aggregate trade subscription");
         let agg_trade_event = with_recv_timeout(agg_trade_subscription.recv()).await.expect("Receive aggregate trade event");
@@ -1365,17 +1338,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to rolling window ticker stream (1-hour window)
         let rolling_window_spec = RollingWindowTickerStreamSpec::hourly(rolling_window_symbol);
         let mut rolling_window_subscription = with_timeout(client.subscribe(&rolling_window_spec)).await.expect("Rolling window ticker subscription");
         let rolling_window_event = with_recv_timeout(rolling_window_subscription.recv()).await.expect("Receive rolling window event");
         
-        // Subscribe to book ticker stream (different spec type)
         let book_ticker_spec = BookTickerStreamSpec::new(book_ticker_symbol);
         let mut book_ticker_subscription = with_timeout(client.subscribe(&book_ticker_spec)).await.expect("Book ticker subscription");
         let book_ticker_event = with_recv_timeout(book_ticker_subscription.recv()).await.expect("Receive book ticker event");
         
-        // Subscribe to kline stream (different spec type)
         let kline_spec = KlineStreamSpec::thirty_minutes(kline_symbol);
         let mut kline_subscription = with_timeout(client.subscribe(&kline_spec)).await.expect("Kline subscription");
         let kline_event = with_recv_timeout(kline_subscription.recv()).await.expect("Receive kline event");
@@ -1459,17 +1429,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to ticker stream
         let ticker_spec = TickerStreamSpec::new(ticker_symbol);
         let mut ticker_subscription = with_timeout(client.subscribe(&ticker_spec)).await.expect("Ticker subscription");
         let ticker_event = with_recv_timeout(ticker_subscription.recv()).await.expect("Receive ticker event");
         
-        // Subscribe to partial book depth stream (different spec type)
         let partial_depth_spec = PartialBookDepthStreamSpec::levels_10(partial_depth_symbol);
         let mut partial_depth_subscription = with_timeout(client.subscribe(&partial_depth_spec)).await.expect("Partial depth subscription");
         let partial_depth_event = with_recv_timeout(partial_depth_subscription.recv()).await.expect("Receive partial depth event");
         
-        // Subscribe to average price stream (different spec type)
         let avg_price_spec = AveragePriceStreamSpec::new(avg_price_symbol);
         let mut avg_price_subscription = with_timeout(client.subscribe(&avg_price_spec)).await.expect("Average price subscription");
         let avg_price_event = with_recv_timeout(avg_price_subscription.recv()).await.expect("Receive average price event");
@@ -1553,17 +1520,14 @@ mod tests {
         // Act
         let _ = with_timeout(client.wait_for_connection()).await.expect("Connection");
         
-        // Subscribe to trade stream
         let trade_spec = TradeStreamSpec::new(trade_symbol);
         let mut trade_subscription = with_timeout(client.subscribe(&trade_spec)).await.expect("Trade subscription");
         let trade_event = with_recv_timeout(trade_subscription.recv()).await.expect("Receive trade event");
         
-        // Subscribe to rolling window ticker stream (different spec type)
         let rolling_window_spec = RollingWindowTickerStreamSpec::four_hourly(rolling_window_symbol);
         let mut rolling_window_subscription = with_timeout(client.subscribe(&rolling_window_spec)).await.expect("Rolling window subscription");
         let rolling_window_event = with_recv_timeout(rolling_window_subscription.recv()).await.expect("Receive rolling window event");
         
-        // Subscribe to kline with timezone stream (different spec type)
         let kline_tz_spec = KlineWithTimezoneStreamSpec::five_minutes_utc_plus_8(kline_tz_symbol);
         let mut kline_tz_subscription = with_timeout(client.subscribe(&kline_tz_spec)).await.expect("Kline timezone subscription");
         let kline_tz_event = with_recv_timeout(kline_tz_subscription.recv()).await.expect("Receive kline timezone event");
@@ -1641,9 +1605,9 @@ mod tests {
 
     #[tokio::test] 
     async fn test_connection_status_max_retries_exceeded() {
-        // Arrange - Create config with limited retries and invalid endpoint
+        // Arrange 
         let config = BinanceConfig::<StreamConfig>::builder()
-            .with_market_data_url("wss://invalid.nonexistent.endpoint.test")  // Invalid endpoint to force failures
+            .with_market_data_url("wss://invalid.nonexistent.endpoint.test")
             .with_stream_config(
                 StreamConfig::builder()
                     .with_max_reconnects(2)

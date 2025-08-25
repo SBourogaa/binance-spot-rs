@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 
-use serde_json::Value;
+use serde_json::{Value, json};
 use tokio::sync::oneshot;
-use tracing::debug;
+use tracing::{debug, trace, instrument, error};
+use uuid::Uuid;
 
 use crate::Result;
 use super::types::{
@@ -14,15 +15,19 @@ use super::types::{
  * Message router for WebSocket stream data.
  *
  * Manages the routing of incoming WebSocket messages to the appropriate broadcast
- * channels based on the connection mode.
+ * channels based on the connection mode. Handles both market data and user data streams
+ * with different routing strategies.
  *
  * # Fields
- * - `dynamic_channels`: Map of stream names to broadcast senders for dynamic mode.
- * - `pending_requests`: Map of request IDs to response senders for subscription management.
+ * - `dynamic_channels`: Map of stream names to broadcast senders for dynamic subscription mode.
+ * - `pending_requests`: Map of request IDs to response senders for tracking subscription/unsubscription requests.
+ * - `pending_user_data_logons`: Map of session.logon request IDs to user data subscription context,
+ *   used for the two-step user data authentication flow.
  */
 pub(super) struct MessageRouter {
     dynamic_channels: HashMap<String, ValueSender>,
     pending_requests: HashMap<String, oneshot::Sender<Result<()>>>,
+    pending_user_data_logons: HashMap<String, (String, ValueSender, oneshot::Sender<Result<()>>)>,
 }
 
 impl MessageRouter {
@@ -36,40 +41,39 @@ impl MessageRouter {
         Self {
             dynamic_channels: HashMap::new(),
             pending_requests: HashMap::new(),
+            pending_user_data_logons: HashMap::new(),
         }
     }
 
-    /**
-     * Adds a dynamic subscription channel.
-     *
-     * # Arguments
-     * - `stream_name`: Name of the stream to register.
-     * - `sender`: Broadcast sender for the stream.
-     */
     pub fn add_subscription(&mut self, stream_name: String, sender: ValueSender) {
         self.dynamic_channels.insert(stream_name, sender);
     }
 
-
-    /**
-     * Removes a dynamic subscription channel.
-     *
-     * # Arguments
-     * - `stream_name`: Name of the stream to remove.
-     */
     pub fn remove_subscription(&mut self, stream_name: &str) {
         self.dynamic_channels.remove(stream_name);
     }
 
-    /**
-     * Adds a pending subscription request.
-     *
-     * # Arguments
-     * - `request_id`: Unique ID of the subscription request.
-     * - `response_sender`: Channel to send the subscription result.
-     */
     pub fn add_pending_request(&mut self, request_id: String, response_sender: oneshot::Sender<Result<()>>) {
         self.pending_requests.insert(request_id, response_sender);
+    }
+
+    pub fn add_pending_user_data_logon(
+        &mut self, 
+        logon_id: String, 
+        stream_name: String, 
+        sender: ValueSender, 
+        response_sender: oneshot::Sender<Result<()>>
+    ) {
+        self.pending_user_data_logons.insert(logon_id, (stream_name, sender, response_sender));
+    }
+    
+    pub fn try_handle_user_data_logon(&mut self, value: &Value) -> Option<Value> {
+        if let Some(id) = value.get("id").and_then(|id| id.as_str()) {
+            if let Some((stream_name, sender, response)) = self.pending_user_data_logons.remove(id) {
+                return self.handle_user_data_logon_response(value, stream_name, sender, response);
+            }
+        }
+        None
     }
 
     /**
@@ -82,7 +86,9 @@ impl MessageRouter {
      * # Returns
      * - `true` if the message was successfully routed.
      */
+    #[instrument(skip(self, value), fields(has_id = value.get("id").is_some()))]
     pub fn route_message(&mut self, value: &Value, mode: &HandlerMode) -> bool {
+        let start = std::time::Instant::now();
         if self.handle_subscription_response(value) {
             return true;
         }
@@ -92,10 +98,18 @@ impl MessageRouter {
             HandlerMode::Static { senders } => self.route_static_data(value, senders),
         };
 
+        let duration = start.elapsed();
+        
         if !routed {
             debug!("Unrouted message: {}", serde_json::to_string(value).unwrap_or_else(|_| "invalid JSON".to_string()));
         }
-
+        
+        trace!(
+            routing_time_us = duration.as_micros(),
+            routed = routed,
+            "Message routing completed"
+        );
+        
         routed
     }
 
@@ -111,6 +125,7 @@ impl MessageRouter {
      * # Returns
      * - `true` if this was a subscription response, `false` otherwise
      */
+    #[instrument(skip(self, value))]
     fn handle_subscription_response(&mut self, value: &Value) -> bool {
         if let Some(id) = value.get("id").and_then(|id| id.as_str()) {
             if let Some(sender) = self.pending_requests.remove(id) {
@@ -119,21 +134,69 @@ impl MessageRouter {
                 } else {
                     Ok(())
                 };
+                let success = result.is_ok();
                 let _ = sender.send(result);
+                debug!(
+                    request_id = id,
+                    success = success,
+                    "Subscription response processed"
+                );
                 return true;
             } else {
-                // TODO: Clean this up. 
-                // If this is an API status response (like account.status) and we don't have a pending request,
-                // it's not an error - just continue routing
                 if value.get("result").and_then(|r| r.get("apiKey")).is_some() {
+                    debug!(request_id = id, "Received API status response, continuing to route");
                     return false;
                 }
                 
+                debug!(request_id = id, "Received response for unknown request ID");
                 return true;
             }
         }
         false
     }
+
+    /**
+     * Handles user data logon response and generates the subscribe message.
+     *
+     * # Arguments
+     * - `value`: The logon response.
+     * - `stream_name`: The stream name ("userData").
+     * - `sender`: Channel sender for stream data.
+     * - `response`: Response sender for subscription result.
+     *
+     * # Returns
+     * - `Option<Value>` containing the subscribe message to send next, or None if logon failed.
+     */
+    fn handle_user_data_logon_response(
+        &mut self,
+        value: &Value,
+        stream_name: String,
+        sender: ValueSender,
+        response: oneshot::Sender<Result<()>>
+    ) -> Option<Value> {
+        if let Some(error) = value.get("error") {
+            error!("Session logon failed: {:?}", error);
+            let _ = response.send(Err(anyhow::anyhow!("Session authentication failed: {:?}", error)));
+            return None;
+        }
+        
+        self.add_subscription(stream_name, sender);
+        let subscribe_id = Uuid::new_v4().to_string();
+        self.add_pending_request(subscribe_id.clone(), response);
+        
+        debug!(
+            logon_success = true,
+            subscribe_id = %subscribe_id,
+            "User data logon successful, sending subscription request"
+        );
+        
+        Some(json!({
+            "method": "userDataStream.subscribe",
+            "id": subscribe_id
+        }))
+    }
+
+
 
     /**
      * Routes data messages in dynamic mode.
@@ -164,21 +227,19 @@ impl MessageRouter {
      * - `value`: The JSON message to route.
      *
      * # Returns
-     * - `true` if this was a combined format message.
+     * - `true` if this was a combined format message, regardless of routing success.
      */
     fn route_combined_format(&self, value: &Value) -> bool {
         if let (Some(stream_name), Some(data)) = (value.get("stream"), value.get("data")) {
             if let Some(stream_name_str) = stream_name.as_str() {
                 if let Some(sender) = self.dynamic_channels.get(stream_name_str) {
                     let _ = sender.send(data.clone());
-                    debug!("Routed combined format message to stream: {}", stream_name_str);
-                } else {
-                    debug!("No subscription found for stream: {}", stream_name_str);
                 }
             }
-            return true;
+            true
+        } else {
+            false
         }
-        false
     }
 
     /**
@@ -191,19 +252,17 @@ impl MessageRouter {
      * - `value`: The JSON message to route.
      *
      * # Returns
-     * - `true` if this was a user data event.
+     * - `true` if this was a user data event, regardless of routing success.
      */
     fn route_user_data_event(&self, value: &Value) -> bool {
-        if let Some(event_type) = value.get("e").and_then(|e| e.as_str()) {
+        if value.get("e").is_some() {
             if let Some(sender) = self.dynamic_channels.get("userData") {
                 let _ = sender.send(value.clone());
-                debug!("Routed user data event to userData subscription: {}", event_type);
-                return true;
-            } else {
-                debug!("No userData subscription found for event: {}", event_type);
             }
+            true
+        } else {
+            false
         }
-        false
     }
 
     /**
@@ -216,21 +275,21 @@ impl MessageRouter {
      * - `value`: The JSON message to route.
      *
      * # Returns
-     * - `true` if this was a nested user data event.
+     * - `true` if this was a nested user data event, regardless of routing success.
      */
     fn route_nested_user_data_event(&self, value: &Value) -> bool {
         if let Some(event_data) = value.get("event") {
-            if let Some(event_type) = event_data.get("e").and_then(|e| e.as_str()) {
+            if event_data.get("e").is_some() {
                 if let Some(sender) = self.dynamic_channels.get("userData") {
                     let _ = sender.send(event_data.clone());
-                    debug!("Routed nested user data event to userData subscription: {}", event_type);
-                    return true;
-                } else {
-                    debug!("No userData subscription found for nested event: {}", event_type);
                 }
+                true
+            } else {
+                false
             }
+        } else {
+            false
         }
-        false
     }
 
     /**
@@ -249,10 +308,13 @@ impl MessageRouter {
         if let Some(result) = value.get("result") {
             if result.get("apiKey").is_some() || result.get("connectedSince").is_some() {
                 debug!("Handled API response message");
-                return true;
+                true
+            } else {
+                false
             }
+        } else {
+            false
         }
-        false
     }
 
     /**
@@ -299,13 +361,28 @@ impl MessageRouter {
     /**
      * Shuts down all pending requests
      * 
-     * Sends failure responses to all pending subscription requests when
-     * the connection is shutting down. This ensures no requests are left
-     * hanging indefinitely.
+     * Sends failure responses to all pending subscription requests and user data logons
+     * when the connection is shutting down. This ensures no requests are left hanging indefinitely.
      */
+    #[instrument(skip(self))]
     pub fn shutdown_all_pending(&mut self) {
+        let pending_count = self.pending_requests.len();
+        let user_data_count = self.pending_user_data_logons.len();
+        
         for (_, sender) in self.pending_requests.drain() {
             let _ = sender.send(Err(anyhow::anyhow!("Connection shutting down")));
+        }
+        
+        for (_, (_, _, response)) in self.pending_user_data_logons.drain() {
+            let _ = response.send(Err(anyhow::anyhow!("Connection shutting down")));
+        }
+        
+        if pending_count > 0 || user_data_count > 0 {
+            debug!(
+                cancelled_requests = pending_count,
+                cancelled_user_data_logons = user_data_count,
+                "Cancelled pending requests during shutdown"
+            );
         }
     }
 }

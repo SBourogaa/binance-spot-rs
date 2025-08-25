@@ -3,6 +3,7 @@ use serde::Serialize;
 use serde_json::Value;
 use serde::de::DeserializeOwned;
 use anyhow::Context;
+use tracing::{info, debug, instrument};
 
 use crate::Result;
 use crate::{
@@ -69,6 +70,13 @@ impl BinanceSpotRestClient {
             if let Ok(error_json) = serde_json::from_str::<Value>(&text) {
                 if let (Some(code), Some(msg)) = (error_json.get("code"), error_json.get("msg")) {
                     if let (Some(code_num), Some(msg_str)) = (code.as_i64(), msg.as_str()) {
+                        debug!(
+                            error_type = "api_error",
+                            error_code = code_num,
+                            error_msg = msg_str,
+                            http_status = %status,
+                            "Binance API error"
+                        );
                         return Err(BinanceError::Api(crate::errors::ApiError::new(
                             code_num as i32,
                             msg_str.to_string()
@@ -76,11 +84,25 @@ impl BinanceSpotRestClient {
                     }
                 }
             }
+            debug!(
+                error_type = "http_error",
+                http_status = %status,
+                response_text = %text,
+                "HTTP error response"
+            );
             return Err(anyhow::anyhow!("HTTP {}: {}", status, text));
         }
 
         serde_json::from_str(&text)
-            .context("Failed to parse JSON response")
+            .map_err(|e| {
+                debug!(
+                    error_type = "parse_error",
+                    response_text = %text,
+                    parse_error = %e,
+                    "Failed to parse JSON response"
+                );
+                anyhow::Error::from(e).context("Failed to parse JSON response")
+            })
     }
 
     /**
@@ -94,13 +116,16 @@ impl BinanceSpotRestClient {
      * # Returns
      * - `Value`: JSON response.
      */
+    #[instrument(skip(self, params), fields(method = %method, endpoint = endpoint))]
     pub(crate) async fn send_request<T: Serialize>(
         &self,
         method: reqwest::Method,
         endpoint: &str,
         params: T,
     ) -> Result<Value> {
-        // Serialize the params to query string
+        let start = std::time::Instant::now();
+        let prep_start = std::time::Instant::now();
+        
         let params_query = serde_urlencoded::to_string(&params)
             .context("Failed to serialize parameters")?;
 
@@ -110,10 +135,31 @@ impl BinanceSpotRestClient {
             format!("{}{}?{}", self.config.url(), endpoint, params_query)
         };
         
+        let prep_duration = prep_start.elapsed();
+        debug!(
+            prep_duration_us = prep_duration.as_micros(),
+            "Request preparation completed"
+        );
+        
+        let network_start = std::time::Instant::now();
         let response = self.client.request(method, &url).send().await
             .context("Failed to send request")?;
+        let network_duration = network_start.elapsed();
         
-        self.handle_response(response).await
+        let parse_start = std::time::Instant::now();
+        let result = self.handle_response(response).await;
+        let parse_duration = parse_start.elapsed();
+        
+        debug!(
+            total_duration_us = start.elapsed().as_micros(),
+            prep_duration_us = prep_duration.as_micros(),
+            network_duration_us = network_duration.as_micros(),
+            parse_duration_us = parse_duration.as_micros(),
+            success = result.is_ok(),
+            "REST request completed"
+        );
+        
+        result
     }
 
     /**
@@ -127,12 +173,16 @@ impl BinanceSpotRestClient {
      * # Returns
      * - `Value`: JSON response.
      */
+    #[instrument(skip(self, params), fields(method = %method, endpoint = endpoint))]
     pub(crate) async fn send_signed_request<T: Serialize>(
         &self,
         method: reqwest::Method,
         endpoint: &str,
         params: T,
     ) -> Result<Value> {
+        let start = std::time::Instant::now();
+        let prep_start = std::time::Instant::now();
+        
         let signer = self.config.signer()
             .ok_or_else(|| anyhow::anyhow!("No authentication configured"))?;
 
@@ -141,11 +191,32 @@ impl BinanceSpotRestClient {
         let final_query = format!("{}&signature={}", query_string, signature);
         let url = format!("{}{}?{}", self.config.url(), endpoint, final_query);
         
+        let prep_duration = prep_start.elapsed();
+        debug!(
+            prep_duration_us = prep_duration.as_micros(),
+            "Signed request preparation completed"
+        );
+        
+        let network_start = std::time::Instant::now();
         let response = self.client.request(method, &url)
             .header("X-MBX-APIKEY", signer.get_api_key())
             .send().await?;
+        let network_duration = network_start.elapsed();
         
-        self.handle_response(response).await
+        let parse_start = std::time::Instant::now();
+        let result = self.handle_response(response).await;
+        let parse_duration = parse_start.elapsed();
+        
+        info!(
+            total_duration_us = start.elapsed().as_micros(),
+            prep_duration_us = prep_duration.as_micros(),
+            network_duration_us = network_duration.as_micros(),
+            parse_duration_us = parse_duration.as_micros(),
+            success = result.is_ok(),
+            "Signed REST request completed"
+        );
+        
+        result
     }
 
     /**

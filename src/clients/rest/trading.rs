@@ -7,7 +7,7 @@ use crate::{
         rest::BinanceSpotRestClient
     },
     types::{
-        responses::{Order, TestOrder, AmendedOrder, CancelledOrder, CancelReplaceOrder},
+        responses::{Order, TestOrder, AmendedOrder, CancelledOrder, CancelReplaceOrder, OrderList},
         requests::{
             Validated,
             OrderSpec,
@@ -15,6 +15,14 @@ use crate::{
             CancelOrderSpec,
             CancelReplaceSpec,
             CancelAllOrdersSpec,
+            OcoOrderSpec,
+            OtoOrderSpec,
+            OtocoOrderSpec,
+            CancelOrderListSpec,
+            OrderListStatusSpec,
+            AllOrderListsSpec,
+            OpenOrderListsSpec,
+            SorOrderSpec,
         },
     },
 };
@@ -43,5 +51,41 @@ impl TradingClient for BinanceSpotRestClient {
 
     async fn amend_order(&self, specification: AmendOrderSpec<Validated>) -> Result<AmendedOrder> {
         self.signed_request(reqwest::Method::PUT, "/api/v3/order/amend/keepPriority", specification).await
+    }
+
+    async fn place_oco_order(&self, specification: OcoOrderSpec<Validated>) -> Result<OrderList> {
+        self.signed_request(reqwest::Method::POST, "/api/v3/orderList/oco", specification).await
+    }
+
+    async fn place_oto_order(&self, specification: OtoOrderSpec<Validated>) -> Result<OrderList> {
+        self.signed_request(reqwest::Method::POST, "/api/v3/orderList/oto", specification).await
+    }
+
+    async fn place_otoco_order(&self, specification: OtocoOrderSpec<Validated>) -> Result<OrderList> {
+        self.signed_request(reqwest::Method::POST, "/api/v3/orderList/otoco", specification).await
+    }
+
+    async fn cancel_order_list(&self, specification: CancelOrderListSpec<Validated>) -> Result<OrderList> {
+        self.signed_request(reqwest::Method::DELETE, "/api/v3/orderList", specification).await
+    }
+
+    async fn order_list_status(&self, specification: OrderListStatusSpec<Validated>) -> Result<OrderList> {
+        self.signed_request(reqwest::Method::GET, "/api/v3/orderList", specification).await
+    }
+
+    async fn all_order_lists(&self, specification: AllOrderListsSpec<Validated>) -> Result<Vec<OrderList>> {
+        self.signed_request(reqwest::Method::GET, "/api/v3/allOrderList", specification).await
+    }
+
+    async fn open_order_lists(&self, specification: OpenOrderListsSpec<Validated>) -> Result<Vec<OrderList>> {
+        self.signed_request(reqwest::Method::GET, "/api/v3/openOrderList", specification).await
+    }
+
+    async fn place_sor_order(&self, specification: SorOrderSpec<Validated>) -> Result<Order> {
+        self.signed_request(reqwest::Method::POST, "/api/v3/sor/order", specification).await
+    }
+
+    async fn test_sor_order(&self, specification: SorOrderSpec<Validated>) -> Result<TestOrder> {
+        self.signed_request(reqwest::Method::POST, "/api/v3/sor/order/test", specification).await
     }
 }

@@ -31,5 +31,6 @@ pub struct OrderList {
     pub transaction_time: u64,
     pub symbol: String,
     pub orders: Vec<OrderSummary>,
+    #[serde(default)]
     pub order_reports: Vec<Order>,
 }

@@ -1,12 +1,12 @@
-// TODO: Clean up file.
-
 #[cfg(test)]
 mod tests {
     use std::time::Duration;
     use std::str::FromStr;
 
+    use tracing::debug;
+    use serial_test::serial;
     use rust_decimal::Decimal;
-    
+
     use crate::Result;
 
     use crate::streams::client::TypedSubscription;
@@ -304,13 +304,13 @@ mod tests {
      * Tests execution report events by placing and canceling a REST API order.
      */
     #[tokio::test]
+    #[serial]
     async fn test_execution_report_via_rest_order() {
         // Arrange
         let mut stream_client = create_user_data_stream_client().expect("Stream client creation");
         let rest_client = create_rest_client().expect("REST client creation");
         let spec = UserDataStreamSpec::new();
         
-        // Get safe order parameters
         let (safe_price, safe_quantity) = get_safe_btcusdt_order_params().await.expect("Get safe order params");
         
         // Act
@@ -362,7 +362,6 @@ mod tests {
         let ws_client = create_websocket_client().await.expect("WebSocket client creation");
         let spec = UserDataStreamSpec::new();
         
-        // Get safe order parameters  
         let (safe_price, safe_quantity) = get_safe_btcusdt_order_params().await.expect("Get safe order params");
         
         // Act
@@ -397,7 +396,7 @@ mod tests {
         let mut subscription = with_timeout(stream_client.subscribe(&spec)).await.expect("Subscription");
         
         let order_spec = OrderSpec::new("BTCUSDT", OrderSide::Buy, OrderType::Market)
-            .with_quote_order_quantity(Decimal::new(15, 0))  // Use $15 instead of $10 to be safer
+            .with_quote_order_quantity(Decimal::new(15, 0))
             .build()
             .expect("Order spec creation");
             
@@ -420,7 +419,7 @@ mod tests {
                             assert_valid_balance_update_event(&balance_update);
                         }
                         other => {
-                            eprintln!("Received other event type: {:?}", other);
+                            debug!(event = ?other, "Received other event type");
                         }
                     }
                     

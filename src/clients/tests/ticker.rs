@@ -363,7 +363,6 @@ mod tests {
         assert_valid_ticker_statistics(&rest_stats[0]);
         assert_valid_ticker_statistics(&ws_stats[0]);
         
-        // Check symbol matches
         match &rest_stats[0] {
             TickerStatistics::Full(full) => assert_eq!(full.symbol, test_symbol),
             TickerStatistics::Mini(mini) => assert_eq!(mini.symbol, test_symbol),
@@ -580,7 +579,6 @@ mod tests {
             assert_valid_ticker_statistics(stat);
         }
         
-        // Check both symbols are present
         let rest_symbols: Vec<String> = rest_stats.iter().map(|s| match s {
             TickerStatistics::Full(full) => full.symbol.clone(),
             TickerStatistics::Mini(mini) => mini.symbol.clone(),
@@ -652,7 +650,6 @@ mod tests {
         assert_valid_ticker_statistics(&rest_stats[0]);
         assert_valid_ticker_statistics(&ws_stats[0]);
         
-        // Check symbol matches
         match &rest_stats[0] {
             TickerStatistics::Full(full) => assert_eq!(full.symbol, test_symbol),
             TickerStatistics::Mini(mini) => assert_eq!(mini.symbol, test_symbol),
@@ -673,7 +670,7 @@ mod tests {
         let rest_client = create_rest_client().expect("REST client creation");
         let ws_client = create_websocket_client().expect("WebSocket client creation");
         let test_symbol = "BTCUSDT";
-        let timezone = "8"; // GMT+8
+        let timezone = "8";
         
         // Act
         let rest_spec = TickerTradingDaySpec::new()
@@ -697,7 +694,6 @@ mod tests {
         assert_valid_ticker_statistics(&rest_stats[0]);
         assert_valid_ticker_statistics(&ws_stats[0]);
         
-        // Check symbol matches
         match &rest_stats[0] {
             TickerStatistics::Full(full) => assert_eq!(full.symbol, test_symbol),
             TickerStatistics::Mini(mini) => assert_eq!(mini.symbol, test_symbol),
@@ -741,7 +737,6 @@ mod tests {
         assert_valid_ticker_statistics(&rest_stats[0]);
         assert_valid_ticker_statistics(&ws_stats[0]);
         
-        // Verify MINI type was returned (though API may still return FULL)
         match &rest_stats[0] {
             TickerStatistics::Full(full) => assert_eq!(full.symbol, test_symbol),
             TickerStatistics::Mini(mini) => assert_eq!(mini.symbol, test_symbol),
@@ -777,7 +772,6 @@ mod tests {
         assert_valid_ticker_statistics(&rest_stats[0]);
         assert_valid_ticker_statistics(&ws_stats[0]);
         
-        // Check symbol matches
         match &rest_stats[0] {
             TickerStatistics::Full(full) => assert_eq!(full.symbol, test_symbol),
             TickerStatistics::Mini(mini) => assert_eq!(mini.symbol, test_symbol),
@@ -822,7 +816,6 @@ mod tests {
         assert_valid_ticker_statistics(&rest_stats[0]);
         assert_valid_ticker_statistics(&ws_stats[0]);
         
-        // Check symbol matches
         match &rest_stats[0] {
             TickerStatistics::Full(full) => assert_eq!(full.symbol, test_symbol),
             TickerStatistics::Mini(mini) => assert_eq!(mini.symbol, test_symbol),
@@ -917,7 +910,6 @@ mod tests {
             .expect("Spec validation");
         let ws_result = with_timeout(ws_client.ticker_book(ws_spec)).await;
 
-        // Assert both should return the same error pattern
         for (client_name, result) in [("REST", rest_result), ("WebSocket", ws_result)] {
             match result {
                 Ok(books) => panic!("Expected {} error, got successful response: {:?}", client_name, books),
@@ -962,7 +954,6 @@ mod tests {
             .expect("Spec validation");
         let ws_result = with_timeout(ws_client.ticker_24hr(ws_spec)).await;
 
-        // Assert both should return the same error pattern
         for (client_name, result) in [("REST", rest_result), ("WebSocket", ws_result)] {
             match result {
                 Ok(stats) => panic!("Expected {} error, got successful response: {:?}", client_name, stats),

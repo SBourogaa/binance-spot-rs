@@ -49,10 +49,7 @@ impl OrderBook {
      * - `bool`: True if order book is properly sorted.
      */
     pub fn is_valid(&self) -> bool {
-        // Check bids are sorted highest to lowest
-        let bids_sorted: bool = self.bids.windows(2).all(|pair| pair[0].price >= pair[1].price);
-        
-        // Check asks are sorted lowest to highest  
+        let bids_sorted: bool = self.bids.windows(2).all(|pair| pair[0].price >= pair[1].price);  
         let asks_sorted: bool = self.asks.windows(2).all(|pair| pair[0].price <= pair[1].price);
         
         bids_sorted && asks_sorted

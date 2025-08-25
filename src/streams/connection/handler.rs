@@ -7,7 +7,7 @@ use serde_json::json;
 use tokio::sync::mpsc;
 use tokio_tungstenite::tungstenite::protocol::Message;
 use chrono::Utc;
-use tracing::{error, warn};
+use tracing::{error, warn, info, debug, instrument};
 
 use crate::Result;
 use crate::auth::SignatureProvider;
@@ -34,7 +34,6 @@ use super::{
  * - `message_router`: Routes incoming messages to appropriate channels.
  * - `state`: Tracks active subscriptions for reconnection.
  * - `signer`: Optional signature provider for user data stream authentication.
- * - `pending_user_data_subscriptions`: Map of logon request IDs to pending user data subscriptions.
  */
 pub(super) struct UnifiedConnectionHandler {
     mode: HandlerMode,
@@ -42,7 +41,6 @@ pub(super) struct UnifiedConnectionHandler {
     message_router: MessageRouter,
     state: ConnectionState,
     signer: Option<Arc<dyn SignatureProvider>>,
-    pending_user_data_subscriptions: std::collections::HashMap<String, (String, ValueSender, tokio::sync::oneshot::Sender<crate::Result<()>>)>,
 }
 
 impl UnifiedConnectionHandler {
@@ -66,7 +64,6 @@ impl UnifiedConnectionHandler {
             message_router: MessageRouter::new(),
             state: ConnectionState::new(),
             signer,
-            pending_user_data_subscriptions: std::collections::HashMap::new(),
         }
     }
 
@@ -89,8 +86,7 @@ impl UnifiedConnectionHandler {
             message_receiver,
             message_router: MessageRouter::new(),
             state: ConnectionState::new(),
-            signer: None, // Static mode doesn't use authentication
-            pending_user_data_subscriptions: std::collections::HashMap::new(),
+            signer: None,
         }
     }
 
@@ -103,7 +99,9 @@ impl UnifiedConnectionHandler {
      * # Returns
      * - `()` on successful state restoration.
      */
+    #[instrument(skip(self, ws_connection))]
     pub async fn on_connected(&mut self, ws_connection: &mut WebSocketConnection) -> Result<()> {
+        let start = std::time::Instant::now();
         if matches!(self.mode, HandlerMode::Dynamic) && self.state.has_active_subscriptions() {
             let active_subs = self.state.active_subscriptions();
             
@@ -168,6 +166,12 @@ impl UnifiedConnectionHandler {
                     .context("Failed to restore market data subscriptions after reconnection")?;
             }
         }
+        
+        info!(
+            duration_us = start.elapsed().as_micros(),
+            active_subscriptions = self.state.active_subscriptions().len(),
+            "Connection state restoration completed"
+        );
         Ok(())
     }
 
@@ -183,23 +187,45 @@ impl UnifiedConnectionHandler {
      * # Returns
      * - Result indicating the reason for connection termination
      */
+    #[instrument(skip(self, ws_connection))]
     pub async fn handle_connection(&mut self, ws_connection: &mut WebSocketConnection) -> Result<()> {
+        let mut message_count = 0u64;
+        let connection_start = std::time::Instant::now();
         loop {
             tokio::select! {
                 Some(cmd) = self.message_receiver.recv() => {
                     if self.handle_command(cmd, ws_connection).await? {
+                        info!(
+                            connection_duration_us = connection_start.elapsed().as_micros(),
+                            messages_processed = message_count,
+                            "WebSocket connection shutting down gracefully"
+                        );
                         return Ok(());
                     }
                 }
                 Some(msg) = ws_connection.next_message() => {
+                    message_count += 1;
                     if !self.handle_websocket_message(msg, ws_connection).await? {
                         break;
+                    }
+                    
+                    if message_count % 1000 == 0 {
+                        debug!(
+                            messages_processed = message_count,
+                            uptime_us = connection_start.elapsed().as_micros(),
+                            "WebSocket connection health check"
+                        );
                     }
                 }
                 else => break,
             }
         }
         
+        info!(
+            connection_duration_us = connection_start.elapsed().as_micros(),
+            messages_processed = message_count,
+            "WebSocket connection lost"
+        );
         Err(anyhow::anyhow!("Connection lost"))
     }
 
@@ -216,12 +242,15 @@ impl UnifiedConnectionHandler {
      * # Returns
      * - Result<bool> where true indicates shutdown was requested
      */
+    #[instrument(skip(self, ws_connection))]
     async fn handle_command(&mut self, command: StreamMessage, ws_connection: &mut WebSocketConnection) -> Result<bool> {
+        let start = std::time::Instant::now();
         match command {
             StreamMessage::Subscribe { stream_name, sender, response } => {
                 match &self.mode {
                     HandlerMode::Dynamic => {
                         if stream_name == "userData" {
+                            debug!(stream = "userData", "Processing user data subscription");
                             let logon_id = Uuid::new_v4().to_string();
                             let timestamp = Utc::now().timestamp_millis();
                             let recv_window = 5000;
@@ -254,11 +283,14 @@ impl UnifiedConnectionHandler {
                                 return Err(anyhow::anyhow!("Failed to authenticate session"));
                             }
                             
-                            self.pending_user_data_subscriptions.insert(
-                                logon_id.clone(), 
-                                (stream_name.clone(), sender, response)
+                            self.message_router.add_pending_user_data_logon(
+                                logon_id.clone(),
+                                stream_name,
+                                sender,
+                                response
                             );
                         } else {
+                            debug!(stream = %stream_name, "Processing market data subscription");
                             let request_id = Uuid::new_v4().to_string();
                             let subscribe_msg = json!({
                                 "method": "SUBSCRIBE",
@@ -272,8 +304,14 @@ impl UnifiedConnectionHandler {
                             }
                             
                             self.message_router.add_subscription(stream_name.clone(), sender);
-                            self.state.add_subscription(stream_name);
+                            self.state.add_subscription(stream_name.clone());
                             self.message_router.add_pending_request(request_id, response);
+                            
+                            info!(
+                                stream = %stream_name,
+                                duration_us = start.elapsed().as_micros(),
+                                "Market data subscription completed"
+                            );
                         }
                     }
                     HandlerMode::Static { .. } => {
@@ -365,45 +403,51 @@ impl UnifiedConnectionHandler {
         message: std::result::Result<Message, tokio_tungstenite::tungstenite::Error>,
         ws_connection: &mut WebSocketConnection
     ) -> Result<bool> {
+        let message_start = std::time::Instant::now();
         match message? {
             Message::Text(text) => {
                 if let Ok(value) = serde_json::from_str::<serde_json::Value>(&text) {
-                    if let Some(id) = value.get("id").and_then(|id| id.as_str()) {
-                        if let Some((stream_name, sender, response)) = self.pending_user_data_subscriptions.remove(id) {
-                            if value.get("error").is_some() {
-                                error!("Session logon failed: {:?}", value.get("error"));
-                                let _ = response.send(Err(anyhow::anyhow!("Session authentication failed: {:?}", value.get("error"))));
-                                return Ok(true);
-                            }
-                            
-                            let subscribe_id = Uuid::new_v4().to_string();
-                            let subscribe_msg = json!({
-                                "method": "userDataStream.subscribe",
-                                "id": subscribe_id
-                            });
-                            
-                            if let Err(e) = ws_connection.send_message(Message::Text(subscribe_msg.to_string())).await {
-                                let _ = response.send(Err(e.context("Failed to subscribe to user data stream after authentication")));
-                                return Err(anyhow::anyhow!("Failed to subscribe to user data stream"));
-                            }
-                            
-                            self.message_router.add_subscription(stream_name.clone(), sender);
-                            self.state.add_subscription(stream_name);
-                            self.message_router.add_pending_request(subscribe_id, response);
+                    if let Some(subscribe_msg) = self.message_router.try_handle_user_data_logon(&value) {
+                        if let Err(e) = ws_connection.send_message(Message::Text(subscribe_msg.to_string())).await {
+                            error!(error = %e, "Failed to send user data stream subscribe after authentication");
+                            return Err(anyhow::anyhow!("Failed to subscribe to user data stream"));
                         }
+                        
+                        self.state.add_subscription("userData".to_string());
                     }
                     
-                    // Route the message through the normal router
                     self.message_router.route_message(&value, &self.mode);
                 }
+                
+                info!(
+                    message_duration_us = message_start.elapsed().as_micros(),
+                    message_type = "text",
+                    "WebSocket text message processed"
+                );
                 Ok(true)
             }
             Message::Ping(data) => {
-                ws_connection.send_message(Message::Pong(data)).await?;
+                let pong_start = std::time::Instant::now();
+                let result = ws_connection.send_message(Message::Pong(data)).await;
+                info!(
+                    pong_duration_us = pong_start.elapsed().as_micros(),
+                    success = result.is_ok(),
+                    "WebSocket ping/pong handled"
+                );
+                result?;
                 Ok(true)
             }
-            Message::Close(_) => Ok(false),
-            _ => Ok(true),
+            Message::Close(_) => {
+                info!("WebSocket close message received");
+                Ok(false)
+            }
+            _ => {
+                info!(
+                    message_duration_us = message_start.elapsed().as_micros(),
+                    "WebSocket message processed (other type)"
+                );
+                Ok(true)
+            }
         }
     }
 }
