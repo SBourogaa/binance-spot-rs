@@ -148,10 +148,10 @@ impl AmendOrderSpec<Unvalidated> {
             _ => {}
         }
 
-        if let Some(ref orig_client_id) = self.original_client_order_id {
-            if orig_client_id.trim().is_empty() {
-                return Err(InvalidParameter::empty("orig_client_order_id").into());
-            }
+        if let Some(ref orig_client_id) = self.original_client_order_id
+            && orig_client_id.trim().is_empty()
+        {
+            return Err(InvalidParameter::empty("orig_client_order_id").into());
         }
 
         if self.new_quantity <= Decimal::ZERO {

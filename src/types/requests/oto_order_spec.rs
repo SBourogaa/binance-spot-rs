@@ -126,6 +126,7 @@ impl OtoOrderSpec<Unvalidated> {
      * # Returns
      * - `Self`: New OTO order specification.
      */
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         symbol: impl Into<String>,
         working_type: OrderType,
@@ -462,22 +463,20 @@ impl OtoOrderSpec<Unvalidated> {
             );
         }
 
-        if let Some(working_iceberg_qty) = self.working_iceberg_quantity {
-            if working_iceberg_qty <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new(
-                    "working_iceberg_quantity",
-                    "must be greater than 0",
-                )
-                .into());
-            }
+        if let Some(working_iceberg_qty) = self.working_iceberg_quantity
+            && working_iceberg_qty <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new(
+                "working_iceberg_quantity",
+                "must be greater than 0",
+            )
+            .into());
         }
 
-        if let Some(strategy_type) = self.working_strategy_type {
-            if strategy_type < 1000000 {
-                return Err(
-                    InvalidParameter::range("working_strategy_type", 1000000, u32::MAX).into(),
-                );
-            }
+        if let Some(strategy_type) = self.working_strategy_type
+            && strategy_type < 1000000
+        {
+            return Err(InvalidParameter::range("working_strategy_type", 1000000, u32::MAX).into());
         }
 
         match self.pending_type {
@@ -550,48 +549,42 @@ impl OtoOrderSpec<Unvalidated> {
             }
         }
 
-        if let Some(price) = self.pending_price {
-            if price <= rust_decimal::Decimal::ZERO {
-                return Err(
-                    InvalidParameter::new("pending_price", "must be greater than 0").into(),
-                );
-            }
+        if let Some(price) = self.pending_price
+            && price <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new("pending_price", "must be greater than 0").into());
         }
 
-        if let Some(stop_price) = self.pending_stop_price {
-            if stop_price <= rust_decimal::Decimal::ZERO {
-                return Err(
-                    InvalidParameter::new("pending_stop_price", "must be greater than 0").into(),
-                );
-            }
+        if let Some(stop_price) = self.pending_stop_price
+            && stop_price <= rust_decimal::Decimal::ZERO
+        {
+            return Err(
+                InvalidParameter::new("pending_stop_price", "must be greater than 0").into(),
+            );
         }
 
-        if let Some(trailing_delta) = self.pending_trailing_delta {
-            if trailing_delta <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new(
-                    "pending_trailing_delta",
-                    "must be greater than 0",
-                )
-                .into());
-            }
+        if let Some(trailing_delta) = self.pending_trailing_delta
+            && trailing_delta <= rust_decimal::Decimal::ZERO
+        {
+            return Err(
+                InvalidParameter::new("pending_trailing_delta", "must be greater than 0").into(),
+            );
         }
 
-        if let Some(iceberg_qty) = self.pending_iceberg_quantity {
-            if iceberg_qty <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new(
-                    "pending_iceberg_quantity",
-                    "must be greater than 0",
-                )
-                .into());
-            }
+        if let Some(iceberg_qty) = self.pending_iceberg_quantity
+            && iceberg_qty <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new(
+                "pending_iceberg_quantity",
+                "must be greater than 0",
+            )
+            .into());
         }
 
-        if let Some(strategy_type) = self.pending_strategy_type {
-            if strategy_type < 1000000 {
-                return Err(
-                    InvalidParameter::range("pending_strategy_type", 1000000, u32::MAX).into(),
-                );
-            }
+        if let Some(strategy_type) = self.pending_strategy_type
+            && strategy_type < 1000000
+        {
+            return Err(InvalidParameter::range("pending_strategy_type", 1000000, u32::MAX).into());
         }
 
         Ok(())

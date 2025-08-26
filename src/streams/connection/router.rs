@@ -70,11 +70,10 @@ impl MessageRouter {
     }
 
     pub fn try_handle_user_data_logon(&mut self, value: &Value) -> Option<Value> {
-        if let Some(id) = value.get("id").and_then(|id| id.as_str()) {
-            if let Some((stream_name, sender, response)) = self.pending_user_data_logons.remove(id)
-            {
-                return self.handle_user_data_logon_response(value, stream_name, sender, response);
-            }
+        if let Some(id) = value.get("id").and_then(|id| id.as_str())
+            && let Some((stream_name, sender, response)) = self.pending_user_data_logons.remove(id)
+        {
+            return self.handle_user_data_logon_response(value, stream_name, sender, response);
         }
         None
     }
@@ -241,10 +240,10 @@ impl MessageRouter {
      */
     fn route_combined_format(&self, value: &Value) -> bool {
         if let (Some(stream_name), Some(data)) = (value.get("stream"), value.get("data")) {
-            if let Some(stream_name_str) = stream_name.as_str() {
-                if let Some(sender) = self.dynamic_channels.get(stream_name_str) {
-                    let _ = sender.send(data.clone());
-                }
+            if let Some(stream_name_str) = stream_name.as_str()
+                && let Some(sender) = self.dynamic_channels.get(stream_name_str)
+            {
+                let _ = sender.send(data.clone());
             }
             true
         } else {
@@ -342,10 +341,10 @@ impl MessageRouter {
      */
     fn route_static_data(&self, value: &Value, senders: &HashMap<String, ValueSender>) -> bool {
         if let (Some(stream_name), Some(data)) = (value.get("stream"), value.get("data")) {
-            if let Some(stream_name_str) = stream_name.as_str() {
-                if let Some(sender) = senders.get(stream_name_str) {
-                    let _ = sender.send(data.clone());
-                }
+            if let Some(stream_name_str) = stream_name.as_str()
+                && let Some(sender) = senders.get(stream_name_str)
+            {
+                let _ = sender.send(data.clone());
             }
             return true;
         }
@@ -359,10 +358,10 @@ impl MessageRouter {
             return true;
         }
 
-        if senders.len() == 1 {
-            if let Some((_, sender)) = senders.iter().next() {
-                let _ = sender.send(value.clone());
-            }
+        if senders.len() == 1
+            && let Some((_, sender)) = senders.iter().next()
+        {
+            let _ = sender.send(value.clone());
         }
 
         true

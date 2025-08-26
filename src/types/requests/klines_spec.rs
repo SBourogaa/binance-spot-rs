@@ -165,20 +165,20 @@ impl KlinesSpec<Unvalidated> {
             .into()),
         }
 
-        if let Some(limit) = self.limit {
-            if limit > 1000 {
-                return Err(InvalidParameter::range("limit", 1, 1000).into());
-            }
+        if let Some(limit) = self.limit
+            && limit > 1000
+        {
+            return Err(InvalidParameter::range("limit", 1, 1000).into());
         }
 
-        if let (Some(start), Some(end)) = (self.start_time, self.end_time) {
-            if end <= start {
-                return Err(InvalidParameter::new(
-                    "start_time/end_time",
-                    "end_time must be greater than start_time",
-                )
-                .into());
-            }
+        if let (Some(start), Some(end)) = (self.start_time, self.end_time)
+            && end <= start
+        {
+            return Err(InvalidParameter::new(
+                "start_time/end_time",
+                "end_time must be greater than start_time",
+            )
+            .into());
         }
 
         if let Some(ref tz) = self.time_zone {
@@ -201,7 +201,7 @@ impl KlinesSpec<Unvalidated> {
         let tz = timezone.trim();
 
         if let Ok(hours) = tz.parse::<i32>() {
-            if hours < -12 || hours > 14 {
+            if !(-12..=14).contains(&hours) {
                 return Err(InvalidParameter::new(
                     "time_zone",
                     "timezone hours must be in range [-12 to +14]",
@@ -229,7 +229,7 @@ impl KlinesSpec<Unvalidated> {
                 .parse::<u32>()
                 .map_err(|_| InvalidParameter::new("time_zone", "invalid minute format"))?;
 
-            if hours < -12 || hours > 14 {
+            if !(-12..=14).contains(&hours) {
                 return Err(InvalidParameter::new(
                     "time_zone",
                     "timezone hours must be in range [-12 to +14]",

@@ -101,7 +101,7 @@ impl CancelOrderSpec<Unvalidated> {
      *
      * # Arguments
      * - `cancel_restrictions`: Restrictions on the cancellation (e.g., no market
-     *    orders, no stop orders).
+     *   orders, no stop orders).
      *
      * # Returns
      * - `Self`: Updated specification.
@@ -141,7 +141,6 @@ impl CancelOrderSpec<Unvalidated> {
      * # Returns
      * - `Self`: Updated specification.
      */
-
     fn validate(&self) -> Result<()> {
         if self.symbol.trim().is_empty() {
             return Err(InvalidParameter::empty("symbol").into());

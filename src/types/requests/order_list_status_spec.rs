@@ -110,10 +110,10 @@ impl OrderListStatusSpec<Unvalidated> {
             .into());
         }
 
-        if let Some(ref orig_client_id) = self.original_client_order_id {
-            if orig_client_id.trim().is_empty() {
-                return Err(InvalidParameter::empty("original_client_order_id").into());
-            }
+        if let Some(ref orig_client_id) = self.original_client_order_id
+            && orig_client_id.trim().is_empty()
+        {
+            return Err(InvalidParameter::empty("original_client_order_id").into());
         }
 
         Ok(())

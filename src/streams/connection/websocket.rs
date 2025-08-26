@@ -89,12 +89,9 @@ impl WebSocketConnection {
      */
     #[instrument(skip(self))]
     pub async fn close(&mut self) -> Result<()> {
-        let result = self
-            .write
+        self.write
             .send(Message::Close(None))
             .await
-            .context("Failed to send close frame");
-
-        result
+            .context("Failed to send close frame")
     }
 }

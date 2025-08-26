@@ -61,23 +61,22 @@ impl BinanceSpotRestClient {
         let text = response.text().await.context("Failed to read response")?;
 
         if !status.is_success() {
-            if let Ok(error_json) = serde_json::from_str::<Value>(&text) {
-                if let (Some(code), Some(msg)) = (error_json.get("code"), error_json.get("msg")) {
-                    if let (Some(code_num), Some(msg_str)) = (code.as_i64(), msg.as_str()) {
-                        debug!(
-                            error_type = "api_error",
-                            error_code = code_num,
-                            error_msg = msg_str,
-                            http_status = %status,
-                            "Binance API error"
-                        );
-                        return Err(BinanceError::Api(crate::errors::ApiError::new(
-                            code_num as i32,
-                            msg_str.to_string(),
-                        ))
-                        .into());
-                    }
-                }
+            if let Ok(error_json) = serde_json::from_str::<Value>(&text)
+                && let (Some(code), Some(msg)) = (error_json.get("code"), error_json.get("msg"))
+                && let (Some(code_num), Some(msg_str)) = (code.as_i64(), msg.as_str())
+            {
+                debug!(
+                    error_type = "api_error",
+                    error_code = code_num,
+                    error_msg = msg_str,
+                    http_status = %status,
+                    "Binance API error"
+                );
+                return Err(BinanceError::Api(crate::errors::ApiError::new(
+                    code_num as i32,
+                    msg_str.to_string(),
+                ))
+                .into());
             }
             debug!(
                 error_type = "http_error",

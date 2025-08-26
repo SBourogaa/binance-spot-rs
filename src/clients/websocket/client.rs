@@ -530,13 +530,12 @@ impl BinanceSpotWebSocketClient {
                 match message {
                     Ok(Message::Close(_)) => break,
                     Ok(Message::Text(text)) => {
-                        if let Ok(response) = serde_json::from_str::<Value>(&text) {
-                            if let Some(id) = response.get("id").and_then(|id| id.as_str()) {
-                                if let Some(sender) = pending_requests.remove(id) {
-                                    let result = Self::parse_websocket_response(response);
-                                    let _ = sender.send(result);
-                                }
-                            }
+                        if let Ok(response) = serde_json::from_str::<Value>(&text)
+                            && let Some(id) = response.get("id").and_then(|id| id.as_str())
+                            && let Some(sender) = pending_requests.remove(id)
+                        {
+                            let result = Self::parse_websocket_response(response);
+                            let _ = sender.send(result);
                         }
                     }
                     Err(_) => break,
@@ -673,22 +672,22 @@ impl BinanceSpotWebSocketClient {
      */
     fn parse_websocket_response(response: Value) -> Result<Value> {
         if let Some(error) = response.get("error") {
-            if let (Some(code), Some(msg)) = (error.get("code"), error.get("msg")) {
-                if let (Some(code_num), Some(msg_str)) = (code.as_i64(), msg.as_str()) {
-                    return Err(BinanceError::Api(crate::errors::ApiError::new(
-                        code_num as i32,
-                        msg_str.to_string(),
-                    ))
-                    .into());
-                }
+            if let (Some(code), Some(msg)) = (error.get("code"), error.get("msg"))
+                && let (Some(code_num), Some(msg_str)) = (code.as_i64(), msg.as_str())
+            {
+                return Err(BinanceError::Api(crate::errors::ApiError::new(
+                    code_num as i32,
+                    msg_str.to_string(),
+                ))
+                .into());
             }
             return Err(anyhow::anyhow!("WebSocket error: {}", error));
         }
 
-        if let Some(status) = response.get("status") {
-            if status.as_u64() != Some(200) {
-                return Err(anyhow::anyhow!("WebSocket status error: {}", status));
-            }
+        if let Some(status) = response.get("status")
+            && status.as_u64() != Some(200)
+        {
+            return Err(anyhow::anyhow!("WebSocket status error: {}", status));
         }
 
         if let Some(result) = response.get("result") {

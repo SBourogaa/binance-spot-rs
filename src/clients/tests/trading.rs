@@ -280,7 +280,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_{}", base_id))
+            .with_client_order_id(format!("rest_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -288,7 +288,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_{}", base_id))
+            .with_client_order_id(format!("ws_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -348,13 +348,13 @@ mod tests {
 
         let rest_spec = OrderSpec::new(test_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&format!("rest_market_{}", base_id))
+            .with_client_order_id(format!("rest_market_{}", base_id))
             .build()
             .expect("Order spec validation");
 
         let ws_spec = OrderSpec::new(test_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&format!("ws_market_{}", base_id))
+            .with_client_order_id(format!("ws_market_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -462,7 +462,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&generate_unique_client_order_id())
+            .with_client_order_id(generate_unique_client_order_id())
             .build()
             .expect("Order spec validation");
 
@@ -470,7 +470,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&generate_unique_client_order_id())
+            .with_client_order_id(generate_unique_client_order_id())
             .build()
             .expect("Order spec validation");
 
@@ -533,13 +533,13 @@ mod tests {
         // Act
         let rest_spec = OrderSpec::new(test_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&generate_unique_client_order_id())
+            .with_client_order_id(generate_unique_client_order_id())
             .build()
             .expect("Order spec validation");
 
         let ws_spec = OrderSpec::new(test_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&generate_unique_client_order_id())
+            .with_client_order_id(generate_unique_client_order_id())
             .build()
             .expect("Order spec validation");
 
@@ -664,7 +664,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_cancel_all_{}", base_id))
+            .with_client_order_id(format!("rest_cancel_all_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -672,7 +672,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_cancel_all_{}", base_id))
+            .with_client_order_id(format!("ws_cancel_all_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -849,7 +849,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_multi_1_{}", base_id))
+            .with_client_order_id(format!("rest_multi_1_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -857,7 +857,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price_2)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_multi_2_{}", base_id))
+            .with_client_order_id(format!("rest_multi_2_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -865,7 +865,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price_2)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_multi_{}", base_id))
+            .with_client_order_id(format!("ws_multi_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1030,7 +1030,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_cr_initial_{}", base_id))
+            .with_client_order_id(format!("rest_cr_initial_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1038,7 +1038,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_cr_initial_{}", base_id))
+            .with_client_order_id(format!("ws_cr_initial_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1152,7 +1152,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_cr_af_{}", base_id))
+            .with_client_order_id(format!("rest_cr_af_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1160,7 +1160,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_cr_af_{}", base_id))
+            .with_client_order_id(format!("ws_cr_af_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1272,7 +1272,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_cr_restr_{}", base_id))
+            .with_client_order_id(format!("rest_cr_restr_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1280,7 +1280,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_cr_restr_{}", base_id))
+            .with_client_order_id(format!("ws_cr_restr_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1424,7 +1424,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_cr_market_{}", base_id))
+            .with_client_order_id(format!("rest_cr_market_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1432,7 +1432,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(initial_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_cr_market_{}", base_id))
+            .with_client_order_id(format!("ws_cr_market_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1608,7 +1608,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_amend_basic_{}", base_id))
+            .with_client_order_id(format!("rest_amend_basic_{}", base_id))
             .build()
             .expect("Order spec validation");
 
@@ -1616,7 +1616,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_amend_basic_{}", base_id))
+            .with_client_order_id(format!("ws_amend_basic_{}", base_id))
             .build()
             .expect("Order spec validation");
 

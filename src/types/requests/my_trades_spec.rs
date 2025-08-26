@@ -164,10 +164,10 @@ impl MyTradesSpec<Unvalidated> {
             return Err(InvalidParameter::empty("symbol").into());
         }
 
-        if let Some(limit) = self.limit {
-            if limit > 1000 {
-                return Err(InvalidParameter::range("limit", 1, 1000).into());
-            }
+        if let Some(limit) = self.limit
+            && limit > 1000
+        {
+            return Err(InvalidParameter::range("limit", 1, 1000).into());
         }
 
         if let (Some(start), Some(end)) = (self.start_time, self.end_time) {
@@ -184,20 +184,18 @@ impl MyTradesSpec<Unvalidated> {
             }
         }
 
-        if let Some(_from_id) = self.from_id {
-            if self.start_time.is_some() || self.end_time.is_some() {
-                return Err(
-                    InvalidParameter::mutually_exclusive("fromId", "startTime/endTime").into(),
-                );
-            }
+        if let Some(_from_id) = self.from_id
+            && (self.start_time.is_some() || self.end_time.is_some())
+        {
+            return Err(InvalidParameter::mutually_exclusive("fromId", "startTime/endTime").into());
         }
 
-        if let Some(_order_id) = self.order_id {
-            if self.start_time.is_some() || self.end_time.is_some() {
-                return Err(
-                    InvalidParameter::mutually_exclusive("orderId", "startTime/endTime").into(),
-                );
-            }
+        if let Some(_order_id) = self.order_id
+            && (self.start_time.is_some() || self.end_time.is_some())
+        {
+            return Err(
+                InvalidParameter::mutually_exclusive("orderId", "startTime/endTime").into(),
+            );
         }
 
         Ok(())

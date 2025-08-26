@@ -7,7 +7,6 @@
  * If the API changes, bump the version in `BINANCE_ERROR_VERSION` and update the error handling
  * according to latest specifications.
  */
-
 /// Version tracking for error definitions - update when Binance API changes
 pub const BINANCE_ERROR_VERSION: &str = "2025-06-11";
 
