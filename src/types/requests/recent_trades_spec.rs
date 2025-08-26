@@ -88,10 +88,10 @@ impl RecentTradesSpec<Unvalidated> {
             return Err(InvalidParameter::empty("symbol").into());
         }
 
-        if let Some(limit) = self.limit {
-            if limit > 1000 {
-                return Err(InvalidParameter::range("limit", 1, 1000).into());
-            }
+        if let Some(limit) = self.limit
+            && limit > 1000
+        {
+            return Err(InvalidParameter::range("limit", 1, 1000).into());
         }
 
         Ok(())

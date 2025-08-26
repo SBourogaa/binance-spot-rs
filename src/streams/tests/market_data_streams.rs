@@ -486,7 +486,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -516,7 +516,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -556,7 +556,7 @@ mod tests {
         let book_ticker_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -607,7 +607,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -634,7 +634,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -666,7 +666,7 @@ mod tests {
         let kline_symbol = "ETHUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -721,7 +721,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -749,7 +749,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -794,7 +794,7 @@ mod tests {
         let book_ticker_symbol = "ETHUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -848,7 +848,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -875,7 +875,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -914,7 +914,7 @@ mod tests {
         let mini_ticker_symbol = "ETHUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -969,7 +969,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -997,7 +997,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1037,7 +1037,7 @@ mod tests {
         let ticker_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1090,7 +1090,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1118,7 +1118,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1158,7 +1158,7 @@ mod tests {
         let avg_price_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1210,7 +1210,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1238,7 +1238,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1278,7 +1278,7 @@ mod tests {
         let agg_trade_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1330,7 +1330,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1359,7 +1359,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1401,7 +1401,7 @@ mod tests {
         let diff_depth_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1454,7 +1454,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1483,7 +1483,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1525,7 +1525,7 @@ mod tests {
         let book_ticker_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1578,7 +1578,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1606,7 +1606,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1646,7 +1646,7 @@ mod tests {
         let diff_depth_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1699,7 +1699,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1728,7 +1728,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1770,7 +1770,7 @@ mod tests {
         let agg_trade_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1829,7 +1829,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1857,7 +1857,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1897,7 +1897,7 @@ mod tests {
         let kline_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -1950,7 +1950,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -1978,7 +1978,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -2018,7 +2018,7 @@ mod tests {
         let avg_price_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -2077,7 +2077,7 @@ mod tests {
         let mut client = create_raw_stream_client(&spec).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(client.subscribe(&spec))
@@ -2105,7 +2105,7 @@ mod tests {
         let mut client = create_combined_stream_client(specs).expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -2145,7 +2145,7 @@ mod tests {
         let kline_tz_symbol = "ADAUSDT";
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 

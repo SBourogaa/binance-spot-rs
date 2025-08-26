@@ -140,10 +140,10 @@ impl TickerRollingWindowSpec<Unvalidated> {
             return Err(InvalidParameter::new("symbol or symbols", "must be specified").into());
         }
 
-        if let Some(ref symbol) = self.symbol {
-            if symbol.trim().is_empty() {
-                return Err(InvalidParameter::empty("symbol").into());
-            }
+        if let Some(ref symbol) = self.symbol
+            && symbol.trim().is_empty()
+        {
+            return Err(InvalidParameter::empty("symbol").into());
         }
 
         if let Some(ref symbols_json) = self.symbols {
@@ -211,21 +211,21 @@ impl TickerRollingWindowSpec<Unvalidated> {
         match number_part.parse::<u32>() {
             Ok(num) => match last_char {
                 'm' => {
-                    if num < 1 || num > 59 {
+                    if !(1..=59).contains(&num) {
                         return Err(
                             InvalidParameter::new("window_size", "minutes must be 1-59").into()
                         );
                     }
                 }
                 'h' => {
-                    if num < 1 || num > 23 {
+                    if !(1..=23).contains(&num) {
                         return Err(
                             InvalidParameter::new("window_size", "hours must be 1-23").into()
                         );
                     }
                 }
                 'd' => {
-                    if num < 1 || num > 7 {
+                    if !(1..=7).contains(&num) {
                         return Err(InvalidParameter::new("window_size", "days must be 1-7").into());
                     }
                 }
@@ -247,5 +247,11 @@ impl TickerRollingWindowSpec<Unvalidated> {
         }
 
         Ok(())
+    }
+}
+
+impl Default for TickerRollingWindowSpec<Unvalidated> {
+    fn default() -> Self {
+        Self::new()
     }
 }

@@ -133,16 +133,16 @@ impl CancelOrderListSpec<Unvalidated> {
             .into());
         }
 
-        if let Some(ref list_client_id) = self.list_client_order_id {
-            if list_client_id.trim().is_empty() {
-                return Err(InvalidParameter::empty("list_client_order_id").into());
-            }
+        if let Some(ref list_client_id) = self.list_client_order_id
+            && list_client_id.trim().is_empty()
+        {
+            return Err(InvalidParameter::empty("list_client_order_id").into());
         }
 
-        if let Some(ref new_client_id) = self.new_client_order_id {
-            if new_client_id.trim().is_empty() {
-                return Err(InvalidParameter::empty("new_client_order_id").into());
-            }
+        if let Some(ref new_client_id) = self.new_client_order_id
+            && new_client_id.trim().is_empty()
+        {
+            return Err(InvalidParameter::empty("new_client_order_id").into());
         }
 
         Ok(())

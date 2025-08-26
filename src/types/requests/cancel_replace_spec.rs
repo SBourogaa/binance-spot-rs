@@ -425,75 +425,65 @@ impl CancelReplaceSpec<Unvalidated> {
             return Err(InvalidParameter::empty("symbol").into());
         }
 
-        match (
+        if let (false, false) = (
             self.cancel_order_id.is_some(),
             self.cancel_origin_client_order_id.is_some(),
         ) {
-            (false, false) => {
-                return Err(InvalidParameter::required(
-                    "cancel_order_id or cancel_origin_client_order_id",
-                )
-                .into());
-            }
-            _ => {}
+            return Err(InvalidParameter::required(
+                "cancel_order_id or cancel_origin_client_order_id",
+            )
+            .into());
         }
 
-        if let Some(strategy_type) = self.strategy_type {
-            if strategy_type < 1000000 {
-                return Err(InvalidParameter::range("strategy_type", 1000000, i32::MAX).into());
-            }
+        if let Some(strategy_type) = self.strategy_type
+            && strategy_type < 1000000
+        {
+            return Err(InvalidParameter::range("strategy_type", 1000000, i32::MAX).into());
         }
 
-        if let Some(qty) = self.quantity {
-            if qty <= Decimal::ZERO {
-                return Err(
-                    InvalidParameter::range("quantity", Decimal::ZERO, Decimal::MAX).into(),
-                );
-            }
+        if let Some(qty) = self.quantity
+            && qty <= Decimal::ZERO
+        {
+            return Err(InvalidParameter::range("quantity", Decimal::ZERO, Decimal::MAX).into());
         }
 
-        if let Some(quote_qty) = self.quote_order_quantity {
-            if quote_qty <= Decimal::ZERO {
-                return Err(InvalidParameter::range(
-                    "quote_order_quantity",
-                    Decimal::ZERO,
-                    Decimal::MAX,
-                )
-                .into());
-            }
+        if let Some(quote_qty) = self.quote_order_quantity
+            && quote_qty <= Decimal::ZERO
+        {
+            return Err(InvalidParameter::range(
+                "quote_order_quantity",
+                Decimal::ZERO,
+                Decimal::MAX,
+            )
+            .into());
         }
 
-        if let Some(price) = self.price {
-            if price <= Decimal::ZERO {
-                return Err(InvalidParameter::range("price", Decimal::ZERO, Decimal::MAX).into());
-            }
+        if let Some(price) = self.price
+            && price <= Decimal::ZERO
+        {
+            return Err(InvalidParameter::range("price", Decimal::ZERO, Decimal::MAX).into());
         }
 
-        if let Some(stop_price) = self.stop_price {
-            if stop_price <= Decimal::ZERO {
-                return Err(
-                    InvalidParameter::range("stop_price", Decimal::ZERO, Decimal::MAX).into(),
-                );
-            }
+        if let Some(stop_price) = self.stop_price
+            && stop_price <= Decimal::ZERO
+        {
+            return Err(InvalidParameter::range("stop_price", Decimal::ZERO, Decimal::MAX).into());
         }
 
-        if let Some(trailing_delta) = self.trailing_delta {
-            if trailing_delta <= Decimal::ZERO {
-                return Err(
-                    InvalidParameter::range("trailing_delta", Decimal::ZERO, Decimal::MAX).into(),
-                );
-            }
+        if let Some(trailing_delta) = self.trailing_delta
+            && trailing_delta <= Decimal::ZERO
+        {
+            return Err(
+                InvalidParameter::range("trailing_delta", Decimal::ZERO, Decimal::MAX).into(),
+            );
         }
 
-        if let Some(iceberg_qty) = self.iceberg_quantity {
-            if iceberg_qty <= Decimal::ZERO {
-                return Err(InvalidParameter::range(
-                    "iceberg_quantity",
-                    Decimal::ZERO,
-                    Decimal::MAX,
-                )
-                .into());
-            }
+        if let Some(iceberg_qty) = self.iceberg_quantity
+            && iceberg_qty <= Decimal::ZERO
+        {
+            return Err(
+                InvalidParameter::range("iceberg_quantity", Decimal::ZERO, Decimal::MAX).into(),
+            );
         }
 
         self.validate_new_order_parameters()?;

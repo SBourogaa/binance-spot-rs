@@ -467,20 +467,16 @@ impl OcoOrderSpec<Unvalidated> {
             ).into());
         }
 
-        if let Some(strategy_type) = self.above_strategy_type {
-            if strategy_type < 1000000 {
-                return Err(
-                    InvalidParameter::new("above_strategy_type", "must be >= 1000000").into(),
-                );
-            }
+        if let Some(strategy_type) = self.above_strategy_type
+            && strategy_type < 1000000
+        {
+            return Err(InvalidParameter::new("above_strategy_type", "must be >= 1000000").into());
         }
 
-        if let Some(strategy_type) = self.below_strategy_type {
-            if strategy_type < 1000000 {
-                return Err(
-                    InvalidParameter::new("below_strategy_type", "must be >= 1000000").into(),
-                );
-            }
+        if let Some(strategy_type) = self.below_strategy_type
+            && strategy_type < 1000000
+        {
+            return Err(InvalidParameter::new("below_strategy_type", "must be >= 1000000").into());
         }
 
         Ok(())

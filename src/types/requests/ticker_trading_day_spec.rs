@@ -138,10 +138,10 @@ impl TickerTradingDaySpec<Unvalidated> {
             return Err(InvalidParameter::new("symbol or symbols", "must be specified").into());
         }
 
-        if let Some(ref symbol) = self.symbol {
-            if symbol.trim().is_empty() {
-                return Err(InvalidParameter::empty("symbol").into());
-            }
+        if let Some(ref symbol) = self.symbol
+            && symbol.trim().is_empty()
+        {
+            return Err(InvalidParameter::empty("symbol").into());
         }
 
         if let Some(ref symbols_json) = self.symbols {
@@ -209,7 +209,7 @@ impl TickerTradingDaySpec<Unvalidated> {
         let tz = timezone.trim();
 
         if let Ok(hours) = tz.parse::<i32>() {
-            if hours < -12 || hours > 14 {
+            if !(-12..=14).contains(&hours) {
                 return Err(InvalidParameter::new(
                     "time_zone",
                     "timezone hours must be in range [-12 to +14]",
@@ -237,7 +237,7 @@ impl TickerTradingDaySpec<Unvalidated> {
                 .parse::<u32>()
                 .map_err(|_| InvalidParameter::new("time_zone", "invalid minute format"))?;
 
-            if hours < -12 || hours > 14 {
+            if !(-12..=14).contains(&hours) {
                 return Err(InvalidParameter::new(
                     "time_zone",
                     "timezone hours must be in range [-12 to +14]",
@@ -259,5 +259,11 @@ impl TickerTradingDaySpec<Unvalidated> {
             "timezone format must be like '0', '8', '-1:00', or '05:45'",
         )
         .into())
+    }
+}
+
+impl Default for TickerTradingDaySpec<Unvalidated> {
+    fn default() -> Self {
+        Self::new()
     }
 }

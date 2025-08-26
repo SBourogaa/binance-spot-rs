@@ -10,6 +10,7 @@ use super::{
  * # Variants
  * - Each variant wraps a struct containing the concrete rule fields.
  */
+#[allow(clippy::enum_variant_names)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "filterType")]
 #[serde(deny_unknown_fields)]

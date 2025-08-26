@@ -176,6 +176,7 @@ impl OtocoOrderSpec<Unvalidated> {
      * # Returns
      * - `Self`: New OTOCO order specification.
      */
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         symbol: impl Into<String>,
         working_type: OrderType,
