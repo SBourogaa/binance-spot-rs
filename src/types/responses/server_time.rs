@@ -24,7 +24,7 @@ impl ServerTime {
         let dt = Utc
             .timestamp_opt(secs, nanos)
             .single()
-            .unwrap_or_else(|| Utc::now());
+            .unwrap_or_else(Utc::now);
 
         Self { server_time: dt }
     }
@@ -61,6 +61,6 @@ mod timestamp_millis {
         Ok(Utc
             .timestamp_opt(secs, nanos)
             .single()
-            .unwrap_or_else(|| Utc::now()))
+            .unwrap_or_else(Utc::now))
     }
 }

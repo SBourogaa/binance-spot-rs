@@ -88,10 +88,10 @@ impl OrderBookSpec<Unvalidated> {
             return Err(InvalidParameter::empty("symbol").into());
         }
 
-        if let Some(limit) = self.limit {
-            if limit > 5000 {
-                return Err(InvalidParameter::range("limit", 1, 5000).into());
-            }
+        if let Some(limit) = self.limit
+            && limit > 5000
+        {
+            return Err(InvalidParameter::range("limit", 1, 5000).into());
         }
 
         Ok(())

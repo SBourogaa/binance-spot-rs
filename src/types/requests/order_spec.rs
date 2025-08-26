@@ -318,54 +318,48 @@ impl OrderSpec<Unvalidated> {
             );
         }
 
-        if let Some(qty) = self.quantity {
-            if qty <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new("quantity", "must be greater than 0").into());
-            }
+        if let Some(qty) = self.quantity
+            && qty <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new("quantity", "must be greater than 0").into());
         }
 
-        if let Some(quote_qty) = self.quote_order_quantity {
-            if quote_qty <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new(
-                    "quote_order_quantity",
-                    "must be greater than 0",
-                )
-                .into());
-            }
+        if let Some(quote_qty) = self.quote_order_quantity
+            && quote_qty <= rust_decimal::Decimal::ZERO
+        {
+            return Err(
+                InvalidParameter::new("quote_order_quantity", "must be greater than 0").into(),
+            );
         }
 
-        if let Some(price) = self.price {
-            if price <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new("price", "must be greater than 0").into());
-            }
+        if let Some(price) = self.price
+            && price <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new("price", "must be greater than 0").into());
         }
 
-        if let Some(stop_price) = self.stop_price {
-            if stop_price <= rust_decimal::Decimal::ZERO {
-                return Err(InvalidParameter::new("stop_price", "must be greater than 0").into());
-            }
+        if let Some(stop_price) = self.stop_price
+            && stop_price <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new("stop_price", "must be greater than 0").into());
         }
 
-        if let Some(trailing_delta) = self.trailing_delta {
-            if trailing_delta <= rust_decimal::Decimal::ZERO {
-                return Err(
-                    InvalidParameter::new("trailing_delta", "must be greater than 0").into(),
-                );
-            }
+        if let Some(trailing_delta) = self.trailing_delta
+            && trailing_delta <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new("trailing_delta", "must be greater than 0").into());
         }
 
-        if let Some(iceberg_qty) = self.iceberg_quantity {
-            if iceberg_qty <= rust_decimal::Decimal::ZERO {
-                return Err(
-                    InvalidParameter::new("iceberg_quantity", "must be greater than 0").into(),
-                );
-            }
+        if let Some(iceberg_qty) = self.iceberg_quantity
+            && iceberg_qty <= rust_decimal::Decimal::ZERO
+        {
+            return Err(InvalidParameter::new("iceberg_quantity", "must be greater than 0").into());
         }
 
-        if let Some(strat_type) = self.strategy_type {
-            if strat_type < 1000000 {
-                return Err(InvalidParameter::range("strategy_type", 1000000, u32::MAX).into());
-            }
+        if let Some(strat_type) = self.strategy_type
+            && strat_type < 1000000
+        {
+            return Err(InvalidParameter::range("strategy_type", 1000000, u32::MAX).into());
         }
 
         if self.iceberg_quantity.is_some()

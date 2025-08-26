@@ -3,16 +3,11 @@ use std::time::Duration;
 const DEFAULT_MARKET_DATA_URL: &str = "wss://stream.binance.com:9443";
 const DEFAULT_USER_DATA_URL: &str = "wss://ws-api.binance.com:443/ws-api/v3";
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum StreamType {
+    #[default]
     MarketData,
     UserData,
-}
-
-impl Default for StreamType {
-    fn default() -> Self {
-        StreamType::MarketData
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -21,17 +16,12 @@ pub struct StreamInfo {
     pub buffer_size: usize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum StreamMode {
     Raw(StreamInfo),
     Combined(Vec<StreamInfo>),
+    #[default]
     Dynamic,
-}
-
-impl Default for StreamMode {
-    fn default() -> Self {
-        StreamMode::Dynamic
-    }
 }
 
 #[derive(Debug, Clone)]

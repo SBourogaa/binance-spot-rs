@@ -128,10 +128,10 @@ impl AllOrderListsSpec<Unvalidated> {
      * - `()`: Ok if valid, error if invalid parameters.
      */
     fn validate(&self) -> Result<()> {
-        if let Some(limit) = self.limit {
-            if limit == 0 || limit > 1000 {
-                return Err(InvalidParameter::range("limit", 1, 1000).into());
-            }
+        if let Some(limit) = self.limit
+            && (limit == 0 || limit > 1000)
+        {
+            return Err(InvalidParameter::range("limit", 1, 1000).into());
         }
 
         if let (Some(start_time), Some(end_time)) = (self.start_time, self.end_time) {

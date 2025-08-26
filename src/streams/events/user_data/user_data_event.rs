@@ -21,6 +21,7 @@ use super::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "e")]
 #[serde(deny_unknown_fields)]
+#[allow(clippy::large_enum_variant)]
 pub enum UserDataEvent {
     #[serde(rename = "executionReport")]
     ExecutionReport(ExecutionReportEvent),

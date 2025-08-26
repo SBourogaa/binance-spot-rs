@@ -23,6 +23,12 @@ impl AllMiniTickersStreamSpec {
     }
 }
 
+impl Default for AllMiniTickersStreamSpec {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl StreamSpec for AllMiniTickersStreamSpec {
     type Event = crate::streams::events::AllMiniTickersStreamEvent;
 

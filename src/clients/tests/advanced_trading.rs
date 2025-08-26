@@ -64,6 +64,24 @@ mod tests {
         Decimal::new(10, 0)
     }
 
+    fn calculate_oco_safe_quantity(
+        take_profit_price: Decimal,
+        stop_loss_price: Decimal,
+        symbol_info: &SymbolInfo,
+    ) -> Decimal {
+        let min_notional = get_min_notional(symbol_info);
+
+        let lower_price = if stop_loss_price < take_profit_price {
+            stop_loss_price
+        } else {
+            take_profit_price
+        };
+
+        let min_quantity_for_notional = (min_notional / lower_price) * Decimal::new(15, 1); // 1.5x margin
+
+        make_quantity_step_compliant(min_quantity_for_notional, symbol_info)
+    }
+
     /**
      * Makes a price compliant with the PRICE_FILTER tick_size requirement.
      */
@@ -281,11 +299,8 @@ mod tests {
                 Err(_) => continue,
             };
 
-            match with_timeout(rest_client.cancel_order_list(cancel_spec)).await {
-                Ok(_) => {
-                    cancelled_count += 1;
-                }
-                Err(_) => {}
+            if (with_timeout(rest_client.cancel_order_list(cancel_spec)).await).is_ok() {
+                cancelled_count += 1;
             }
         }
 
@@ -343,7 +358,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_sor_{}", base_id))
+            .with_client_order_id(format!("rest_sor_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
@@ -351,7 +366,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_sor_{}", base_id))
+            .with_client_order_id(format!("ws_sor_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
@@ -420,13 +435,13 @@ mod tests {
 
         let rest_spec = SorOrderSpec::new(&sor_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&format!("rest_sor_market_{}", base_id))
+            .with_client_order_id(format!("rest_sor_market_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
         let ws_spec = SorOrderSpec::new(&sor_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&format!("ws_sor_market_{}", base_id))
+            .with_client_order_id(format!("ws_sor_market_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
@@ -491,7 +506,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("rest_test_sor_{}", base_id))
+            .with_client_order_id(format!("rest_test_sor_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
@@ -499,7 +514,7 @@ mod tests {
             .with_quantity(safe_quantity)
             .with_price(safe_price)
             .with_time_in_force(TimeInForce::GTC)
-            .with_client_order_id(&format!("ws_test_sor_{}", base_id))
+            .with_client_order_id(format!("ws_test_sor_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
@@ -574,13 +589,13 @@ mod tests {
 
         let rest_spec = SorOrderSpec::new(&sor_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&format!("rest_test_sor_market_{}", base_id))
+            .with_client_order_id(format!("rest_test_sor_market_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
         let ws_spec = SorOrderSpec::new(&sor_symbol, OrderSide::Buy, OrderType::Market)
             .with_quote_order_quantity(quote_quantity)
-            .with_client_order_id(&format!("ws_test_sor_market_{}", base_id))
+            .with_client_order_id(format!("ws_test_sor_market_{}", base_id))
             .build()
             .expect("SOR order spec validation");
 
@@ -704,12 +719,13 @@ mod tests {
             .expect("Get exchange info");
         let symbol_info = &exchange_info.symbols[0];
 
-        let (_, safe_quantity) = calculate_safe_order_params(market_price, symbol_info);
-
         let take_profit_price =
             make_price_tick_compliant(market_price * Decimal::new(105, 2), symbol_info);
         let stop_loss_price =
             make_price_tick_compliant(market_price * Decimal::new(90, 2), symbol_info);
+
+        let safe_quantity =
+            calculate_oco_safe_quantity(take_profit_price, stop_loss_price, symbol_info);
 
         // Act
         let base_id = chrono::Utc::now().timestamp_millis();
@@ -1844,11 +1860,13 @@ mod tests {
             .expect("Get exchange info");
         let symbol_info = &exchange_info.symbols[0];
 
-        let (_, safe_quantity) = calculate_safe_order_params(market_price, symbol_info);
         let limit_maker_price =
             make_price_tick_compliant(market_price * Decimal::new(105, 2), symbol_info);
         let stop_loss_price =
             make_price_tick_compliant(market_price * Decimal::new(90, 2), symbol_info);
+
+        let safe_quantity =
+            calculate_oco_safe_quantity(limit_maker_price, stop_loss_price, symbol_info);
 
         let base_id = chrono::Utc::now().timestamp_millis();
 
@@ -2393,11 +2411,13 @@ mod tests {
             .expect("Get exchange info");
         let symbol_info = &exchange_info.symbols[0];
 
-        let (_, safe_quantity) = calculate_safe_order_params(market_price, symbol_info);
         let limit_maker_price =
             make_price_tick_compliant(market_price * Decimal::new(105, 2), symbol_info);
         let stop_loss_price =
             make_price_tick_compliant(market_price * Decimal::new(90, 2), symbol_info);
+
+        let safe_quantity =
+            calculate_oco_safe_quantity(limit_maker_price, stop_loss_price, symbol_info);
 
         let base_id = chrono::Utc::now().timestamp_millis();
 

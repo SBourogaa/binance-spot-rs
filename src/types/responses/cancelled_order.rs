@@ -12,6 +12,7 @@ use crate::types::responses::{Order, OrderList};
  * - `Individual`: Cancelled individual order information.
  * - `OrderList`: Cancelled order list (OCO, OTO, etc.) information.
  */
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(untagged)]
 #[serde(deny_unknown_fields)]

@@ -166,10 +166,10 @@ impl PreventedMatchesSpec<Unvalidated> {
             .into());
         }
 
-        if let Some(limit) = self.limit {
-            if limit == 0 || limit > 1000 {
-                return Err(InvalidParameter::range("limit", 1, 1000).into());
-            }
+        if let Some(limit) = self.limit
+            && (limit == 0 || limit > 1000)
+        {
+            return Err(InvalidParameter::range("limit", 1, 1000).into());
         }
 
         Ok(())

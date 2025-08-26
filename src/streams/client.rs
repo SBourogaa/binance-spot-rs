@@ -192,52 +192,6 @@ impl StreamClient<UserDataConnectionManager> {
     }
 }
 
-/**
- * Factory for creating appropriate stream clients based on configuration.
- */
-pub(crate) struct StreamClientFactory;
-
-impl StreamClientFactory {
-    /**
-     * Creates the appropriate stream client based on stream specification.
-     *
-     * # Arguments
-     * - `config`: Binance configuration with stream settings.
-     * - `_spec`: Stream specification (unused, for API compatibility).
-     *
-     * # Returns
-     * - New BinanceSpotStreamClient instance.
-     */
-    pub fn for_stream<S: StreamSpec>(
-        config: BinanceConfig<StreamConfig>,
-        _spec: &S,
-    ) -> Result<BinanceSpotStreamClient> {
-        Self::new(config)
-    }
-
-    /**
-     * Creates a new stream client based on the configuration.
-     *
-     * # Arguments
-     * - `config`: Binance configuration with stream settings and type.
-     *
-     * # Returns
-     * - New BinanceSpotStreamClient instance.
-     */
-    pub fn new(config: BinanceConfig<StreamConfig>) -> Result<BinanceSpotStreamClient> {
-        match config.stream_config().stream_type {
-            StreamType::MarketData => {
-                let client = StreamClient::new_market_data(config)?;
-                Ok(BinanceSpotStreamClient::MarketData(client))
-            }
-            StreamType::UserData => {
-                let client = StreamClient::new_user_data(config)?;
-                Ok(BinanceSpotStreamClient::UserData(client))
-            }
-        }
-    }
-}
-
 impl<M: ConnectionManager> StreamClient<M> {
     /**
      * Waits for the WebSocket connection to be established.
@@ -363,9 +317,10 @@ impl<M: ConnectionManager> StreamClient<M> {
 
         let _ = sender.send(StreamMessage::Shutdown(response_tx));
 
-        match tokio::time::timeout(std::time::Duration::from_secs(10), response_rx).await {
-            Ok(Ok(result)) => result?,
-            Ok(Err(_)) | Err(_) => {}
+        if let Ok(Ok(result)) =
+            tokio::time::timeout(std::time::Duration::from_secs(10), response_rx).await
+        {
+            result?
         }
 
         self.connection_manager.abort_connection();
@@ -500,9 +455,9 @@ impl BinanceSpotStreamClient {
      */
     pub fn for_stream<S: StreamSpec>(
         config: BinanceConfig<StreamConfig>,
-        spec: &S,
+        _spec: &S,
     ) -> Result<Self> {
-        StreamClientFactory::for_stream(config, spec)
+        Self::new(config)
     }
 
     /**
@@ -515,7 +470,16 @@ impl BinanceSpotStreamClient {
      * - New BinanceSpotStreamClient instance.
      */
     pub fn new(config: BinanceConfig<StreamConfig>) -> Result<Self> {
-        StreamClientFactory::new(config)
+        match config.stream_config().stream_type {
+            StreamType::MarketData => {
+                let client = StreamClient::new_market_data(config)?;
+                Ok(BinanceSpotStreamClient::MarketData(client))
+            }
+            StreamType::UserData => {
+                let client = StreamClient::new_user_data(config)?;
+                Ok(BinanceSpotStreamClient::UserData(client))
+            }
+        }
     }
 
     /**

@@ -15,6 +15,8 @@ pub use errors::BINANCE_ERROR_VERSION;
 pub use errors::BinanceError;
 pub use filters::BINANCE_FILTER_VERSION;
 
+pub type Result<T> = anyhow::Result<T>;
+
 pub mod rest {
     pub use super::clients::rest::client;
 }
@@ -26,5 +28,3 @@ pub mod websocket {
 pub mod stream {
     pub use super::streams::client;
 }
-
-pub type Result<T> = anyhow::Result<T>;

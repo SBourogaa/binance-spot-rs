@@ -331,7 +331,7 @@ mod tests {
         let spec = UserDataStreamSpec::new();
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let _subscription = with_timeout(client.subscribe(&spec))
@@ -358,7 +358,7 @@ mod tests {
             .expect("Get safe order params");
 
         // Act
-        let _ = with_timeout(stream_client.wait_for_connection())
+        with_timeout(stream_client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(stream_client.subscribe(&spec))
@@ -430,7 +430,7 @@ mod tests {
             .expect("Get safe order params");
 
         // Act
-        let _ = with_timeout(stream_client.wait_for_connection())
+        with_timeout(stream_client.wait_for_connection())
             .await
             .expect("Connection");
         let _subscription = with_timeout(stream_client.subscribe(&spec))
@@ -464,7 +464,7 @@ mod tests {
         let spec = UserDataStreamSpec::new();
 
         // Act
-        let _ = with_timeout(stream_client.wait_for_connection())
+        with_timeout(stream_client.wait_for_connection())
             .await
             .expect("Connection");
         let mut subscription = with_timeout(stream_client.subscribe(&spec))
@@ -486,27 +486,26 @@ mod tests {
         for _ in 0..5 {
             if let Ok(event) =
                 tokio::time::timeout(Duration::from_secs(10), subscription.recv()).await
+                && let Ok(user_data_event) = event
             {
-                if let Ok(user_data_event) = event {
-                    match user_data_event {
-                        UserDataEvent::ExecutionReport(execution_report) => {
-                            assert_valid_execution_report_event(&execution_report);
-                            received_execution_report = true;
-                        }
-                        UserDataEvent::OutboundAccountPosition(account_position) => {
-                            assert_valid_account_position_event(&account_position);
-                        }
-                        UserDataEvent::BalanceUpdate(balance_update) => {
-                            assert_valid_balance_update_event(&balance_update);
-                        }
-                        other => {
-                            debug!(event = ?other, "Received other event type");
-                        }
+                match user_data_event {
+                    UserDataEvent::ExecutionReport(execution_report) => {
+                        assert_valid_execution_report_event(&execution_report);
+                        received_execution_report = true;
                     }
+                    UserDataEvent::OutboundAccountPosition(account_position) => {
+                        assert_valid_account_position_event(&account_position);
+                    }
+                    UserDataEvent::BalanceUpdate(balance_update) => {
+                        assert_valid_balance_update_event(&balance_update);
+                    }
+                    other => {
+                        debug!(event = ?other, "Received other event type");
+                    }
+                }
 
-                    if received_execution_report {
-                        break;
-                    }
+                if received_execution_report {
+                    break;
                 }
             }
         }
@@ -530,7 +529,7 @@ mod tests {
         let spec = UserDataStreamSpec::new();
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
 
@@ -555,19 +554,18 @@ mod tests {
         let spec = UserDataStreamSpec::new();
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         let _subscription = with_timeout(client.subscribe(&spec))
             .await
             .expect("Subscription");
 
-        let _unsubscribe_result = with_timeout(client.unsubscribe(spec))
+        with_timeout(client.unsubscribe(spec))
             .await
             .expect("Unsubscription");
 
-        // Assert
-        let _ = with_timeout(client.close()).await;
+        with_timeout(client.close()).await.expect("Close failed")
     }
 
     /**
@@ -579,15 +577,12 @@ mod tests {
         let mut client = create_user_data_stream_client().expect("Client creation");
 
         // Act
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         assert!(client.is_connected(), "Should be connected");
 
-        let close_result = with_timeout(client.close()).await.expect("Close");
-
-        // Assert
-        let _ = close_result;
+        with_timeout(client.close()).await.expect("Close failed");
     }
 
     /**
@@ -609,12 +604,12 @@ mod tests {
             "Should not report as connected initially"
         );
 
-        let _ = with_timeout(client.wait_for_connection())
+        with_timeout(client.wait_for_connection())
             .await
             .expect("Connection");
         assert_eq!(client.connection_status(), ConnectionStatus::Connected);
         assert!(client.is_connected(), "Should report as connected");
 
-        let _ = with_timeout(client.close()).await.expect("Close");
+        with_timeout(client.close()).await.expect("Close");
     }
 }

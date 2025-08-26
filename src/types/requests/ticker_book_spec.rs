@@ -97,10 +97,10 @@ impl TickerBookSpec<Unvalidated> {
      * - `()`: Ok if valid, error if invalid parameters.
      */
     fn validate(&self) -> Result<()> {
-        if let Some(ref symbol) = self.symbol {
-            if symbol.trim().is_empty() {
-                return Err(InvalidParameter::empty("symbol").into());
-            }
+        if let Some(ref symbol) = self.symbol
+            && symbol.trim().is_empty()
+        {
+            return Err(InvalidParameter::empty("symbol").into());
         }
 
         if let Some(ref symbols_json) = self.symbols {
@@ -129,5 +129,11 @@ impl TickerBookSpec<Unvalidated> {
         }
 
         Ok(())
+    }
+}
+
+impl Default for TickerBookSpec<Unvalidated> {
+    fn default() -> Self {
+        Self::new()
     }
 }

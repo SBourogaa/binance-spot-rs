@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
  * # Fields:
  * - `update_id`: Order book update ID
  * - `ticker`: Flattened ticker book data containing symbol, best bid price, best bid quantity,
- *    best ask price, and best ask quantity
+ *   best ask price, and best ask quantity
  */
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
