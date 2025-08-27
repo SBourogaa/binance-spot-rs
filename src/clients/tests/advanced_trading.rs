@@ -89,11 +89,11 @@ mod tests {
         symbol_info: &SymbolInfo,
     ) -> Decimal {
         let min_notional = get_min_notional(symbol_info);
-        
+
         let lowest_price = working_price.min(limit_maker_price.min(stop_loss_price));
-        
+
         let min_quantity_for_notional = (min_notional / lowest_price) * Decimal::new(15, 1); // 1.5x margin
-        
+
         make_quantity_step_compliant(min_quantity_for_notional, symbol_info)
     }
 
@@ -1396,8 +1396,13 @@ mod tests {
             make_price_tick_compliant(market_price * Decimal::new(105, 2), symbol_info);
         let stop_loss_price =
             make_price_tick_compliant(market_price * Decimal::new(90, 2), symbol_info);
-        
-        let working_quantity = calculate_otoco_safe_quantity(working_price, limit_maker_price, stop_loss_price, symbol_info);
+
+        let working_quantity = calculate_otoco_safe_quantity(
+            working_price,
+            limit_maker_price,
+            stop_loss_price,
+            symbol_info,
+        );
 
         // Act
         let base_id = chrono::Utc::now().timestamp_millis();
