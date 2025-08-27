@@ -82,6 +82,21 @@ mod tests {
         make_quantity_step_compliant(min_quantity_for_notional, symbol_info)
     }
 
+    fn calculate_otoco_safe_quantity(
+        working_price: Decimal,
+        limit_maker_price: Decimal,
+        stop_loss_price: Decimal,
+        symbol_info: &SymbolInfo,
+    ) -> Decimal {
+        let min_notional = get_min_notional(symbol_info);
+        
+        let lowest_price = working_price.min(limit_maker_price.min(stop_loss_price));
+        
+        let min_quantity_for_notional = (min_notional / lowest_price) * Decimal::new(15, 1); // 1.5x margin
+        
+        make_quantity_step_compliant(min_quantity_for_notional, symbol_info)
+    }
+
     /**
      * Makes a price compliant with the PRICE_FILTER tick_size requirement.
      */
@@ -1376,12 +1391,13 @@ mod tests {
             .expect("Get exchange info");
         let symbol_info = &exchange_info.symbols[0];
 
-        let (working_price, working_quantity) =
-            calculate_safe_order_params(market_price, symbol_info);
+        let (working_price, _) = calculate_safe_order_params(market_price, symbol_info);
         let limit_maker_price =
             make_price_tick_compliant(market_price * Decimal::new(105, 2), symbol_info);
         let stop_loss_price =
             make_price_tick_compliant(market_price * Decimal::new(90, 2), symbol_info);
+        
+        let working_quantity = calculate_otoco_safe_quantity(working_price, limit_maker_price, stop_loss_price, symbol_info);
 
         // Act
         let base_id = chrono::Utc::now().timestamp_millis();
